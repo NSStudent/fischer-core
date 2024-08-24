@@ -23,10 +23,6 @@ public enum Rank: Int {
         self.init(rawValue: index + 1)
     }
 
-    public init?(_ value: Int) {
-        self.init(rawValue: value)
-    }
-
     public func opposite() -> Rank {
         return Rank(rawValue: 9 - rawValue)!
     }
