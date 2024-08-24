@@ -22,6 +22,13 @@ final class BitboardTests: XCTestCase {
         XCTAssertEqual(mBitboard, Bitboard(square: .f4))
         mBitboard >>= 1
         XCTAssertEqual(mBitboard, Bitboard(square: .e4))
+        
+        XCTAssertEqual(Bitboard(file: .a) & Bitboard(rank: 1), Bitboard(square: .a1))
+        print((Bitboard(file: .a) ^ Bitboard(rank: 1)).ascii)
+        print(((Bitboard(file: .a) | Bitboard(rank: .one)) & (~Bitboard(square: .a1))).ascii)
+        XCTAssertEqual(
+            Bitboard(file: .a) ^ Bitboard(rank: .one),
+            (Bitboard(file: .a) | Bitboard(rank: .one)) & (~Bitboard(square: .a1)))
     }
     
 }
