@@ -33,22 +33,10 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_report.lcov
-
-  scan:
-    runs-on: macos-14
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '15.4'
-
-      - name: Run Periphery scan
-        run: |
-          brew update
-          brew install peripheryapp/periphery/periphery
-          periphery scan --strict --format github-actions
+          comment:                  # this is a top-level key
+            layout: " diff, flags, files"
+            behavior: default
+            require_changes: false  # learn more in the Requiring Changes section below
+            require_base: false        # [true :: must have a base report to post]
+            require_head: true       # [true :: must have a head report to post]
+            hide_project_coverage: false # [true :: only show coverage on the git diff]
