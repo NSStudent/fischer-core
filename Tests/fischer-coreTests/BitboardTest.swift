@@ -41,8 +41,20 @@ final class BitboardTests: XCTestCase {
     }
     
     func testLSBIndex() throws {
-        let a1Bitboard = Bitboard(square: .a1)
-        XCTAssertEqual(a1Bitboard.lsbIndex, 0)
+        let multipleSquareBitboard = Bitboard(squares: [.b1, .h1])
+        XCTAssertEqual(multipleSquareBitboard.lsbIndex, 1)
+        XCTAssertEqual(multipleSquareBitboard.lsbSquare, .b1)
+        XCTAssertEqual(multipleSquareBitboard.msbIndex, 7)
+        XCTAssertEqual(multipleSquareBitboard.msbSquare, .h1)
+        var popLSBBitboard = multipleSquareBitboard
+        let popedLSB = popLSBBitboard.popLSB()
+        XCTAssertEqual(popLSBBitboard, Bitboard(square: .h1))
+        XCTAssertEqual(popedLSB, Bitboard(square: .b1))
+        
+        var popMSBBitboard = multipleSquareBitboard
+        let popedMSB = popMSBBitboard.popMSB()
+        XCTAssertEqual(popMSBBitboard, Bitboard(square: .b1))
+        XCTAssertEqual(popedMSB, Bitboard(square: .h1))
     }
     
 }
