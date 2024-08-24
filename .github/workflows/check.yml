@@ -1,0 +1,14 @@
+name: checks
+
+on:
+  push:
+    branches: develop
+  pull_request:
+    branches: develop
+
+jobs:
+  check:
+    uses: NSStudent/fischer-core/.github/workflows/test-spm-codecov.yaml@master
+    secrets: inherit
+    with:
+       test_bundle: ChessKitPackageTests
