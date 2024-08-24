@@ -26,6 +26,14 @@ public enum Rank: Int {
     public func opposite() -> Rank {
         return Rank(rawValue: 9 - rawValue)!
     }
+    
+    public init(startFor color: PlayerColor) {
+        self = color.isWhite() ? 1 : 8
+    }
+
+    public init(endFor color: PlayerColor) {
+        self = color.isWhite() ? 8 : 1
+    }
 }
 
 extension Rank: CaseIterable {}

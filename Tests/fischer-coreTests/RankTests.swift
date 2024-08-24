@@ -31,4 +31,12 @@ final class RankTests: XCTestCase {
         let rank: Rank = 1
         XCTAssertEqual(rank, .one)
     }
+    
+    func testStartAndEndRanks() throws {
+        XCTAssertEqual( Rank.init(startFor: .white), 1)
+        XCTAssertEqual( Rank.init(startFor: .black), 8)
+        
+        XCTAssertEqual( Rank.init(endFor: .white), 8)
+        XCTAssertEqual( Rank.init(endFor: .black), 1)
+    }
 }
