@@ -307,7 +307,7 @@ extension Bitboard {
             let str = strings.joined(separator: " ")
             result += "\(rank.description) | \(str) |\n"
         }
-        result += "\(edge)    a b c d e f g h  "
+        result += "\(edge)    a b c d e f g h"
         return result
     }
 

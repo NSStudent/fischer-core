@@ -220,4 +220,22 @@ final class BitboardTests: XCTestCase {
         XCTAssertEqual(Bitboard(startFor: Piece(king: .white)), Bitboard(location: (file: .e, rank: .one)))
         XCTAssertEqual(Bitboard(startFor: Piece(king: .black)), Bitboard(location: (file: .e, rank: .eight)))
     }
+    
+    func testAscii() throws {
+        let result =
+"""
+  +-----------------+
+8 | . . . . . . . . |
+7 | . . . . . . . . |
+6 | . . . . . . . . |
+5 | . . . . . . . . |
+4 | . . . . 1 . . . |
+3 | . . . . . . . . |
+2 | . . . . . . . . |
+1 | . . . . . . . . |
+  +-----------------+
+    a b c d e f g h
+"""
+        XCTAssertEqual(e4Bitboard.ascii, result)
+    }
 }
