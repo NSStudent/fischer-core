@@ -61,4 +61,40 @@ final class PieceTests: XCTestCase {
         XCTAssertEqual(Piece.init(value: 1), Piece(pawn: .black))
         XCTAssertEqual(Piece.init(value: 0), Piece(pawn: .white))
     }
+    
+    func testCanPromote() throws {
+        XCTAssertFalse(Piece(pawn: .black).kind.canPromote())
+        XCTAssertFalse(Piece(king: .black).kind.canPromote())
+        XCTAssertTrue(Piece(queen: .black).kind.canPromote())
+    }
+    
+    func testBooleanFunctions() throws {
+        let pawn = Piece(pawn: .white)
+        XCTAssertTrue(pawn.kind.isPawn)
+        XCTAssertFalse(pawn.kind.isKnight)
+        XCTAssertFalse(pawn.kind.isBishop)
+        XCTAssertFalse(pawn.kind.isRook)
+        XCTAssertFalse(pawn.kind.isQueen)
+        XCTAssertFalse(pawn.kind.isKing)
+    }
+    
+    func testAllBitboardLogic() {
+        let blackPawn = Piece(pawn: .black)
+        XCTAssertEqual(blackPawn.bitValue, 1)
+    }
+    
+    func testArrayPieces() {
+        XCTAssertEqual(Piece.all.count, 12)
+        XCTAssertEqual(Piece.whitePieces.count, 6)
+        XCTAssertEqual(Piece.blackPieces.count, 6)
+        XCTAssertEqual(Piece.whiteNonQueens.count, 5)
+        XCTAssertEqual(Piece.blackNonQueens.count, 5)
+        XCTAssertEqual(Piece.nonQueens(for: .white).count, Piece.whiteNonQueens.count)
+        XCTAssertEqual(Piece.nonQueens(for: .black).count, Piece.blackNonQueens.count)
+        XCTAssertEqual(Piece.whiteHashes, [0, 2, 4, 6, 8, 10])
+        XCTAssertEqual(Piece.blackHashes, [1, 3, 5, 7, 9, 11])
+        
+        XCTAssertEqual(Piece.whiteHashes, Piece.hashes(for: .white))
+        XCTAssertEqual(Piece.blackHashes, Piece.hashes(for: .black))
+    }
 }

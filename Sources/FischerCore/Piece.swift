@@ -151,6 +151,16 @@ extension Piece.Kind {
     public var isPawn: Bool {
         return self == .pawn
     }
+    
+    /// The piece is `bishop`.
+    public var isBishop: Bool {
+        return self == .bishop
+    }
+    
+    /// The piece is `knight`.
+    public var isKnight: Bool {
+        return self == .knight
+    }
 
     public var isRook: Bool {
         return self == .rook
