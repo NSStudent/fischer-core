@@ -4,7 +4,7 @@ import XCTest
 final class BitboardTests: XCTestCase {
     
     let multipleSquareBitboard = Bitboard(squares: [.b1, .h1])
-    let e4Bitboard = Bitboard(square: .e4)
+    let e4Bitboard = Bitboard(location:(file: .e, rank: .four))
     
     func testBasicInit() {
         XCTAssertEqual(Bitboard(), Bitboard(rawValue: 0))
@@ -39,6 +39,7 @@ final class BitboardTests: XCTestCase {
     }
     
     func testMSBIndex() throws {
+        XCTAssertNil(Bitboard().msbIndex)
         XCTAssertEqual(multipleSquareBitboard.msbIndex, 7)
         XCTAssertEqual(multipleSquareBitboard.msbSquare, .h1)
     }
@@ -174,5 +175,49 @@ final class BitboardTests: XCTestCase {
     
     func testKingAttacks() throws {
         XCTAssertEqual(e4Bitboard.attacks(for: .init(king: .white)), Bitboard(squares: [.d5, .d4, .d3, .e5, .e3, .f5, .f4, .f3]))
+    }
+    
+    func testIterator() throws {
+        let bitboard = multipleSquareBitboard
+        XCTAssertEqual(bitboard.underestimatedCount, 2)
+        XCTAssertTrue(bitboard.contains(.b1))
+        var iterator = bitboard.makeIterator()
+        XCTAssertEqual(iterator.next(), .b1)
+        XCTAssertEqual(iterator.next(), .h1)
+        XCTAssertNil(iterator.next())
+    }
+    
+    func testInitWithMove() {
+        XCTAssertEqual(Bitboard(move: Move(start: .c1, end: .c8)), Bitboard(squares: [.c1, .c8]))
+    }
+    
+    func testInitialPawnBoardPositions() throws {
+        XCTAssertEqual(Bitboard(startFor: Piece(pawn: .white)), Bitboard(rank: .two))
+        XCTAssertEqual(Bitboard(startFor: Piece(pawn: .black)), Bitboard(rank: .seven))
+    }
+    
+    func testInitialKnightBoardPositions() throws {
+        XCTAssertEqual(Bitboard(startFor: Piece(knight: .white)), Bitboard(locations: [(file: .b, rank: .one), (file: .g, rank: .one)]))
+        XCTAssertEqual(Bitboard(startFor: Piece(knight: .black)), Bitboard(locations: [(file: .b, rank: .eight), (file: .g, rank: .eight)]))
+    }
+    
+    func testInitialBishopBoardPositions() throws {
+        XCTAssertEqual(Bitboard(startFor: Piece(bishop: .white)), Bitboard(locations: [(file: .c, rank: .one), (file: .f, rank: .one)]))
+        XCTAssertEqual(Bitboard(startFor: Piece(bishop: .black)), Bitboard(locations: [(file: .c, rank: .eight), (file: .f, rank: .eight)]))
+    }
+    
+    func testInitialRookBoardPositions() throws {
+        XCTAssertEqual(Bitboard(startFor: Piece(rook: .white)), Bitboard(locations: [(file: .a, rank: .one), (file: .h, rank: .one)]))
+        XCTAssertEqual(Bitboard(startFor: Piece(rook: .black)), Bitboard(locations: [(file: .a, rank: .eight), (file: .h, rank: .eight)]))
+    }
+    
+    func testInitialQueenBoardPositions() throws {
+        XCTAssertEqual(Bitboard(startFor: Piece(queen: .white)), Bitboard(location: (file: .d, rank: .one)))
+        XCTAssertEqual(Bitboard(startFor: Piece(queen: .black)), Bitboard(location: (file: .d, rank: .eight)))
+    }
+    
+    func testInitialKingBoardPositions() throws {
+        XCTAssertEqual(Bitboard(startFor: Piece(king: .white)), Bitboard(location: (file: .e, rank: .one)))
+        XCTAssertEqual(Bitboard(startFor: Piece(king: .black)), Bitboard(location: (file: .e, rank: .eight)))
     }
 }
