@@ -25,6 +25,7 @@ final class PieceTests: XCTestCase {
         XCTAssertEqual(Piece.init("r"), Piece(rook: .black))
         XCTAssertEqual(Piece.init("K"), Piece(king: .white))
         XCTAssertEqual(Piece.init("k"), Piece(king: .black))
+        XCTAssertNil(Piece.init("invalid"))
     }
     
     func testFENName() throws {
@@ -60,6 +61,7 @@ final class PieceTests: XCTestCase {
     func testInitWithIntValue() throws {
         XCTAssertEqual(Piece.init(value: 1), Piece(pawn: .black))
         XCTAssertEqual(Piece.init(value: 0), Piece(pawn: .white))
+        XCTAssertNil(Piece.init(value: 42))
     }
     
     func testCanPromote() throws {
