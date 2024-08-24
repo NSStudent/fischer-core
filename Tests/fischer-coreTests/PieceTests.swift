@@ -26,4 +26,39 @@ final class PieceTests: XCTestCase {
         XCTAssertEqual(Piece.init("K"), Piece(king: .white))
         XCTAssertEqual(Piece.init("k"), Piece(king: .black))
     }
+    
+    func testFENName() throws {
+        XCTAssertEqual(Piece(pawn: .white).fenName, "P")
+        XCTAssertEqual(Piece(pawn: .black).fenName, "p")
+        XCTAssertEqual(Piece(knight: .white).fenName, "N")
+        XCTAssertEqual(Piece(knight: .black).fenName, "n")
+        XCTAssertEqual(Piece(bishop: .white).fenName, "B")
+        XCTAssertEqual(Piece(bishop: .black).fenName, "b")
+        XCTAssertEqual(Piece(queen: .white).fenName, "Q")
+        XCTAssertEqual(Piece(queen: .black).fenName, "q")
+        XCTAssertEqual(Piece(rook: .white).fenName, "R")
+        XCTAssertEqual(Piece(rook: .black).fenName, "r")
+        XCTAssertEqual(Piece(king: .white).fenName, "K")
+        XCTAssertEqual(Piece(king: .black).fenName, "k")
+    }
+    
+    func testSpecialCharacter() throws {
+        XCTAssertEqual(Piece(pawn: .white).specialCharacter, "♟")
+        XCTAssertEqual(Piece(pawn: .black).specialCharacter, "♙")
+        XCTAssertEqual(Piece(knight: .white).specialCharacter, "♞")
+        XCTAssertEqual(Piece(knight: .black).specialCharacter, "♘")
+        XCTAssertEqual(Piece(bishop: .white).specialCharacter, "♝")
+        XCTAssertEqual(Piece(bishop: .black).specialCharacter, "♗")
+        XCTAssertEqual(Piece(queen: .white).specialCharacter, "♛")
+        XCTAssertEqual(Piece(queen: .black).specialCharacter, "♕")
+        XCTAssertEqual(Piece(rook: .white).specialCharacter, "♜")
+        XCTAssertEqual(Piece(rook: .black).specialCharacter, "♖")
+        XCTAssertEqual(Piece(king: .white).specialCharacter, "♚")
+        XCTAssertEqual(Piece(king: .black).specialCharacter, "♔")
+    }
+    
+    func testInitWithIntValue() throws {
+        XCTAssertEqual(Piece.init(value: 1), Piece(pawn: .black))
+        XCTAssertEqual(Piece.init(value: 0), Piece(pawn: .white))
+    }
 }
