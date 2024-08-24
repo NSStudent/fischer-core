@@ -21,6 +21,8 @@ final class FileTests: XCTestCase {
         XCTAssertEqual(File(Character("f")), .f)
         XCTAssertEqual(File(Character("g")), .g)
         XCTAssertEqual(File(Character("h")), .h)
+        
+        XCTAssertEqual(File(index: 7), .h)
     }
     
     func testOposite() throws {

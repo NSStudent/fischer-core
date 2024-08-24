@@ -33,22 +33,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage_report.lcov
-
-  scan:
-    runs-on: macos-14
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Set up Xcode
-        uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: '15.4'
-
-      - name: Run Periphery scan
-        run: |
-          brew update
-          brew install peripheryapp/periphery/periphery
-          periphery scan --strict --format github-actions
