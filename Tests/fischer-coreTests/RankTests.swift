@@ -5,6 +5,7 @@ final class RankTests: XCTestCase {
     func testInit() throws {
         XCTAssertEqual(Rank(index: 0), .one)
         XCTAssertEqual(Rank(rawValue: 1), .one)
+        XCTAssertEqual(Rank(1), .one)
     }
     
     func testRankIndex() throws {
