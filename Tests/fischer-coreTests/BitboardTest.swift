@@ -13,6 +13,10 @@ final class BitboardTests: XCTestCase {
 //        print(bitboard.msbIndex)
 //    }
     
+    func testBasicInit() {
+        XCTAssertEqual(Bitboard(), Bitboard(rawValue: 0))
+    }
+    
     func testOperators() throws {
         let bitboard = Bitboard(square: .e4)
         var mBitboard = bitboard
@@ -24,11 +28,21 @@ final class BitboardTests: XCTestCase {
         XCTAssertEqual(mBitboard, Bitboard(square: .e4))
         
         XCTAssertEqual(Bitboard(file: .a) & Bitboard(rank: 1), Bitboard(square: .a1))
-        print((Bitboard(file: .a) ^ Bitboard(rank: 1)).ascii)
-        print(((Bitboard(file: .a) | Bitboard(rank: .one)) & (~Bitboard(square: .a1))).ascii)
         XCTAssertEqual(
             Bitboard(file: .a) ^ Bitboard(rank: .one),
             (Bitboard(file: .a) | Bitboard(rank: .one)) & (~Bitboard(square: .a1)))
+    }
+    
+    func testComparableOperators() throws {
+        let a1Bitboard = Bitboard(square: .a1)
+        let h8Bitboard = Bitboard(square: .h8)
+        XCTAssertTrue(a1Bitboard < h8Bitboard)
+        XCTAssertTrue(h8Bitboard > a1Bitboard)
+    }
+    
+    func testLSBIndex() throws {
+        let a1Bitboard = Bitboard(square: .a1)
+        XCTAssertEqual(a1Bitboard.lsbIndex, 0)
     }
     
 }
