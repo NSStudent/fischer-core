@@ -25,7 +25,7 @@ final class FileTests: XCTestCase {
         XCTAssertEqual(File(index: 7), .h)
     }
     
-    func testOposite() throws {
+    func testOpposite() throws {
         XCTAssertEqual(File.a.opposite(), .h)
     }
     
@@ -43,5 +43,4 @@ final class FileTests: XCTestCase {
     func testIndex() throws {
         XCTAssertEqual(File("a").index, 0)
     }
-
 }
