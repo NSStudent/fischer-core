@@ -11,4 +11,4 @@ jobs:
     uses: ./.github/workflows/test-spm-codecov.yml
     secrets: inherit
     with:
-       test_bundle: FischerCoreTests
+       test_bundle: FischerCorePackageTests
