@@ -8,7 +8,7 @@ on:
 
 jobs:
   check:
-    uses: test-spm-codecov.yaml@master
+    uses: ./.github/workflows/test-spm-codecov.yml
     secrets: inherit
     with:
        test_bundle: ChessKitPackageTests
