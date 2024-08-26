@@ -160,10 +160,13 @@ final class BitboardTests: XCTestCase {
     
     func testBishopAttacks() throws {
         XCTAssertEqual(e4Bitboard.attacks(for: .init(bishop: .white)), Bitboard(squares: [.b1, .c2, .d3, .f5, .g6, .h7, .a8, .b7, .c6, .d5, .f3, .g2, .h1 ]))
+        XCTAssertEqual(Bitboard(square: .h7),e4Bitboard.xrayBishopAttacks(occupied: Bitboard(square: .g6), stoppers: Bitboard()))
     }
     
     func testRookAttacks() throws {
         XCTAssertEqual(e4Bitboard.attacks(for: .init(rook: .white)), Bitboard(file: .e) ^ Bitboard(rank: .four))
+
+        XCTAssertEqual(Bitboard(square: .h4),e4Bitboard.xrayRookAttacks(occupied: Bitboard(square: .g4), stoppers: Bitboard()))
     }
     
     func testQueenAttacks() throws {
@@ -223,19 +226,57 @@ final class BitboardTests: XCTestCase {
     
     func testAscii() throws {
         let result =
-"""
-  +-----------------+
-8 | . . . . . . . . |
-7 | . . . . . . . . |
-6 | . . . . . . . . |
-5 | . . . . . . . . |
-4 | . . . . 1 . . . |
-3 | . . . . . . . . |
-2 | . . . . . . . . |
-1 | . . . . . . . . |
-  +-----------------+
-    a b c d e f g h
-"""
+        """
+          +-----------------+
+        8 | . . . . . . . . |
+        7 | . . . . . . . . |
+        6 | . . . . . . . . |
+        5 | . . . . . . . . |
+        4 | . . . . 1 . . . |
+        3 | . . . . . . . . |
+        2 | . . . . . . . . |
+        1 | . . . . . . . . |
+          +-----------------+
+            a b c d e f g h
+        """
         XCTAssertEqual(e4Bitboard.ascii, result)
+    }
+
+    func testInitFiles() throws {
+        let aBitboard = Bitboard(file: .a)
+        let bBitboard = aBitboard << 1
+        let cBitboard = bBitboard << 1
+        let dBitboard = cBitboard << 1
+        let eBitboard = dBitboard << 1
+        let fBitboard = eBitboard << 1
+        let gBitboard = fBitboard << 1
+        let hBitboard = gBitboard << 1
+        XCTAssertEqual(aBitboard, Bitboard(file: .a))
+        XCTAssertEqual(bBitboard, Bitboard(file: .b))
+        XCTAssertEqual(cBitboard, Bitboard(file: .c))
+        XCTAssertEqual(dBitboard, Bitboard(file: .d))
+        XCTAssertEqual(eBitboard, Bitboard(file: .e))
+        XCTAssertEqual(fBitboard, Bitboard(file: .f))
+        XCTAssertEqual(gBitboard, Bitboard(file: .g))
+        XCTAssertEqual(hBitboard, Bitboard(file: .h))
+    }
+
+    func testSubscript() throws {
+        var emptyBoard = e4Bitboard
+        emptyBoard[(file: .e, rank: .four)] = false
+        XCTAssertEqual(emptyBoard, Bitboard())
+    }
+
+    func testPawnPushes() throws {
+        let e4PawnPushesWhite = e4Bitboard.pawnPushes(for: .white, empty: ~(Bitboard.allZeros))
+        let e4PawnPushesBlack = e4Bitboard.pawnPushes(for: .black, empty: ~(Bitboard.allZeros))
+        XCTAssertEqual(e4PawnPushesWhite, Bitboard(square: .e5))
+        XCTAssertEqual(e4PawnPushesBlack, Bitboard(square: .e3))
+    }
+
+    func testRanks() throws {
+        let ranks = Bitboard(squares: [.a1,.b2, .c3, .d4, .e5, .f6, .g7, .h8]).ranks()
+        let result: [UInt8] = [1, 2, 4, 8, 16, 32, 64, 128]
+        XCTAssertEqual(ranks, result)
     }
 }
