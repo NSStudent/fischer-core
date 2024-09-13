@@ -15,7 +15,7 @@ public struct Board: Equatable {
         }
     }
 
-    public struct Space {
+    public struct Space: Equatable {
         public var piece: Piece?
         public var file: File
         public var rank: Rank
@@ -277,7 +277,7 @@ extension Board {
             let str = strings.joined(separator: " ")
             result += "\(rank.description) | \(str) |\n"
         }
-        result += "\(edge)    a b c d e f g h  "
+        result += "\(edge)    a b c d e f g h"
         return result
     }
 }
