@@ -73,6 +73,19 @@ final class BoardTests: XCTestCase {
         XCTAssertEqual(Board(fen: "kPPPPPP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP/KPPPPPPP")!.emptySpaces, Bitboard(square: .h8))
         XCTAssertEqual(Board(fen: "8/8/8/8/8/8/8/K7")!.occupiedSpaces, Bitboard(square: .a1))
         XCTAssertEqual(Board(fen: "kPPPPPP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP/KPPPPPPP")!.count(of: Piece(pawn: .white)), 61)
-        
+    }
+    
+    func testFen() throws {
+        XCTAssertNil(Board(fen: "1"))
+        XCTAssertNil(Board(fen: "g7/8/8/8/8/8/8/K7"))
+        XCTAssertNil(Board(fen: "PPPPPPPPPP/8/8/8/8/8/8/K7"))
+    }
+    
+    func testVariant() throws {
+        var sut = Board(variant: .upsideDown)
+        var iterator = sut.makeIterator()
+        XCTAssertEqual(sut[.a1], Piece("r"))
+        XCTAssertEqual(sut.space(at: .a1), Board.Space(piece: Piece("r"), square: .a1))
+        XCTAssertEqual(sut.space(at: .h1), Board.Space(piece: Piece("r"), location: (file: .h, rank: .one)))
     }
 }
