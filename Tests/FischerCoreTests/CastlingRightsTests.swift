@@ -74,8 +74,8 @@ final class CastlingRightsTests: XCTestCase {
     }
     
     func testIterator() throws {
-        var right = CastlingRights.white
-        var iterator = right.makeIterator()
+        let rights = CastlingRights.white
+        var iterator = rights.makeIterator()
         XCTAssertNotNil(iterator.next())
         XCTAssertNotNil(iterator.next())
         XCTAssertNil(iterator.next())

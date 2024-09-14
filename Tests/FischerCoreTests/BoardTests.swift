@@ -82,8 +82,7 @@ final class BoardTests: XCTestCase {
     }
     
     func testVariant() throws {
-        var sut = Board(variant: .upsideDown)
-        var iterator = sut.makeIterator()
+        let sut = Board(variant: .upsideDown)
         XCTAssertEqual(sut[.a1], Piece("r"))
         XCTAssertEqual(sut.space(at: .a1), Board.Space(piece: Piece("r"), square: .a1))
         XCTAssertEqual(sut.space(at: .h1), Board.Space(piece: Piece("r"), location: (file: .h, rank: .one)))
