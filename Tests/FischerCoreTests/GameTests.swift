@@ -138,6 +138,15 @@ final class GameTests {
         #expect(game.board[.h1] == nil)
         #expect(game.playerTurn == .black)
     }
+    
+    @Test("Game position Fen")
+    func testPositionFen() throws {
+        let fen = "rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 1"
+        let game = try Game(with: fen)
+        let game2 = game
+        #expect(game.position.fen() == fen)
+        #expect(game2.position == game.position)
+    }
 
     @Test("Game Execute Move - Capture")
     func testExecuteMoveCapture() throws {
@@ -179,5 +188,73 @@ final class GameTests {
         #expect(game.board[.f1] == nil)
         #expect(game.board[.g1] == nil)
         #expect(game.playerTurn == .white)
+    }
+    
+    @Test("Game Outcome - Win")
+    func testGameOutcomeWin() {
+        let whiteWin = Game.Outcome.win(.white)
+        let blackWin = Game.Outcome.win(.black)
+
+        #expect(whiteWin.isWin)
+        #expect(!whiteWin.isDraw)
+        #expect(whiteWin.winColor == .white)
+        #expect(whiteWin.description == "1-0")
+
+        #expect(blackWin.isWin)
+        #expect(!blackWin.isDraw)
+        #expect(blackWin.winColor == .black)
+        #expect(blackWin.description == "0-1")
+    }
+
+    @Test("Game Outcome - Draw")
+    func testGameOutcomeDraw() {
+        let draw = Game.Outcome.draw
+
+        #expect(draw.isDraw)
+        #expect(!draw.isWin)
+        #expect(draw.winColor == nil)
+        #expect(draw.description == "1/2-1/2")
+    }
+
+    @Test("Game Outcome - Initialization from String")
+    func testGameOutcomeInitFromString() {
+        #expect(Game.Outcome("1-0") == .win(.white))
+        #expect(Game.Outcome("0-1") == .win(.black))
+        #expect(Game.Outcome("1/2-1/2") == .draw)
+        #expect(Game.Outcome("invalid") == nil)
+    }
+
+    @Test("Game Outcome - Value for Player")
+    func testGameOutcomeValueForPlayer() {
+        let whiteWin = Game.Outcome.win(.white)
+        let blackWin = Game.Outcome.win(.black)
+        let draw = Game.Outcome.draw
+
+        #expect(whiteWin.value(for: .white) == 1.0)
+        #expect(whiteWin.value(for: .black) == 0.0)
+        #expect(blackWin.value(for: .white) == 0.0)
+        #expect(blackWin.value(for: .black) == 1.0)
+        #expect(draw.value(for: .white) == 0.5)
+        #expect(draw.value(for: .black) == 0.5)
+    }
+    
+    @Test("ExecutionError - Missing Piece Message")
+    func testExecutionErrorMissingPieceMessage() {
+        let error = Game.ExecutionError.missingPiece(.e4)
+        #expect(error.message == "Missing piece: e4")
+    }
+    
+    @Test("ExecutionError - Illegal Move Message")
+    func testExecutionErrorIllegalMoveMessage() {
+        let board = Board()
+        let move = Move(start: .e2, end: .e5)
+        let error = Game.ExecutionError.illegalMove(move, .white, board)
+        #expect(error.message == "Illegal move: \(move) for white on \(board)")
+    }
+    
+    @Test("ExecutionError - Invalid Promotion Message")
+    func testExecutionErrorInvalidPromotionMessage() {
+        let error = Game.ExecutionError.invalidPromotion(.king)
+        #expect(error.message == "Invalid promoton: king")
     }
 }
