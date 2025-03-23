@@ -1,0 +1,11 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 80%  # Define que la cobertura debe ser al menos del 80%
+        threshold: 0% # No permite bajar del 80%
+        base: auto    # Compara con la cobertura anterior automáticamente
+    patch:
+      default:
+        target: 80%
+        threshold: 0%
