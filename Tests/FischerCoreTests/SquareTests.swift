@@ -1,49 +1,55 @@
-import XCTest
+import Testing
 @testable import FischerCore
 
-final class SquareTests: XCTestCase {
-    
+final class SquareTests {
+
+    @Test("Square ID Value")
     func testIdValue() throws {
-        XCTAssertEqual(Square.a1.id, 0)
+        #expect(Square.a1.id == 0)
     }
 
+    @Test("Square Mutations")
     func testSquareMutations() throws {
         var mutableSquare = Square.a1
         mutableSquare.file = .b
-        XCTAssertEqual(mutableSquare, .b1)
+        #expect(mutableSquare == .b1)
         mutableSquare.rank = 2
-        XCTAssertEqual(mutableSquare, .b2)
-        XCTAssertEqual(mutableSquare.location.file, .b)
+        #expect(mutableSquare == .b2)
+        #expect(mutableSquare.location.file == .b)
         mutableSquare.location = (file: .e, rank: 4)
-        XCTAssertEqual(mutableSquare, .e4)
+        #expect(mutableSquare == .e4)
     }
 
+    @Test("Square Initializations")
     func testInits() throws {
-        XCTAssertEqual(Square("e"), nil)
-        XCTAssertEqual(Square("e4"), .e4)
-        XCTAssertEqual(Square("i4"), nil)
-        XCTAssertEqual(Square("ee"), nil)
+        #expect(Square("e") == nil)
+        #expect(Square("e4") == .e4)
+        #expect(Square("i4") == nil)
+        #expect(Square("ee") == nil)
     }
 
+    @Test("Square Grid Collection")
     func testGrid() throws {
-        XCTAssertEqual( Square.gridCollection.first, .a8)
+        #expect(Square.gridCollection.first == .a8)
     }
 
+    @Test("Square Attacks")
     func testAttacks() throws {
-        XCTAssertEqual(Square.e4.attacks(for: Piece(king: .white)),  Bitboard(squares: [.d5, .d4, .d3, .e5, .e3, .f5, .f4, .f3]))
-        XCTAssertEqual(Square.e4.attacks(for: Piece(knight: .white)), Bitboard(squares: [.d6, .f6, .g5, .g3, .f2, .d2, .c3, .c5]))
-        XCTAssertEqual(Square.e4.attacks(for: Piece(pawn: .white)), Bitboard(squares: [.d5, .f5]))
-        XCTAssertEqual(Square.e4.attacks(for: Piece(pawn: .black)), Bitboard(squares: [.d3, .f3]))
-        XCTAssertEqual(Square.e4.attacks(for: Piece(rook: .white)), Bitboard(file: .e) ^ Bitboard(rank: .four))
+        #expect(Square.e4.attacks(for: Piece(king: .white)) == Bitboard(squares: [.d5, .d4, .d3, .e5, .e3, .f5, .f4, .f3]))
+        #expect(Square.e4.attacks(for: Piece(knight: .white)) == Bitboard(squares: [.d6, .f6, .g5, .g3, .f2, .d2, .c3, .c5]))
+        #expect(Square.e4.attacks(for: Piece(pawn: .white)) == Bitboard(squares: [.d5, .f5]))
+        #expect(Square.e4.attacks(for: Piece(pawn: .black)) == Bitboard(squares: [.d3, .f3]))
+        #expect(Square.e4.attacks(for: Piece(rook: .white)) == Bitboard(file: .e) ^ Bitboard(rank: .four))
     }
 
+    @Test("Square Between")
     func testBetween() throws {
-        XCTAssertEqual(Square.e1.between(.e3), Bitboard(square: .e2))
+        #expect(Square.e1.between(.e3) == Bitboard(square: .e2))
     }
 
+    @Test("Square Color")
     func testColor() throws {
-        XCTAssertEqual(Square.e1.color, .dark)
-        XCTAssertEqual(Square.e2.color, .light)
+        #expect(Square.e1.color == .dark)
+        #expect(Square.e2.color == .light)
     }
-
 }

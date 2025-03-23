@@ -1,14 +1,17 @@
-import XCTest
+import Testing
 @testable import FischerCore
 
-final class VariantTests: XCTestCase {
+final class VariantTests {
+
+    @Test("Variant Is Standard")
     func testIsStandard() throws {
-        XCTAssertTrue(Variant.standard.isStandard)
-        XCTAssertFalse(Variant.upsideDown.isStandard)
+        #expect(Variant.standard.isStandard)
+        #expect(!Variant.upsideDown.isStandard)
     }
-    
+
+    @Test("Variant Is Upside Down")
     func testIsUpsideDown() throws {
-        XCTAssertTrue(Variant.upsideDown.isUpsideDown)
-        XCTAssertFalse(Variant.standard.isUpsideDown)
+        #expect(Variant.upsideDown.isUpsideDown)
+        #expect(!Variant.standard.isUpsideDown)
     }
 }

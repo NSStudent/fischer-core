@@ -24,7 +24,7 @@ public enum Rank: Int {
     }
 
     public func opposite() -> Rank {
-        return Rank(rawValue: 9 - rawValue)!
+        Rank(rawValue: 9 - rawValue)!
     }
     
     public init(startFor color: PlayerColor) {

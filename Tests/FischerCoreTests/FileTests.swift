@@ -1,46 +1,51 @@
-import XCTest
+import Testing
 @testable import FischerCore
 
-final class FileTests: XCTestCase {
+final class FileTests {
+
+    @Test("File all init")
     func testInit() throws {
-        XCTAssertEqual(File("a"), .a)
-        XCTAssertEqual(File("b"), .b)
-        XCTAssertEqual(File("c"), .c)
-        XCTAssertEqual(File("d"), .d)
-        XCTAssertEqual(File("e"), .e)
-        XCTAssertEqual(File("f"), .f)
-        XCTAssertEqual(File("g"), .g)
-        XCTAssertEqual(File("h"), .h)
+        #expect(File("a") == .a)
+        #expect(File("b") == .b)
+        #expect(File("c") == .c)
+        #expect(File("d") == .d)
+        #expect(File("e") == .e)
+        #expect(File("f") == .f)
+        #expect(File("g") == .g)
+        #expect(File("h") == .h)
         
+        #expect(File(Character("a")) == .a)
+        #expect(File(Character("b")) == .b)
+        #expect(File(Character("c")) == .c)
+        #expect(File(Character("d")) == .d)
+        #expect(File(Character("e")) == .e)
+        #expect(File(Character("f")) == .f)
+        #expect(File(Character("g")) == .g)
+        #expect(File(Character("h")) == .h)
         
-        XCTAssertEqual(File(Character("a")), .a)
-        XCTAssertEqual(File(Character("b")), .b)
-        XCTAssertEqual(File(Character("c")), .c)
-        XCTAssertEqual(File(Character("d")), .d)
-        XCTAssertEqual(File(Character("e")), .e)
-        XCTAssertEqual(File(Character("f")), .f)
-        XCTAssertEqual(File(Character("g")), .g)
-        XCTAssertEqual(File(Character("h")), .h)
-        
-        XCTAssertEqual(File(index: 7), .h)
+        #expect(File(index: 7) == .h)
     }
-    
+
+    @Test("File Opposite")
     func testOpposite() throws {
-        XCTAssertEqual(File.a.opposite(), .h)
+        #expect(File.a.opposite() == .h)
     }
-    
+
+    @Test("File Description")
     func testDescription() throws {
-        XCTAssertEqual(File.a.description, "a")
+        #expect(File.a.description == "a")
     }
-    
+
+    @Test("File Comparable")
     func testComparable() throws {
-        XCTAssertTrue(File.a < .b)
-        XCTAssertFalse(File.a > .b)
-        XCTAssertFalse(File.a == .b)
-        XCTAssertTrue(File.a == .a)
+        #expect(File.a < .b)
+        #expect(!(File.a > .b))
+        #expect(!(File.a == .b))
+        #expect(File.a == .a)
     }
-    
+
+    @Test("File Index")
     func testIndex() throws {
-        XCTAssertEqual(File("a").index, 0)
+        #expect(File("a").index == 0)
     }
 }

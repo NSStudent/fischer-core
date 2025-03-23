@@ -1,42 +1,50 @@
-import XCTest
+import Testing
 @testable import FischerCore
 
-final class RankTests: XCTestCase {
+final class RankTests {
+    
+    @Test("Rank all init")
     func testInit() throws {
-        XCTAssertEqual(Rank(index: 0), .one)
-        XCTAssertEqual(Rank(rawValue: 1), .one)
-        XCTAssertEqual(Rank(1), .one)
+        #expect(Rank(index: 0) == .one)
+        #expect(Rank(rawValue: 1) == .one)
+        #expect(Rank(1) == .one)
     }
     
+    @Test("Rank Index")
     func testRankIndex() throws {
-        XCTAssertEqual(Rank.one.index, 0)
+        #expect(Rank.one.index == 0)
     }
     
+    @Test("Rank Opposite")
     func testOpposite() throws {
-        XCTAssertEqual(Rank.one.opposite(), .eight)
+        #expect(Rank.one.opposite() == .eight)
     }
     
+    @Test("Rank Description")
     func testDescription() throws {
-        XCTAssertEqual(Rank.one.description, "1")
+        #expect(Rank.one.description == "1")
     }
     
+    @Test("Rank Comparable")
     func testComparable() throws {
-        XCTAssertTrue(Rank.one < .two)
-        XCTAssertFalse(Rank.one > .two)
-        XCTAssertFalse(Rank.one == .two)
-        XCTAssertTrue(Rank.one == .one)
+        #expect(Rank.one < .two)
+        #expect(!(Rank.one > .two))
+        #expect(!(Rank.one == .two))
+        #expect(Rank.one == .one)
     }
     
+    @Test("Rank Integer value")
     func testInteger() throws {
         let rank: Rank = 1
-        XCTAssertEqual(rank, .one)
+        #expect(rank == .one)
     }
     
+    @Test("Rank Start and End")
     func testStartAndEndRanks() throws {
-        XCTAssertEqual( Rank.init(startFor: .white), 1)
-        XCTAssertEqual( Rank.init(startFor: .black), 8)
+        #expect(Rank.init(startFor: .white) == 1)
+        #expect(Rank.init(startFor: .black) == 8)
         
-        XCTAssertEqual( Rank.init(endFor: .white), 8)
-        XCTAssertEqual( Rank.init(endFor: .black), 1)
+        #expect(Rank.init(endFor: .white) == 8)
+        #expect(Rank.init(endFor: .black) == 1)
     }
 }

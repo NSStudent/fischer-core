@@ -7,12 +7,7 @@ public enum PlayerColor: String, CaseIterable, Equatable, Codable {
 
 extension PlayerColor {
     prefix static func ! (_ value: PlayerColor) -> PlayerColor {
-        switch value {
-        case .white:
-            return .black
-        case .black:
-            return .white
-        }
+        value.inverse()
     }
 
     public init?(string: String) {
@@ -24,15 +19,15 @@ extension PlayerColor {
     }
 
     public func isWhite() -> Bool {
-        return self == .white
+        self == .white
     }
 
     public func isBlack() -> Bool {
-        return self == .black
+        self == .black
     }
 
     public func inverse() -> PlayerColor {
-        return self.isWhite() ? .black : .white
+        self.isWhite() ? .black : .white
     }
 
     public mutating func invert() {
