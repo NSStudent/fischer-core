@@ -68,7 +68,6 @@ final class GameTests {
     @Test("Game Outcome Detection")
     func testGameOutcome() throws {
         var game = Game()
-        // Simulate a fool’s mate (fastest checkmate)
         try game.execute(move: Move(start: .f2, end: .f3))
         try game.execute(move: Move(start: .e7, end: .e5))
         try game.execute(move: Move(start: .g2, end: .g4))
@@ -80,10 +79,21 @@ final class GameTests {
     @Test("Game San Representation")
     func testSanRepresentation() throws {
         var game = Game()
+
+        try game.execute(move: Move(start: .b2, end: .b3))
+        try game.execute(move: Move(start: .g7, end: .g6))
+        try game.execute(move: Move(start: .c1, end: .b2))
+        try game.execute(move: Move(start: .f8, end: .g7))
+        try game.execute(move: Move(start: .b1, end: .c3))
+        try game.execute(move: Move(start: .g8, end: .f6))
         try game.execute(move: Move(start: .e2, end: .e4))
-        try game.execute(move: Move(start: .e7, end: .e5))
+        try game.execute(move: Move(start: .e8, end: .g8))
+        try game.execute(move: Move(start: .d1, end: .e2))
+        try game.execute(move: Move(start: .f6, end: .e4))
+        try game.execute(move: Move(start: .e1, end: .c1))
+
         let san = game.sanRepresentation()
-        #expect(san.contains("1.e4 e5"))
+        #expect(san == "1.b3 g6 2.Bb2 Bg7 3.Nc3 Nf6 4.e4 O-O 5.Qe2 Nxe4 6.O-O-O")
     }
 
     @Test("Game From FEN")
@@ -146,6 +156,7 @@ final class GameTests {
         let game2 = game
         #expect(game.position.fen() == fen)
         #expect(game2.position == game.position)
+        #expect(game2.position.description == "Position(\(fen))")
     }
 
     @Test("Game Execute Move - Capture")
