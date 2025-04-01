@@ -542,8 +542,6 @@ extension Game {
     }
 }
 
-extension String: Error {}
-
 extension Game {
     public func sanRepresentation() -> String {
         var string = ""
