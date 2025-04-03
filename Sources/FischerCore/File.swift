@@ -80,6 +80,29 @@ extension File: ExpressibleByStringLiteral {
             fatalError("Rank value not within a and h, inclusive")
         }
     }
+
+    init?(string: String) {
+        switch string {
+        case "a":
+            self = .a
+        case "b":
+            self = .b
+        case "c":
+            self = .c
+        case "d":
+            self = .d
+        case "e":
+            self = .e
+        case "f":
+            self = .f
+        case "g":
+            self = .g
+        case "h":
+            self = .h
+        default:
+            return nil
+        }
+    }
 }
 
 extension File {

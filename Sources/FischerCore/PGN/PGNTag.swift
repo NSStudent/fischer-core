@@ -7,7 +7,7 @@
 
 
 // Reference https://github.com/fsmosca/PGN-Standard/blob/master/PGN-Standard.txt
-public enum Tag: String, CaseIterable, Equatable {
+public enum PGNTag: String, CaseIterable, Equatable {
     /// Seven Tag Roster
     case event = "Event"
     case site = "Site"
@@ -54,5 +54,9 @@ public enum Tag: String, CaseIterable, Equatable {
     case annotator = "Annotator"
     case mode = "Mode"
     case plyCount = "PlyCount"
+
+    case variant = "Variant"
+    case studyName = "StudyName"
+    case chapterName = "ChapterName"
 
 }
