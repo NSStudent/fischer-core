@@ -29,8 +29,9 @@ struct PGNElement {
     let blackEvaluation: NAG?
     let postBlackCommentList: [PGNComment]?
     let postBlackVariation: [PGNElement]?
-    let result: String?
+    let result: PGNOutcome?
 }
+
 
 enum PGNComment {
     case text(String)
@@ -40,6 +41,21 @@ enum PGNComment {
 //    case elapsedMoveTime(String)
 //    case evaluation(String)
 //    case depth(String)
+}
+
+extension PGNComment: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .text(let comment):
+            return "{\(comment)}"
+        }
+    }
+}
+
+extension Array where Element == PGNComment {
+    var description: String {
+        return self.map{$0.description}.joined(separator: " ")
+    }
 }
 
 enum SANMove {
@@ -180,18 +196,27 @@ extension SANMove.SANDefaultMove: CustomStringConvertible {
 }
 
 extension PGNElement {
-    init(turn: UInt, whiteMove: SANMove?, blackMove: SANMove?, postBlackVariation: [PGNElement]?, result: String?) {
+    init(
+        turn: UInt,
+        whiteMove: SANMove?,
+        postWhiteCommentList: [PGNComment]?,
+        postWhiteVariation: [PGNElement]?,
+        blackMove: SANMove?,
+        postBlackCommentList: [PGNComment]?,
+        postBlackVariation: [PGNElement]?,
+        result: PGNOutcome?
+    ) {
         self.init(
             turn: turn,
             previousWhiteCommentList: nil,
             whiteMove: whiteMove,
             whiteEvaluation: nil,
-            postWhiteCommentList: nil,
-            postWhiteVariation: nil,
+            postWhiteCommentList: postWhiteCommentList,
+            postWhiteVariation: postWhiteVariation,
             previousBlackCommentList: nil,
             blackMove: blackMove,
             blackEvaluation: nil,
-            postBlackCommentList: nil,
+            postBlackCommentList: postBlackCommentList,
             postBlackVariation: postBlackVariation,
             result: result
         )
@@ -206,12 +231,47 @@ extension PGNGame: CustomStringConvertible {
             }.joined(separator: "\n")
         let movementListDescription = elements
             .map{ element in
-                "\(element.turn). \(element.whiteMove?.description ?? "") \(element.blackMove?.description ?? "") \(element.result ?? "")"
+                element.description
             }.joined(separator: "\n")
         return """
         Game:
         \(taglistDescription)
         \(movementListDescription)
         """
+    }
+}
+
+extension PGNElement: CustomStringConvertible {
+    var description: String {
+        var output = "\(turn)."
+
+        if let white = whiteMove {
+            output += " \(white.description)"
+        } else {
+            output += ".."
+        }
+        
+        if let postWhiteCommentList {
+            output += postWhiteCommentList.description
+        }
+        if let postWhiteVariation = postWhiteVariation {
+            output += "(\(postWhiteVariation.description))"
+        }
+
+        if let black = blackMove {
+            output += " \(black.description)"
+        }
+        if let postBlackCommentList {
+            output += postBlackCommentList.description
+        }
+        if let postBlackVariation = postBlackVariation {
+            output += "(\(postBlackVariation.description))"
+        }
+
+        if let result = result {
+            output += " \(result.rawValue)"
+        }
+
+        return output
     }
 }

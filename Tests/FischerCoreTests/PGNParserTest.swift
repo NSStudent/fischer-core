@@ -133,10 +133,10 @@ class PGNParserTest {
         let blackVariation = "(5... Nd6 6. Nxe5 Be7 7. Nxc6 dxc6 8. Bf1 Bf5 9. c3 O-O 10. d4 Re8 11. Nd2 Nb5)"
         let parser = VariationParser()
         let result = try parser.parse(blackVariation)
-        print(result)
+        #expect(result.count == 7)
     }
     
-    @Test("Test black variation")//,.disabled("we are developing this feature"))
+    @Test("Test black variation")
     func testPGNWithBlackVariation() async throws {
         let input3 =
         """
@@ -161,5 +161,57 @@ class PGNParserTest {
         #expect(result3.tags.count == 11)
         #expect(result3.elements.count == 5)
     }
+    
+    @Test("Test white variation")
+    func testPGNWithWhiteVariation() async throws {
+        let input3 =
+        """
+        [Event "23/24 season PGN: Danny Graham (1714) - Freddie Vesey (1754)"]
+        [Site "https://lichess.org/study/q5HyYwEt/QjPT2O7r"]
+        [Result "*"]
+        [Annotator "https://lichess.org/@/Insipio"]
+        [Variant "Standard"]
+        [ECO "D15"]
+        [Opening "Slav Defense: Schlechter Variation"]
+        [StudyName "23/24 League games PGN"]
+        [ChapterName "23/24 season PGN: Danny Graham (1714) - Freddie Vesey (1754)"]
+        [UTCDate "2024.08.02"]
+        [UTCTime "20:48:14"]
+        
+        1. d4 d5 2. c4 c6 3. Nc3 Nf6 4. Nf3 g6 5. Bg5 h6 6. Bxf6 exf6 7. cxd5 cxd5 8. e3 a6 9. Qb3 Be6 10. Qxb7 Nd7 11. Qb3 Bd6 12. Bd3 O-O 13. O-O h5 14. Qc2 Qe7 15. Rfe1 Bg4 16. Nxd5 Qe6 17. Nf4 (17. Be4 f5 18. Ng5 Qe8 19. Bf3 Bxf3 20. Nxf3) 17... Qe7 18. Nd2 Rfc8 19. Nd5 Qd8 20. Qa4 Nf8 21. Ne4 Nh7 22. Nxd6 Qxd6 23. Qa5 Rab8 24. Nf4 Rxb2 25. Qxa6 Qb4 26. Be2 Bd7 27. Nd3 Qc3 28. Nxb2 Qxb2 29. Rab1 Qd2 30. Red1 Qc2 31. Bd3 Qc7 32. Qa3 Qd8 33. h3 Ng5 34. Rbc1 Ra8 35. Qb2 Be6 36. Bc4 Bf5 37. h4 Ne4 38. Bd3 Qe8 39. Bxe4 Qxe4 40. d5 Qxh4 41. d6 Qg4 42. Rd4 Qg5 43. d7 Bh3 44. d8=Q+ Kg7 45. Qxa8 *
+        """
+        
+        let parser = PGNGameParser()
+        let result3 = try parser.parse(input3)
+        print(result3)
+        #expect(result3.tags.count == 11)
+        #expect(result3.elements.count == 46)
+    }
+    
+    @Test("Test multiple variations")
+    func testPGNWithMultipleVariations() async throws {
+        let input =
+        """
+        [Event "Londres Enigmático (PGN): 3️⃣El negro juega con Cf6 y c5"]
+        [Site "https://lichess.org/study/hLXVvEvQ/nN705kYf"]
+        [Date "????.??.??"]
+        [White "ANALISIS Cf6-c5"]
+        [Result "*"]
+        [Annotator "Pepe Cuenca"]
+        [Variant "Standard"]
+        [ECO "A45"]
+        [Opening "Indian Defense"]
+        [StudyName "Londra Sistemi Tuzakları"]
+        [ChapterName "Londres Enigmático (PGN): 3️⃣El negro juega con Cf6 y c5"]
+
+        1. d4 Nf6 2. Bf4 c5 3. dxc5 { Cuando el negro juega con Cf6 y c5, esta va a ser mi recomendación, en muchas líneas vamos a defender el peón extra y quedarnos con ventaja. } 3... Nc6 { [%cal Re7e5] } 4. Nf3 { [%csl Ge5] } 4... Qa5+ 5. Nc3 Qxc5 (5... Ne4 6. Qd3 Nxc3 7. Qxc3 Qxc3+ 8. bxc3) 6. e4 Qb4 7. a3 { ¡Uy! Nos hemos dejado el peón de b2... } 7... Qxb2 { ... ¿Seguro? TRUQUITO ENIGMÁTICO ✨ } 8. Na4 { La dama queda ATRAPADA 😵 } { [%csl Rb2] } *
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.tags.count == 11)
+        #expect(result.elements.count == 11)
+    }
+
 }
 

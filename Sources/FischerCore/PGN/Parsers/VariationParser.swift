@@ -11,7 +11,7 @@ struct VariationParser: Parser {
         "("
         Many {
             OneOf {
-                PGNBlackVariationElementBasicParser()
+                PGNBlackElementBasicParser()
                 PGNElementBasicParser()
             }
         } separator: {
@@ -20,3 +20,15 @@ struct VariationParser: Parser {
         ")"
     }
 }
+
+
+struct ComentTextParser: Parser {
+    var body: some Parser<Substring, PGNComment> {
+        "{"
+        Prefix { $0 != "}"}
+            .map(String.init)
+            .compactMap{ PGNComment.text($0)}
+        "}"
+    }
+}
+
