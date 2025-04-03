@@ -14,7 +14,7 @@ struct PGNGameParser: Parser {
             "\n"
             Many {
                 OneOf{
-                    PGNBlackElementBasicParser()
+//                    PGNBlackElementBasicParser()
                     PGNElementBasicParser()
                 }
             } separator: {

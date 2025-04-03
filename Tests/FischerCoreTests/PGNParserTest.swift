@@ -185,7 +185,7 @@ class PGNParserTest {
         let result3 = try parser.parse(input3)
         print(result3)
         #expect(result3.tags.count == 11)
-        #expect(result3.elements.count == 46)
+        #expect(result3.elements.count == 45)
     }
     
     @Test("Test multiple variations")
@@ -210,7 +210,7 @@ class PGNParserTest {
         let result = try parser.parse(input)
         print(result)
         #expect(result.tags.count == 11)
-        #expect(result.elements.count == 11)
+        #expect(result.elements.count == 8)
     }
 
 }

@@ -35,7 +35,17 @@ struct PGNElementBasicParser: Parser {
 
             Optionally {
                 Whitespace()
-                SanMoveParser()
+                OneOf {
+                    SanMoveParser()
+                    Parse {
+                        Skip {
+                            UInt.parser()
+                        }
+                        "..."
+                        Whitespace()
+                        SanMoveParser()
+                    }
+                }
             }
             
             Optionally {
