@@ -126,8 +126,18 @@ class PGNParserTest {
         print(result2)
         #expect(result2.tags.count == 11)
         #expect(result2.elements.count == 4)
-
-
+    }
+    
+    @Test("test only variations")
+    func parseVariations() async throws {
+        let blackVariation = "(5... Nd6 6. Nxe5 Be7 7. Nxc6 dxc6 8. Bf1 Bf5 9. c3 O-O 10. d4 Re8 11. Nd2 Nb5)"
+        let parser = VariationParser()
+        let result = try parser.parse(blackVariation)
+        print(result)
+    }
+    
+    @Test("Test black variation")//,.disabled("we are developing this feature"))
+    func testPGNWithBlackVariation() async throws {
         let input3 =
         """
         [Event "HKnight64's Study: ruy lopez berlin"]
@@ -145,221 +155,11 @@ class PGNParserTest {
         1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. Re1 Nf6 (5... Nd6 6. Nxe5 Be7 7. Nxc6 dxc6 8. Bf1 Bf5 9. c3 O-O 10. d4 Re8 11. Nd2 Nb5) *
         """
 
+        let parser = PGNGameParser()
         let result3 = try parser.parse(input3)
         print(result3)
-        #expect(result2.tags.count == 11)
-        #expect(result2.elements.count == 5)
+        #expect(result3.tags.count == 11)
+        #expect(result3.elements.count == 5)
     }
 }
-
-
-struct PieceParser: Parser {
-    var body: some Parser<Substring, Piece.Kind> {
-        Optionally {
-            OneOf {
-                "K".map { Piece.Kind.king }
-                "Q".map { Piece.Kind.queen }
-                "R".map { Piece.Kind.rook }
-                "B".map { Piece.Kind.bishop }
-                "N".map { Piece.Kind.knight }
-            }
-        }.map { $0 ?? Piece.Kind.pawn }
-    }
-}
-
-struct CaptureParser: Parser {
-    var body: some Parser<Substring, Bool?> {
-        Optionally {
-            "x".map{ true }
-        }
-    }
-}
-
-struct SquareParser: Parser {
-    var body: some Parser<Substring, Square> {
-        Prefix(2)
-            .map(String.init).compactMap {
-                Square.init($0)
-            }
-    }
-}
-
-struct PromotionParser: Parser {
-    var body: some Parser<Substring, SANMove.PromotionPiece?> {
-        Optionally {
-            "="
-            SANMove.PromotionPiece.parser()
-        }
-    }
-}
-
-struct CheckParser: Parser {
-    var body: some Parser<Substring, Bool?> {
-        Optionally {
-            "+".map{ true }
-        }
-    }
-}
-
-struct CheckMateParser: Parser {
-    var body: some Parser<Substring, Bool?> {
-        Optionally {
-            "#".map{ true }
-        }
-    }
-}
-
-struct FromRankParser: Parser {
-    var body: some Parser<Substring, SANMove.FromPosition> {
-        Prefix(1) { $0.isNumber }.map(String.init).compactMap(Int.init).compactMap(Rank.init(integerLiteral:)).compactMap {
-            SANMove.FromPosition.rank($0)
-        }
-    }
-}
-
-struct FromFileParser: Parser {
-    var body: some Parser<Substring, SANMove.FromPosition> {
-        Prefix(1) { $0.isLetter }.map(String.init).compactMap(File.init(string:)).compactMap {
-            SANMove.FromPosition.file($0)
-        }
-    }
-}
-struct FromPositionParser: Parser {
-    var body: some Parser<Substring, SANMove.FromPosition> {
-        OneOf {
-            SquareParser().map(SANMove.FromPosition.square)
-            FromRankParser()
-            FromFileParser()
-        }
-    }
-}
-
-struct BasicSANParser: Parser {
-    var body: some Parser<Substring, SANMove> {
-        Parse(SANMove.SANDefaultMove.init(kind:isCapture:toSquare:promotion:isCheck:isCheckmate:)) {
-            PieceParser()
-            CaptureParser()
-            SquareParser()
-            PromotionParser()
-            CheckParser()
-            CheckMateParser()
-        }.map(SANMove.san)
-    }
-}
-
-struct BasicFromSANParser: Parser {
-    var body: some Parser<Substring, SANMove> {
-        Parse(SANMove.SANDefaultMove.init(kind:from:isCapture:toSquare:promotion:isCheck:isCheckmate:)) {
-            PieceParser()
-            FromPositionParser()
-            CaptureParser()
-            SquareParser()
-            PromotionParser()
-            CheckParser()
-            CheckMateParser()
-        }.map(SANMove.san)
-    }
-}
-
-struct TagParser: Parser {
-    var body: some Parser<Substring, [(PGNTag, String)]> {
-        Many {
-            Parse {
-                "["
-                PrefixUpTo(" \"").compactMap{PGNTag(rawValue: String($0)) }
-                " \""
-                Prefix{ $0 != "\""}.map(String.init)
-                "\"]"
-            }
-        } separator: {
-            "\n"
-        }
-    }
-}
-
-struct SanMoveParser: Parser {
-    var body: some Parser<Substring, SANMove> {
-        OneOf {
-            "O-O-O".map { SANMove.queensideCastling }
-            "O-O".map { SANMove.kingsideCastling }
-            BasicFromSANParser()
-            BasicSANParser()
-        }
-    }
-}
-
-struct PGNElementBasicParser: Parser {
-    var body: some Parser<Substring, PGNElement> {
-        Parse(PGNElement.init(turn:whiteMove:blackMove:postBlackVariation:result:)) {
-            UInt.parser()
-            "."
-            OneOf {
-                ".."
-                SpaceORBreakParser()
-            }
-
-            Optionally {
-                SanMoveParser()
-            }
-
-            SpaceORBreakParser()
-
-            Optionally {
-                SanMoveParser()
-            }
-
-            Optionally {
-                VariationParser()
-            }
-
-            Optionally {
-                OneOf {
-                    "1-0".map{"1-0"}
-                    "1/2-1/2".map{"1/2-1/2"}
-                    "0-1".map{"0-1"}
-                    "*".map{"*"}
-                }
-            }
-        }
-    }
-}
-
-struct VariationParser: Parser {
-    var body: some Parser<Substring, [PGNElement]> {
-        "("
-        Many {
-            PGNElementBasicParser()
-        }
-        ")"
-    }
-}
-struct SpaceORBreakParser: Parser {
-    var body: some Parser<Substring, Void> {
-        OneOf {
-            " "
-            "\n"
-        }
-    }
-}
-
-struct PGNGameParser: Parser {
-    var body: some Parser<Substring, PGNGame> {
-        Parse(PGNGame.init(tags:elements:)) {
-            TagParser()
-            "\n"
-            "\n"
-            Many {
-                PGNElementBasicParser()
-            } separator: {
-                SpaceORBreakParser()
-            } terminator: {
-                OneOf {
-                    SpaceORBreakParser()
-                    ""
-                }
-            }
-        }
-    }
-}
-
 
