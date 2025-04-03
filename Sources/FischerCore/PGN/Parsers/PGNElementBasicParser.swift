@@ -19,13 +19,7 @@ struct PGNElementBasicParser: Parser {
             
             Optionally {
                 Whitespace()
-                Many {
-                    ComentTextParser()
-                } separator: {
-                    Whitespace()
-                } terminator: {
-                    Whitespace()
-                }
+                CommentListParser()
             }
             
             Optionally {
@@ -50,13 +44,7 @@ struct PGNElementBasicParser: Parser {
             
             Optionally {
                 Whitespace()
-                Many {
-                    ComentTextParser()
-                } separator: {
-                    Whitespace()
-                } terminator: {
-                    Whitespace()
-                }
+                CommentListParser()
             }
 
             Optionally {

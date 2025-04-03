@@ -19,13 +19,7 @@ struct PGNBlackElementBasicParser: Parser {
             SanMoveParser()
             Optionally {
                 Whitespace()
-                Many {
-                    ComentTextParser()
-                } separator: {
-                    Whitespace()
-                } terminator: {
-                    Whitespace()
-                }
+                CommentListParser()
             }
 
             Optionally {

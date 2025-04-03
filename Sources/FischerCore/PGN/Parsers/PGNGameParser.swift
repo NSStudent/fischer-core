@@ -13,10 +13,7 @@ struct PGNGameParser: Parser {
             "\n"
             "\n"
             Many {
-                OneOf{
-//                    PGNBlackElementBasicParser()
-                    PGNElementBasicParser()
-                }
+                PGNElementBasicParser()
             } separator: {
                 Whitespace()
             } terminator: {

@@ -32,3 +32,30 @@ struct ComentTextParser: Parser {
     }
 }
 
+struct ComentArrowListParser: Parser {
+    var body: some Parser<Substring, PGNComment> {
+        "{ [%cal"
+        Prefix { $0 != "]"}
+            .map(String.init)
+            .compactMap{
+                PGNComment.arrowList($0)
+            }
+        "] }"
+    }
+}
+
+struct CommentListParser: Parser {
+    var body: some Parser<Substring, [PGNComment]> {
+        Many {
+            OneOf {
+                ComentArrowListParser()
+                ComentTextParser()
+            }
+        } separator: {
+            Whitespace()
+        } terminator: {
+            Whitespace()
+        }
+    }
+}
+

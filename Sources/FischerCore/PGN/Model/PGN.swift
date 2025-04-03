@@ -35,7 +35,7 @@ struct PGNElement {
 
 enum PGNComment {
     case text(String)
-//    case arrowList(String)
+    case arrowList(String)
 //    case squareList(String)
 //    case clockTime(String)
 //    case elapsedMoveTime(String)
@@ -48,6 +48,8 @@ extension PGNComment: CustomStringConvertible {
         switch self {
         case .text(let comment):
             return "{\(comment)}"
+        case .arrowList(let comment):
+            return "{ [arrow list:\(comment)] }"
         }
     }
 }
