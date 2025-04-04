@@ -310,4 +310,94 @@ class PGNParserTest {
         #expect(result.elements.count == 6)
         print(Board(fen: result.tags[.fen]!)!.ascii())
     }
+    
+    @Test func allNagvalues() async throws {
+        let input =
+        """
+        [Event "NAG Full Test"]
+        [Site "Local"]
+        [Date "2025.04.04"]
+        [Round "-"]
+        [White "NAGTest"]
+        [Black "NAGTest"]
+        [Result "*"]
+
+        1. e4 $0 e5 $1
+        2. Nf3 $2 Nc6 $3
+        3. Bb5 $4 a6 $5
+        4. Ba4 $6 Nf6 $7
+        5. O-O $8 Be7 $9
+        6. Re1 $10 b5 $11
+        7. Bb3 $12 d6 $13
+        8. c3 $14 O-O $15
+        9. h3 $16 Nb8 $17
+        10. d4 $18 Nbd7 $19
+        11. Nbd2 $20 Bb7 $21
+        12. Bc2 $22 Re8 $23
+        13. a4 $24 Bf8 $25
+        14. Bd3 $26 g6 $27
+        15. Qc2 $28 c5 $29
+        16. d5 $30 c4 $31
+        17. Bf1 $32 Nc5 $33
+        18. a5 $34 Rc8 $35
+        19. Nh2 $36 Bg7 $37
+        20. Ng4 $38 Nxg4 $39
+        21. hxg4 $40 Qh4 $41
+        22. Qd1 $42 Rc7 $43
+        23. g3 $44 Qe7 $45
+        24. Bg2 $46 Bc8 $47
+        25. Nf1 $48 f5 $49
+        26. gxf5 $50 Bxf5 $51
+        27. exf5 $52 Bxf5 $53
+        28. Ne3 $54 Bd3 $55
+        29. Qh5 $56 Qf8 $57
+        30. Bd2 $58 Rf7 $59
+        31. Bf1 $60 Bg6 $61
+        32. Qh2 $62 e4 $63
+        33. Be2 $64 Be5 $65
+        34. Qh4 $66 Rxf2 $67
+        35. Ng4 $68 e3 $69
+        36. Bxe3 $70 Rxe2 $71
+        37. Rxe2 $72 Qf3 $73
+        38. Rxe2 $74 Qxg3+ $75
+        39. Rf2 $76 Bxg3 $77
+        40. Qxg3 $78 Kg7 $79
+        41. Qxg3 $80 Kg8 $81
+        42. Rf6 $82 Re1 $83
+        43. Bh6+ $84 Kg7 $85
+        44. Raf1 $86 Kg8 $87
+        45. Rxf8# $88 Re1 $89
+        46. e3 $90 Kh8 $91
+        47. Na3 $92 c5 $93
+        48. Nb5 $94 c6 $95
+        49. b3 $96 Nc6 $97
+        50. a3 $98 Nd7 $99
+        51. Qa1 $100 Nf6 $101
+        52. Qa4 $102 Ng6 $103
+        53. Qc3 $104 Qb6 $105
+        54. Qc4 $106 Qc7 $107
+        55. Qd3 $108 Qd6 $109
+        56. Qd4 $110 Qe7 $111
+        57. Qe3 $112 Qf6 $113
+        58. Qe4 $114 Qg7 $115
+        59. Qf3 $116 Qh6 $117
+        60. Qf4 $118 Kg6 $119
+        61. Qg3 $120 Kg7 $121
+        62. Qg4 $122 Kg8 $123
+        63. Qh3 $124 Kh7 $125
+        64. Qh4 $126 Kh8 $127
+        65. Ke2 $128 b5 $129
+        66. Kf2 $130 c4 $131
+        67. Kg2 $132 e5 $133
+        68. Kh2 $134 Nc6 $135
+        69. a4 $136 a6 $137
+        70. b4 $138 Nf6 $139
+        *
+        """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.elements.count == 70)
+    }
 }
