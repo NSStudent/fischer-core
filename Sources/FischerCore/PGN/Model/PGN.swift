@@ -8,6 +8,37 @@
 
 // Reference https://github.com/fsmosca/PGN-Standard/blob/master/PGN-Standard.txt
 
+enum PGNColor: String, CaseIterable {
+    case red = "R"
+    case green = "G"
+    case blue = "B"
+    case yellow = "Y"
+    case magenta = "M"
+    case cyan = "C"
+}
+
+struct PGNArrow {
+    public var color: PGNColor
+    public var fromSquare: Square
+    public var toSquare: Square
+}
+
+extension PGNArrow: CustomStringConvertible {
+    var description: String {
+        "\(color.rawValue)-\(fromSquare.description)-\(toSquare.description)"
+    }
+}
+
+struct PGNSquare {
+    public var color: PGNColor
+    public var square: Square
+}
+extension PGNSquare: CustomStringConvertible {
+    var description: String {
+        "\(color.rawValue)-\(square.description)"
+    }
+}
+
 struct PGN {
     public var games: [PGNGame]
 }
@@ -23,20 +54,20 @@ struct PGNElement {
     let whiteMove: SANMove?
     let whiteEvaluation: NAG?
     let postWhiteCommentList: [PGNComment]?
-    let postWhiteVariation: [PGNElement]?
+    let postWhiteVariation: [[PGNElement]]?
     let previousBlackCommentList: [PGNComment]?
     let blackMove: SANMove?
     let blackEvaluation: NAG?
     let postBlackCommentList: [PGNComment]?
-    let postBlackVariation: [PGNElement]?
+    let postBlackVariation: [[PGNElement]]?
     let result: PGNOutcome?
 }
 
 
 enum PGNComment {
     case text(String)
-    case arrowList(String)
-//    case squareList(String)
+    case arrowList([PGNArrow])
+    case squareList([PGNSquare])
 //    case clockTime(String)
 //    case elapsedMoveTime(String)
 //    case evaluation(String)
@@ -50,11 +81,19 @@ extension PGNComment: CustomStringConvertible {
             return "{\(comment)}"
         case .arrowList(let comment):
             return "{ [arrow list:\(comment)] }"
+        case .squareList(let comment):
+            return "{ [square list:\(comment)] }"
         }
     }
 }
 
 extension Array where Element == PGNComment {
+    var description: String {
+        return self.map{$0.description}.joined(separator: " ")
+    }
+}
+
+extension Array where Element == [PGNElement] {
     var description: String {
         return self.map{$0.description}.joined(separator: " ")
     }
@@ -202,10 +241,10 @@ extension PGNElement {
         turn: UInt,
         whiteMove: SANMove?,
         postWhiteCommentList: [PGNComment]?,
-        postWhiteVariation: [PGNElement]?,
+        postWhiteVariation: [[PGNElement]]?,
         blackMove: SANMove?,
         postBlackCommentList: [PGNComment]?,
-        postBlackVariation: [PGNElement]?,
+        postBlackVariation: [[PGNElement]]?,
         result: PGNOutcome?
     ) {
         self.init(
@@ -256,7 +295,7 @@ extension PGNElement: CustomStringConvertible {
         if let postWhiteCommentList {
             output += postWhiteCommentList.description
         }
-        if let postWhiteVariation = postWhiteVariation {
+        if let postWhiteVariation = postWhiteVariation, !postWhiteVariation.isEmpty{
             output += "(\(postWhiteVariation.description))"
         }
 
@@ -266,7 +305,7 @@ extension PGNElement: CustomStringConvertible {
         if let postBlackCommentList {
             output += postBlackCommentList.description
         }
-        if let postBlackVariation = postBlackVariation {
+        if let postBlackVariation = postBlackVariation, !postBlackVariation.isEmpty {
             output += "(\(postBlackVariation.description))"
         }
 

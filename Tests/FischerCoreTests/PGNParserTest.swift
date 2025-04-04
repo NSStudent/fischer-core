@@ -213,5 +213,49 @@ class PGNParserTest {
         #expect(result.elements.count == 8)
     }
 
-}
+    @Test("All color square anotations")
+    func colorAnotationSquares() async throws {
+        let input =
+        """
+        [Event "CSL Color example"]
+        [Site "Fischer-Core Test Collection"]
+        [Date "2025.04.04"]
+        [Round "-"]
+        [White "-"]
+        [Black "-"]
+        [Result "*"]
 
+        1. e4 {[%csl Ra1,Gb2,Bc3,Yd4,Me5,Cf6]} 1... e5 *
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        guard case let .squareList(squares) = result.elements[0].postWhiteCommentList?[0] else {
+            Issue.record("no square color list")
+            return
+        }
+        #expect(squares.count == 6)
+    }
+
+    @Test("All color arrow annotations")
+    func colorArrowAnnotations() async throws {
+        let input =
+        """
+        [Event "CAL Arrow example"]
+        [Site "Fischer-Core Test Collection"]
+        [Date "2025.04.04"]
+        [Round "-"]
+        [White "-"]
+        [Black "-"]
+        [Result "*"]
+
+        1. e4 {[%cal Ra1a8,Gb2b4,Bc3f3,Yd4d8,Me5e7,Cf6h6]} 1... e5 *
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        guard case let .arrowList(arrows) = result.elements[0].postWhiteCommentList?[0] else {
+            Issue.record("no arrow color list")
+            return
+        }
+        #expect(arrows.count == 6)
+    }
+}

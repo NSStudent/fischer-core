@@ -9,24 +9,7 @@ import Parsing
 struct PGNElementBasicParser: Parser {
     var body: some Parser<Substring, PGNElement> {
         Parse(PGNElement.init(turn:whiteMove:postWhiteCommentList:postWhiteVariation:blackMove:postBlackCommentList:postBlackVariation:result:)) {
-            UInt.parser()
-            "."
-
-            Optionally {
-                Whitespace()
-                SanMoveParser()
-            }
-            
-            Optionally {
-                Whitespace()
-                CommentListParser()
-            }
-            
-            Optionally {
-                Whitespace()
-                VariationParser()
-            }
-
+            InitParse()
             Optionally {
                 Whitespace()
                 OneOf {
@@ -48,8 +31,10 @@ struct PGNElementBasicParser: Parser {
             }
 
             Optionally {
-                Whitespace()
-                VariationParser()
+                Many {
+                    Whitespace()
+                    VariationParser()
+                }
             }
 
             Optionally {
@@ -57,5 +42,50 @@ struct PGNElementBasicParser: Parser {
                 PGNOutcome.parser()
             }
         }
+    }
+}
+
+
+struct InitParse: Parser {
+    var body: some Parser<Substring,(UInt,SANMove?,[PGNComment]?,[[PGNElement]]?)> {
+        OneOf {
+            BlackParser()
+            WhiteParser()
+        }
+    }
+}
+
+struct WhiteParser: Parser {
+    var body: some Parser<Substring,(UInt,SANMove?,[PGNComment]?,[[PGNElement]]?)> {
+        UInt.parser()
+        "."
+
+        Optionally {
+            Whitespace()
+            SanMoveParser()
+        }
+
+        Optionally {
+            Whitespace()
+            CommentListParser()
+        }
+
+        Optionally {
+            Many {
+                Whitespace()
+                VariationParser()
+            }
+        }
+    }
+}
+
+struct BlackParser: Parser {
+    var body: some Parser<Substring,(UInt,SANMove?,[PGNComment]?,[[PGNElement]]?)> {
+        UInt.parser()
+        "..."
+        Whitespace()
+        Always(SANMove?.none)
+        Always([PGNComment]?.none)
+        Always([[PGNElement]]?.none)
     }
 }
