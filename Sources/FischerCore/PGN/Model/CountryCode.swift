@@ -5,7 +5,7 @@
 //  Created by Omar Megdadi on 1/4/25.
 //
 
-enum CountryCode: String, CustomStringConvertible, CaseIterable, Equatable {
+enum CountryCode: String, CaseIterable, Equatable {
     case afg = "AFG"
     case air = "AIR"
     case alb = "ALB"
@@ -158,7 +158,9 @@ enum CountryCode: String, CustomStringConvertible, CaseIterable, Equatable {
     case zam = "ZAM"
     case zim = "ZIM"
     case zre = "ZRE"
+}
 
+//extension CountryCode: CustomStringConvertible {
 //    var description: String {
 //        switch self {
 //        case .afg: return "Afghanistan"
