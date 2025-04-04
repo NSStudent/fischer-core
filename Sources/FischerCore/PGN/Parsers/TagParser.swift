@@ -7,7 +7,7 @@
 
 import Parsing
 struct TagParser: Parser {
-    var body: some Parser<Substring, [(PGNTag, String)]> {
+    var body: some Parser<Substring, [PGNTag: String]> {
         Many {
             Parse {
                 "["
@@ -18,6 +18,6 @@ struct TagParser: Parser {
             }
         } separator: {
             "\n"
-        }
+        }.map(Dictionary.init)
     }
 }

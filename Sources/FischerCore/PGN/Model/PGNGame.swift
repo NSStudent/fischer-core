@@ -6,7 +6,7 @@
 //
 
 struct PGNGame {
-    public var tags: [(PGNTag, String)]
+    public var tags: [PGNTag: String]
     public var initialComment: [PGNComment]?
     public var elements: [PGNElement]
 }

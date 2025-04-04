@@ -20,19 +20,36 @@ struct VariationParser: Parser {
 
 
 struct CommentTextParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
+    var body: some Parser<Substring, [PGNComment]> {
         "{"
         Prefix { $0 != "}"}
             .map(String.init)
-            .compactMap{ PGNComment.text($0)}
+            .compactMap{ [PGNComment.text($0)]}
         "}"
     }
 }
 
-struct CommentArrowListParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
+struct MultipleCommentParser: Parser {
+    var body: some Parser<Substring, [PGNComment]> {
         "{"
         Whitespace()
+        Many {
+            OneOf{
+                CALParser()
+                CSLParser()
+            }
+        } separator: {
+            OneOf {
+                Whitespace()
+            }
+        }
+        Whitespace()
+        "}"
+    }
+}
+
+struct CALParser: Parser {
+    var body: some Parser<Substring, PGNComment> {
         "[%cal"
         Whitespace()
         PGNArrowListParser().compactMap{
@@ -40,15 +57,25 @@ struct CommentArrowListParser: Parser {
         }
         Whitespace()
         "]"
+    }
+}
+
+struct CommentArrowListParser: Parser {
+    var body: some Parser<Substring, [PGNComment]> {
+        "{"
+        Whitespace()
+        Many {
+            CALParser()
+        } separator: {
+            Whitespace()
+        }
         Whitespace()
         "}"
     }
 }
 
-struct CommentSquareListParser: Parser {
+struct CSLParser: Parser {
     var body: some Parser<Substring, PGNComment> {
-        "{"
-        Whitespace()
         "[%csl"
         Whitespace()
         PGNSquareListParser().compactMap{
@@ -56,6 +83,18 @@ struct CommentSquareListParser: Parser {
         }
         Whitespace()
         "]"
+    }
+}
+
+struct CommentSquareListParser: Parser {
+    var body: some Parser<Substring, [PGNComment]> {
+        "{"
+        Whitespace()
+        Many {
+            CSLParser()
+        } separator: {
+            Whitespace()
+        }
         Whitespace()
         "}"
     }
@@ -65,6 +104,7 @@ struct CommentListParser: Parser {
     var body: some Parser<Substring, [PGNComment]> {
         Many {
             OneOf {
+                MultipleCommentParser()
                 CommentSquareListParser()
                 CommentArrowListParser()
                 CommentTextParser()
@@ -73,6 +113,8 @@ struct CommentListParser: Parser {
             Whitespace()
         } terminator: {
             Whitespace()
+        }.flatMap { result in
+            Always(result.flatMap{$0})
         }
     }
 }

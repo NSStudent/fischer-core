@@ -5,7 +5,7 @@
 //  Created by Omar Megdadi on 4/4/25.
 //
 
-struct PGNSquare {
+struct PGNSquare: Equatable {
     public var color: PGNColor
     public var square: Square
 }

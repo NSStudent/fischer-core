@@ -5,7 +5,7 @@
 //  Created by Omar Megdadi on 4/4/25.
 //
 
-enum PGNComment {
+enum PGNComment: Equatable {
     case text(String)
     case arrowList([PGNArrow])
     case squareList([PGNSquare])
