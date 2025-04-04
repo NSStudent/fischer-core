@@ -8,8 +8,12 @@
 import Parsing
 struct PGNElementBasicParser: Parser {
     var body: some Parser<Substring, PGNElement> {
-        Parse(PGNElement.init(turn:whiteMove:postWhiteCommentList:postWhiteVariation:blackMove:postBlackCommentList:postBlackVariation:result:)) {
+        Parse(PGNElement.init(turn:previousWhiteCommentList:whiteMove:whiteEvaluation:postWhiteCommentList:postWhiteVariation:previousBlackCommentList:blackMove:blackEvaluation:postBlackCommentList:postBlackVariation:result:)) {
             InitParse()
+            Optionally {
+                Whitespace()
+                CommentListParser()
+            }
             Optionally {
                 Whitespace()
                 OneOf {
@@ -23,6 +27,10 @@ struct PGNElementBasicParser: Parser {
                         SanMoveParser()
                     }
                 }
+            }
+            Optionally {
+                Whitespace()
+                NAGParser()
             }
             
             Optionally {
@@ -47,7 +55,7 @@ struct PGNElementBasicParser: Parser {
 
 
 struct InitParse: Parser {
-    var body: some Parser<Substring,(UInt,SANMove?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,NAG?,[PGNComment]?,[[PGNElement]]?)> {
         OneOf {
             BlackParser()
             WhiteParser()
@@ -56,13 +64,22 @@ struct InitParse: Parser {
 }
 
 struct WhiteParser: Parser {
-    var body: some Parser<Substring,(UInt,SANMove?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,NAG?,[PGNComment]?,[[PGNElement]]?)> {
         UInt.parser()
         "."
+        Optionally {
+            Whitespace()
+            CommentListParser()
+        }
 
         Optionally {
             Whitespace()
             SanMoveParser()
+        }
+        
+        Optionally {
+            Whitespace()
+            NAGParser()
         }
 
         Optionally {
@@ -80,11 +97,13 @@ struct WhiteParser: Parser {
 }
 
 struct BlackParser: Parser {
-    var body: some Parser<Substring,(UInt,SANMove?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,NAG?,[PGNComment]?,[[PGNElement]]?)> {
         UInt.parser()
         "..."
         Whitespace()
+        Always([PGNComment]?.none)
         Always(SANMove?.none)
+        Always(NAG?.none)
         Always([PGNComment]?.none)
         Always([[PGNElement]]?.none)
     }

@@ -59,12 +59,7 @@ class PGNParserTest {
             "Nbxd2",       // Knight from b captures on d2 (disambiguation by file)
         ]
 
-        let sanParse = OneOf {
-            "O-O-O".map { SANMove.queensideCastling }
-            "O-O".map { SANMove.kingsideCastling }
-            BasicFromSANParser()
-            BasicSANParser()
-        }
+        let sanParse = SanMoveParser()
 
         //        let result = try sanParse.parse("bxa1=N+")
         //        print(result)
@@ -257,5 +252,55 @@ class PGNParserTest {
             return
         }
         #expect(arrows.count == 6)
+    }
+    @Test("real Lichess game example")
+    func realLichessGame() async throws{
+        let input =
+//        """
+//        [Event "FIDE Women's World Championship Match 2025"]
+//        [Site "Shanghai, China"]
+//        [Date "2025.04.03"]
+//        [Round "1"]
+//        [White "Ju, Wenjun"]
+//        [Black "Tan, Zhongyi"]
+//        [Result "1/2-1/2"]
+//        [WhiteElo "2561"]
+//        [WhiteFideId "8603006"]
+//        [BlackElo "2555"]
+//        [BlackFideId "8603642"]
+//        [Annotator "https://lichess.org/@/raluca_sgircea"]
+//        [Variant "Standard"]
+//        [ECO "B40"]
+//        [Opening "Sicilian Defense: French Variation, Normal"]
+//        [StudyName "Women's World Championship 2025: Annotated Games"]
+//        [ChapterName "Ju, Wenjun - Tan, Zhongyi (Sgîrcea)"]
+//
+//        { The match kicked off with a solid game. It often happens that the first round of a long match is rather quiet. Both players prefered to be on the safe side, take no big risks and get a feel for the match. As Tan said in the post-game press conference, it is important to find the right tempo for the rest of the games. }
+//        1. e4 { A predominantly 1.d4 player, Ju decided to start the first game with 1.e4, perhaps to try to surprise her opponent. } 1... c5 2. Nf3 e6 3. d4 cxd4 4. Nxd4 Nf6 5. Bd3 { Ju opts for a sideline, possibly to avoid the Four Knights variation of the Sicilian. Although far less popular than the 5.Nc3 alternative, this line has lately come back in fashion. Initially, it was made popular by Argentinian Grandmaster Daniel Campora. Nowadays, it has been seen at high level and tried by players like Carlsen, Anand, Nakamura or Abdusattorov. } (5. Nc3 { is the main line, leading to the Four Knights Variation after } 5... Nc6) 5... Nc6 6. Nxc6 bxc6 7. Bf4 { Again, the World Champion opts for a sideline. This is only the 3rd most popular choice according to my database, but it has seen a rise in popularity in the recent year. } 7... d5 8. Nd2 g6 9. Bg5 { Both players have been blitzing out their moves. Bg5 was probably Ju's preparation, as it has only been played once before. } 9... h6 { The first new move of the game and the first moment where the Challenger stopped to think. She admitted that she was a bit surprised by Ju Wenjun's move, but decided to play sensible moves and not spend too much time thinking. } (9... Be7 { is how the only other game in the database continued, but Tan Zhongyi was most likely bothered by } 10. Bh6 e5 11. h3 Bf8 12. Bxf8 Kxf8 13. O-O Kg7 14. Re1 Re8 { and black was fine, although eventually lost the game in Heimann,M (2467)-Zeltsan,J (2417) Rockville USA 2024 }) 10. Bh4 Be7 11. O-O a5 { preparing Ba6 } 12. Qe2 { A logical square for the white Queen, also preventing Black's idea } 12... O-O 13. Rad1 { Another logical developing move } 13... Nd7 14. Bxe7 (14. Bg3 { was the alternative but now, after having broken the pin, Black can follow up with } 14... Qb6 { her development after Rd8 and Ba6 } { [%cal Gc8a6,Gf8d8] }) 14... Qxe7 15. c4 (15. Rfe1 Bb7 16. Nf3 Rfd8 { white keeps a small edge }) 15... Ne5 { threatening to follow up with Ba6 } 16. exd5 Nxd3 17. Qxd3 cxd5 18. Qe3 (18. cxd5 { wins a pawn, but Black gets very active and eventually wins the pawn back after } 18... Ba6 19. Nc4 exd5 20. Qxd5 Rfd8 21. Qc6 Rdc8 22. Qd6 Qxd6 23. Nxd6 Rc2 24. Rfe1 Rxb2) 18... Qg5 19. Qxg5 hxg5 20. cxd5 exd5 21. Rfe1 Rb8 22. b3 g4 { White was threatening Nf3 } 23. Nf1 { The only other route to improve the position of this knight } 23... a4 { Tan goes for active play, trading her weaknesses on a5 and d5 fore white's queenside pawns } 24. bxa4 Rb4 25. a5 (25. Rxd5 Rxa4 26. Rd2 { makes no difference, as black can continue with } 26... Be6 { and still win the a2 pawn }) 25... Ra4 26. Rxd5 Be6 27. Rc5 Rxa2 28. Ne3 Ra8 29. Nd5 R8xa5 30. Rxa5 Rxa5 31. Nf4 Bf5 32. h3 gxh3 33. Nxh3 Bxh3 34. gxh3 Kg7 35. Kg2 Rg5+ 36. Kf3 Rf5+ 37. Kg2 Rg5+ 38. Kf3 Rf5+ 39. Kg2 { A solid, calm game. Today we saw that both players were very well prepared, played very fast and almost all moves were top engine moves. The tension will build up and it's interesting to see what the rest of the games will bring. } 1/2-1/2
+//        """
+        """
+        [Event "[NEW] CRUSH the French!: 📘 4...Nd7"]
+        [Site "https://lichess.org/study/Rb4AyiUo/DsuBAZD0"]
+        [Result "*"]
+        [Variant "Standard"]
+        [ECO "?"]
+        [Opening "?"]
+        [Annotator "https://lichess.org/@/Bosburp"]
+        [StudyName "[NEW] CRUSH the French!"]
+        [ChapterName "📘 4...Nd7"]
+        [FEN "rnbqkbnr/ppp2ppp/4p3/8/4N3/5N2/PPPP1PPP/R1BQKB1R b KQkq - 0 4"]
+        [SetUp "1"]
+        [UTCDate "2025.03.31"]
+        [UTCTime "10:47:15"]
+
+        4... Nd7 { A better response. Might look weird at first, but the idea behind this move is to support Nf6 on the next move, allowing Black to recapture with the d7 knight instead of weakening the pawn structure by capturing with a pawn or bringing the queen out to early. } { [%csl Gf6][%cal Bg8f6,Yd7f6] } 5. d4 { We'll immediately take the center. } { [%csl Ge5][%cal Gd4e5] } 5... Ngf6 { Challenging our knight. } { [%csl Re4][%cal Gf6e4] } 6. Nxf6+ Nxf6 { Now Black has a knight on f6 instead of the queen, as we saw in the previous chapter. This is a much more solid approach. } { [%csl Gf6] } 7. g3! { Here, I recommend playing g3, going for the LSB fianchetto and an O-O setup. I think most players will mess up by trying to force an attack or action too soon, but there isn’t anything, Black’s setup is still quite solid. The best option here is to calmly continue developing all our pieces. No need to rush. } { [%csl Bg1][%cal Bf1g2,Be1g1] } 7... Be7 (7... c5 8. Bg2 $16 { Same idea. Of course, if Black captures d4, recapture. } { [%csl Gg2][%cal Be1g1,Ba2a4,Bc2c4] }) (7... b6 { Top engine move. Black also wants to place the LSB somewhere active. } { [%cal Bc8b7,Gb7h1,Gb7a8] } 8. Bg2 { We just continue our plan. } 8... Bb7 9. O-O Be7 10. Qe2 { Many developing moves work here. But I like to get the f1 rook to the d-file. } 10... O-O 11. Rd1 $14 { White has a small edge, but it's equal with perfect play. White's winrate is at 55%. } { [%csl Gd1,Ge2][%cal Bc2c4,Bb2b3,Bc1b2,Ba2a4] }) 8. Bg2 O-O 9. O-O $16 { We’ve finished our kingside development, and there’s nothing to complain about in our position. From here, just play chess! White has a 58% win rate. } { [%csl Gg2,Gg1,Rc8][%cal Bc2c4,Bf3e5,Bf1e1,Bd1e2] } *
+
+
+
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.elements.count == 39)
     }
 }

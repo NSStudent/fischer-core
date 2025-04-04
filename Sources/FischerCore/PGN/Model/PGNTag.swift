@@ -5,7 +5,6 @@
 //  Created by Omar Megdadi on 1/4/25.
 //
 
-
 // Reference https://github.com/fsmosca/PGN-Standard/blob/master/PGN-Standard.txt
 public enum PGNTag: String, CaseIterable, Equatable {
     /// Seven Tag Roster
@@ -58,5 +57,7 @@ public enum PGNTag: String, CaseIterable, Equatable {
     case variant = "Variant"
     case studyName = "StudyName"
     case chapterName = "ChapterName"
+    case whiteFideId = "WhiteFideId"
+    case blackFideId = "BlackFideId"
 
 }

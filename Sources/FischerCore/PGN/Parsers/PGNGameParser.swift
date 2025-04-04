@@ -8,10 +8,13 @@
 import Parsing
 struct PGNGameParser: Parser {
     var body: some Parser<Substring, PGNGame> {
-        Parse(PGNGame.init(tags:elements:)) {
+        Parse(PGNGame.init(tags:initialComment:elements:)) {
             TagParser()
             "\n"
             "\n"
+            Optionally {
+                CommentListParser()
+            }
             Many {
                 PGNElementBasicParser()
             } separator: {
