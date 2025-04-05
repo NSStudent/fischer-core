@@ -8,7 +8,7 @@
 import Parsing
 struct PGNGameParser: Parser {
     var body: some Parser<Substring, PGNGame> {
-        Parse(PGNGame.init(tags:initialComment:elements:)) {
+        Parse(PGNGame.init(tags:initialComment:elements:result:)) {
             TagParser()
             "\n"
             "\n"
@@ -21,6 +21,10 @@ struct PGNGameParser: Parser {
                 Whitespace()
             } terminator: {
                 Whitespace()
+            }
+            Optionally {
+                Whitespace()
+                PGNOutcome.parser()
             }
         }
     }

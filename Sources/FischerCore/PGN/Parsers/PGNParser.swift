@@ -13,6 +13,9 @@ struct PGNParser: Parser {
             PGNGameParser()
         } separator: {
             Whitespace()
-        }.map(PGN.init)
+        } terminator: {
+            Whitespace()
+        }
+        .map(PGN.init)
     }
 }

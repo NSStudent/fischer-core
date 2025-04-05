@@ -9,6 +9,7 @@ struct PGNGame {
     public var tags: [PGNTag: String]
     public var initialComment: [PGNComment]?
     public var elements: [PGNElement]
+    let result: PGNOutcome?
 }
 
 extension PGNGame: CustomStringConvertible {
@@ -22,7 +23,13 @@ extension PGNGame: CustomStringConvertible {
             .map{ element in
                 element.description
             }.joined(separator: "\n")
-        let gameDescription = [taglistDescription, initialCommentDescription, movementListDescription].compactMap { $0 }.joined(separator: "\n")
+        let resultDetail = "Result: \(result?.rawValue ?? "" ) \n"
+        let gameDescription = [
+            taglistDescription,
+            initialCommentDescription,
+            movementListDescription,
+            resultDetail
+        ].compactMap { $0 }.joined(separator: "\n")
         return """
         Game:
         \(gameDescription)

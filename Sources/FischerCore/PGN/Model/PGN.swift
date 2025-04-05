@@ -10,4 +10,8 @@ struct PGN {
     public var games: [PGNGame]
 }
 
-
+extension PGN: CustomStringConvertible {
+    var description: String {
+        return games.map(\.description).joined(separator: "\n==============================================================================\n\n")
+    }
+}

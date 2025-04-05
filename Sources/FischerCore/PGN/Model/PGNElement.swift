@@ -18,7 +18,6 @@ struct PGNElement {
     let blackEvaluation: [NAG]?
     let postBlackCommentList: [PGNComment]?
     let postBlackVariation: [[PGNElement]]?
-    let result: PGNOutcome?
 }
 
 
@@ -64,9 +63,9 @@ extension PGNElement: CustomStringConvertible {
             output += "(\(postBlackVariation.description))"
         }
         
-        if let result = result {
-            output += " \(result.rawValue)"
-        }
+//        if let result = result {
+//            output += " \(result.rawValue)"
+//        }
         
         return output
     }

@@ -8,7 +8,7 @@
 import Parsing
 struct PGNElementBasicParser: Parser {
     var body: some Parser<Substring, PGNElement> {
-        Parse(PGNElement.init(turn:previousWhiteCommentList:whiteMove:whiteEvaluation:postWhiteCommentList:postWhiteVariation:previousBlackCommentList:blackMove:blackEvaluation:postBlackCommentList:postBlackVariation:result:)) {
+        Parse(PGNElement.init(turn:previousWhiteCommentList:whiteMove:whiteEvaluation:postWhiteCommentList:postWhiteVariation:previousBlackCommentList:blackMove:blackEvaluation:postBlackCommentList:postBlackVariation:)) {
             InitParse()
             Optionally {
                 Whitespace()
@@ -43,11 +43,6 @@ struct PGNElementBasicParser: Parser {
                     Whitespace()
                     VariationParser()
                 }
-            }
-
-            Optionally {
-                Whitespace()
-                PGNOutcome.parser()
             }
         }
     }
