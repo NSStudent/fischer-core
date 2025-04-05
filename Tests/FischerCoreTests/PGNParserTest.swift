@@ -287,23 +287,32 @@ class PGNParserTest {
     @Test("cal ans csl comment in the same comment")
     func calAndCslSameComment() async throws{
         let input =
-//        """
-//        [Event "[NEW] CRUSH the French!: 📘 4...Nd7"]
-//        [Site "https://lichess.org/study/Rb4AyiUo/DsuBAZD0"]
-//        [Result "*"]
-//        [Variant "Standard"]
-//        [ECO "?"]
-//        [Opening "?"]
-//        [Annotator "https://lichess.org/@/Bosburp"]
-//        [StudyName "[NEW] CRUSH the French!"]
-//        [ChapterName "📘 4...Nd7"]
-//        [FEN "rnbqkbnr/ppp2ppp/4p3/8/4N3/5N2/PPPP1PPP/R1BQKB1R b KQkq - 0 4"]
-//        [SetUp "1"]
-//        [UTCDate "2025.03.31"]
-//        [UTCTime "10:47:15"]
-//
-//        4... Nd7 { A better response. Might look weird at first, but the idea behind this move is to support Nf6 on the next move, allowing Black to recapture with the d7 knight instead of weakening the pawn structure by capturing with a pawn or bringing the queen out to early. } { [%csl Gf6][%cal Bg8f6,Yd7f6] } 5. d4 { We'll immediately take the center. } { [%csl Ge5][%cal Gd4e5] } 5... Ngf6 { Challenging our knight. } { [%csl Re4][%cal Gf6e4] } 6. Nxf6+ Nxf6 { Now Black has a knight on f6 instead of the queen, as we saw in the previous chapter. This is a much more solid approach. } { [%csl Gf6] } 7. g3! { Here, I recommend playing g3, going for the LSB fianchetto and an O-O setup. I think most players will mess up by trying to force an attack or action too soon, but there isn’t anything, Black’s setup is still quite solid. The best option here is to calmly continue developing all our pieces. No need to rush. } { [%csl Bg1][%cal Bf1g2,Be1g1] } 7... Be7 (7... c5 8. Bg2 $16 { Same idea. Of course, if Black captures d4, recapture. } { [%csl Gg2][%cal Be1g1,Ba2a4,Bc2c4] }) (7... b6 { Top engine move. Black also wants to place the LSB somewhere active. } { [%cal Bc8b7,Gb7h1,Gb7a8] } 8. Bg2 { We just continue our plan. } 8... Bb7 9. O-O Be7 10. Qe2 { Many developing moves work here. But I like to get the f1 rook to the d-file. } 10... O-O 11. Rd1 $14 { White has a small edge, but it's equal with perfect play. White's winrate is at 55%. } { [%csl Gd1,Ge2][%cal Bc2c4,Bb2b3,Bc1b2,Ba2a4] }) 8. Bg2 O-O 9. O-O $16 { We’ve finished our kingside development, and there’s nothing to complain about in our position. From here, just play chess! White has a 58% win rate. } { [%csl Gg2,Gg1,Rc8][%cal Bc2c4,Bf3e5,Bf1e1,Bd1e2] } *
-//        """
+        """
+        [Event "[NEW] CRUSH the French!: 📘 4...Nd7"]
+        [Site "https://lichess.org/study/Rb4AyiUo/DsuBAZD0"]
+        [Result "*"]
+        [Variant "Standard"]
+        [ECO "?"]
+        [Opening "?"]
+        [Annotator "https://lichess.org/@/Bosburp"]
+        [StudyName "[NEW] CRUSH the French!"]
+        [ChapterName "📘 4...Nd7"]
+        [FEN "rnbqkbnr/ppp2ppp/4p3/8/4N3/5N2/PPPP1PPP/R1BQKB1R b KQkq - 0 4"]
+        [SetUp "1"]
+        [UTCDate "2025.03.31"]
+        [UTCTime "10:47:15"]
+
+        4... Nd7 { A better response. Might look weird at first, but the idea behind this move is to support Nf6 on the next move, allowing Black to recapture with the d7 knight instead of weakening the pawn structure by capturing with a pawn or bringing the queen out to early. } { [%csl Gf6][%cal Bg8f6,Yd7f6] } 5. d4 { We'll immediately take the center. } { [%csl Ge5][%cal Gd4e5] } 5... Ngf6 { Challenging our knight. } { [%csl Re4][%cal Gf6e4] } 6. Nxf6+ Nxf6 { Now Black has a knight on f6 instead of the queen, as we saw in the previous chapter. This is a much more solid approach. } { [%csl Gf6] } 7. g3! { Here, I recommend playing g3, going for the LSB fianchetto and an O-O setup. I think most players will mess up by trying to force an attack or action too soon, but there isn’t anything, Black’s setup is still quite solid. The best option here is to calmly continue developing all our pieces. No need to rush. } { [%csl Bg1][%cal Bf1g2,Be1g1] } 7... Be7 (7... c5 8. Bg2 $16 { Same idea. Of course, if Black captures d4, recapture. } { [%csl Gg2][%cal Be1g1,Ba2a4,Bc2c4] }) (7... b6 { Top engine move. Black also wants to place the LSB somewhere active. } { [%cal Bc8b7,Gb7h1,Gb7a8] } 8. Bg2 { We just continue our plan. } 8... Bb7 9. O-O Be7 10. Qe2 { Many developing moves work here. But I like to get the f1 rook to the d-file. } 10... O-O 11. Rd1 $14 { White has a small edge, but it's equal with perfect play. White's winrate is at 55%. } { [%csl Gd1,Ge2][%cal Bc2c4,Bb2b3,Bc1b2,Ba2a4] }) 8. Bg2 O-O 9. O-O $16 { We’ve finished our kingside development, and there’s nothing to complain about in our position. From here, just play chess! White has a 58% win rate. } { [%csl Gg2,Gg1,Rc8][%cal Bc2c4,Bf3e5,Bf1e1,Bd1e2] } *
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.elements.count == 6)
+    }
+    
+    @Test("multiples nags in one move")
+    func multiplesNagsSameMove() async throws {
+        let input =
         """
         [Event "Fighting against London: Bishop Kicking!"]
         [Site "https://lichess.org/study/Q7v33IGE/7W2bZKD5"]
@@ -316,17 +325,13 @@ class PGNParserTest {
         [ChapterName "Bishop Kicking!"]
         [UTCDate "2025.03.24"]
         [UTCTime "00:41:42"]
-
+        
         1. d4 Nf6 2. Bf4 b6!? (2... d5 3. e3 c5 4. c3 Nc6 5. Nd2 e6 6. Ngf3 Bd6 7. Bg3 O-O 8. Bd3) 3. e3 Bb7 4. Nf3 Nh5! 5. Bg5 (5. Bg3 Nxg3 6. hxg3 g6 7. c4 Bg7 8. Nc3 O-O 9. Bd3 e6 $36 10. Be4?! d5! 11. cxd5 exd5 12. Bd3 c5 $15) 5... h6 6. Bh4 g5 7. Nfd2 (7. Ne5 Nf6 8. Bg3 d6 9. Nc4 Ne4!? $13) (7. Bg3 Nxg3 8. hxg3 Bg7 9. Nbd2 e6 10. c3 d5 11. a4 a6! $10) 7... Nf4! 8. exf4 gxh4 9. Nf3 (9. Qh5?! e6 10. Nc3 Qf6! 11. Qe5 Qxe5+ 12. dxe5 Nc6 13. O-O-O O-O-O 14. Rg1 d6 $36) (9. h3? e6 10. Nc3 Qf6! $17) 9... e6 10. Nbd2 c5! 11. dxc5 bxc5 12. g3 Be7 13. Bg2 Nc6 $13 *
-
-
-
         """
+        
         let parser = PGNGameParser()
         let result = try parser.parse(input)
         print(result)
-//        #expect(result.elements.count == 6)
-//        print(Board(fen: result.tags[.fen]!)!.ascii())
         #expect(result.elements.count == 13)
     }
     
