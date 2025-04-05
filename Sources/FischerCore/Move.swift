@@ -181,3 +181,72 @@ extension Sequence where Iterator.Element == Square {
 
 }
 
+
+extension Move {
+    public init(board: Board, sanMove: SANMove, turn: PlayerColor) throws {
+        switch sanMove {
+        case .san(let sanDefaultMove):
+            try self.init(board: board, sanDefaultMove: sanDefaultMove, turn: turn)
+        case .kingsideCastling:
+            switch turn {
+            case .white:
+                self.init(start: .e1, end: .g1)
+            case .black:
+                self.init(start: .e8, end: .g8)
+            }
+        case .queensideCastling:
+            switch turn {
+            case .white:
+                self.init(start: .e1, end: .c1)
+            case .black:
+                self.init(start: .e8, end: .c8)
+            }
+        }
+    }
+    
+    init(board: Board, sanDefaultMove: SANMove.SANDefaultMove, turn: PlayerColor) throws {
+        let piece = Piece(kind: sanDefaultMove.piece, color: turn)
+        let bitboard = board[piece]
+        if let from = sanDefaultMove.from {
+            guard let start = bitboard.first(where: { currentSquare in
+                switch from {
+                case .file(let file):
+                    currentSquare.file == file
+                case .rank(let rank):
+                    currentSquare.rank == rank
+                case .square(let sqr):
+                    sqr == currentSquare
+                }
+            }) else {
+                    throw FischerCoreError.illegalMove
+            }
+            self.init(start: start, end: sanDefaultMove.toSquare)
+        } else {
+            guard let start = bitboard.first(where: { currentSquare in
+                Move.isLegal(start: currentSquare, end: sanDefaultMove.toSquare, piece: piece)
+            }) else {
+                throw FischerCoreError.illegalMove
+            }
+            self.init(start: start, end: sanDefaultMove.toSquare)
+        }
+    }
+    
+    internal static func isLegal(start: Square, end: Square, piece: Piece) -> Bool {
+        var allEndSquareMoves = start.attacks(for: piece, stoppers: 0)
+        if piece.kind == .pawn {
+            let squareBitboard = Bitboard(square: start)
+            let pushes = squareBitboard.pawnPushes(for: piece.color,
+                                                   empty: ~0)
+            let doublePushes = (squareBitboard & Bitboard(startFor: piece))
+                .pawnPushes(for: piece.color, empty: ~0)
+                .pawnPushes(for: piece.color, empty: ~0)
+            allEndSquareMoves = allEndSquareMoves | pushes | doublePushes
+        }
+        return allEndSquareMoves.contains(end)
+    }
+}
+
+enum FischerCoreError: Error {
+    case illegalMove
+    
+}

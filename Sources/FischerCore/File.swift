@@ -1,5 +1,11 @@
 import Foundation
 
+/// Represents the file (column) of a square on a chessboard, labeled from "a" to "h".
+///
+/// This enum provides utilities for indexing, string conversion, opposite file determination,
+/// and initialization from characters or strings. It is used in board representation and SAN parsing.
+///
+/// Files are 1-based internally (`.a = 1`) but expose a zero-based `index` for array-like access.
 public enum File: Int {
 
     public enum Direction {
@@ -80,6 +86,29 @@ extension File: ExpressibleByStringLiteral {
             fatalError("Rank value not within a and h, inclusive")
         }
     }
+
+    init?(string: String) {
+        switch string {
+        case "a":
+            self = .a
+        case "b":
+            self = .b
+        case "c":
+            self = .c
+        case "d":
+            self = .d
+        case "e":
+            self = .e
+        case "f":
+            self = .f
+        case "g":
+            self = .g
+        case "h":
+            self = .h
+        default:
+            return nil
+        }
+    }
 }
 
 extension File {
@@ -97,4 +126,3 @@ extension File {
         }
     }
 }
-
