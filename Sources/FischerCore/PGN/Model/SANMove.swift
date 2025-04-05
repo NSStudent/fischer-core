@@ -120,9 +120,6 @@ extension SANMove.SANDefaultMove: CustomStringConvertible {
         }
 
         if isCapture {
-            if piece == .pawn && from == nil {
-                result += toSquare.file.description
-            }
             result += "x"
         }
 
