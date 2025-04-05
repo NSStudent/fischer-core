@@ -10,12 +10,12 @@ struct PGNElement {
     let turn: UInt
     let previousWhiteCommentList: [PGNComment]?
     let whiteMove: SANMove?
-    let whiteEvaluation: NAG?
+    let whiteEvaluation: [NAG]?
     let postWhiteCommentList: [PGNComment]?
     let postWhiteVariation: [[PGNElement]]?
     let previousBlackCommentList: [PGNComment]?
     let blackMove: SANMove?
-    let blackEvaluation: NAG?
+    let blackEvaluation: [NAG]?
     let postBlackCommentList: [PGNComment]?
     let postBlackVariation: [[PGNElement]]?
     let result: PGNOutcome?
@@ -39,7 +39,7 @@ extension PGNElement: CustomStringConvertible {
         }
         
         if let nag = whiteEvaluation {
-            output += " $$\(nag.description)$$"
+            output += "\(nag.map{$0.symbol}.joined(separator: ""))"
         }
         
         if let postWhiteCommentList {
@@ -54,7 +54,7 @@ extension PGNElement: CustomStringConvertible {
         }
         
         if let nag = blackEvaluation {
-            output += " $$\(nag.description)$$"
+            output += "\(nag.map{$0.symbol}.joined(separator: ""))"
         }
         
         if let postBlackCommentList {

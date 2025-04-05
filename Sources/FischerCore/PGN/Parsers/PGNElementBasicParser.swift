@@ -55,7 +55,7 @@ struct PGNElementBasicParser: Parser {
 
 
 struct InitParse: Parser {
-    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,NAG?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
         OneOf {
             BlackParser()
             WhiteParser()
@@ -64,7 +64,7 @@ struct InitParse: Parser {
 }
 
 struct WhiteParser: Parser {
-    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,NAG?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
         UInt.parser()
         "."
         Optionally {
@@ -97,13 +97,13 @@ struct WhiteParser: Parser {
 }
 
 struct BlackParser: Parser {
-    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,NAG?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
         UInt.parser()
         "..."
         Whitespace()
         Always([PGNComment]?.none)
         Always(SANMove?.none)
-        Always(NAG?.none)
+        Always([NAG]?.none)
         Always([PGNComment]?.none)
         Always([[PGNElement]]?.none)
     }

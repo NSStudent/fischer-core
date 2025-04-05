@@ -8,10 +8,14 @@
 import Parsing
 
 struct NAGParser: Parser {
-    var body: some Parser<Substring, NAG> {
-        OneOf{
-            NAGSimbolParser()
-            NAGNumberParser()
+    var body: some Parser<Substring, [NAG]> {
+        Many {
+            OneOf{
+                NAGSimbolParser()
+                NAGNumberParser()
+            }
+        } separator: {
+            Whitespace()
         }
     }
 }
