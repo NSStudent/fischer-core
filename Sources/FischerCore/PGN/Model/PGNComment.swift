@@ -5,7 +5,7 @@
 //  Created by Omar Megdadi on 4/4/25.
 //
 
-enum PGNComment: Equatable {
+public enum PGNComment: Equatable {
     case text(String)
     case arrowList([PGNArrow])
     case squareList([PGNSquare])
@@ -16,7 +16,7 @@ enum PGNComment: Equatable {
 }
 
 extension PGNComment: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .text(let comment):
             return "{\(comment)}"

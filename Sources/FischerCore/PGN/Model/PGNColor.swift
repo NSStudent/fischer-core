@@ -6,7 +6,7 @@
 //
 
 
-enum PGNColor: String, CaseIterable {
+public enum PGNColor: String, CaseIterable {
     case red = "R"
     case green = "G"
     case blue = "B"

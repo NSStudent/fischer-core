@@ -6,7 +6,7 @@
 //
 
 
-struct PGNElement {
+public struct PGNElement {
     let turn: UInt
     let previousWhiteCommentList: [PGNComment]?
     let whiteMove: SANMove?
@@ -28,7 +28,7 @@ extension Array where Element == [PGNElement] {
 }
 
 extension PGNElement: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         var output = "\(turn)."
         
         if let white = whiteMove {

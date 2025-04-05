@@ -5,12 +5,12 @@
 //  Created by Omar Megdadi on 4/4/25.
 //
 
-struct PGNSquare: Equatable {
+public struct PGNSquare: Equatable {
     public var color: PGNColor
     public var square: Square
 }
 extension PGNSquare: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         "\(color.rawValue)-\(square.description)"
     }
 }
