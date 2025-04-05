@@ -1,5 +1,13 @@
 import Foundation
-
+/// Castling rights available to each side and direction.
+///
+/// This enum distinguishes between white and black, kingside and queenside castling.
+/// It is used to track and manipulate castling legality throughout a game.
+///
+/// - `whiteKingside`: White may castle kingside (O-O).
+/// - `whiteQueenside`: White may castle queenside (O-O-O).
+/// - `blackKingside`: Black may castle kingside (O-O).
+/// - `blackQueenside`: Black may castle queenside (O-O-O).
 public struct CastlingRights {
     public enum Right: String, CaseIterable, CustomStringConvertible {
         case whiteKingside

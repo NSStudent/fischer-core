@@ -5,6 +5,13 @@
 //  Created by Omar Megdadi on 1/4/25.
 //
 
+/// Represents ISO-like 3-letter country codes used for identifying player nationalities in chess data.
+///
+/// This enum includes a broad set of codes including current countries, historical nations,
+/// and special location codes such as "Aboard spacecraft" or "Internet".
+///
+/// These codes are commonly seen in chess federation data or tournament metadata.
+/// The full display names for each code can be restored using the `CustomStringConvertible` extension.
 enum CountryCode: String, CaseIterable, Equatable {
     case afg = "AFG"
     case air = "AIR"

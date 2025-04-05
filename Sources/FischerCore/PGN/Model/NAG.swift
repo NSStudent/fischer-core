@@ -5,7 +5,15 @@
 //  Created by Omar Megdadi on 1/4/25.
 //
 
-///Numeric Annotation Glyph
+/// Represents a Numeric Annotation Glyph (NAG) used in chess PGN to evaluate moves.
+///
+/// NAGs provide a standardized way to annotate chess moves with commentary such as
+/// "good move", "poor move", "decisive advantage", and more.
+///
+/// These annotations are widely used in PGN notation with symbols like `!`, `?`, `!?`, `+−`, etc.,
+/// and help engines and humans alike understand the quality of a move.
+///
+/// - Reference: [PGN Standard - NAG codes](https://en.wikipedia.org/wiki/Numeric_Annotation_Glyphs)
 enum NAG: Int, CaseIterable, Equatable {
     case nullAnnotation = 0
     case goodMove

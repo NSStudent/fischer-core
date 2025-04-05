@@ -1,5 +1,13 @@
 import Foundation
 
+/// Represents a chessboard using bitboards for efficient position tracking and operations.
+///
+/// The board holds piece positions using an array of 12 bitboards—one per piece type and color.
+/// It supports querying and updating squares, FEN parsing/generation, iteration over spaces,
+/// and evaluation of threats, pinned pieces, and attacks.
+///
+/// - Note: The bitboards are indexed by `Piece.bitValue`, where `0...5` represent white pieces
+/// and `6...11` black pieces.
 public struct Board: Equatable {
 
     public enum Side {
@@ -194,6 +202,13 @@ extension Board {
 }
 
 extension Board {
+    /// Initializes a `Board` instance from a FEN (Forsyth–Edwards Notation) string.
+    ///
+    /// This parses the piece placement section of the FEN string (first field),
+    /// and sets up the board accordingly. Returns `nil` if the format is invalid.
+    ///
+    /// - Parameter fen: A FEN string describing a board position.
+    /// - Returns: A board with pieces placed according to the FEN, or `nil` if the FEN is invalid.
     public init?(fen: String) {
 
         func pieces(for string: String) -> [Piece?]? {

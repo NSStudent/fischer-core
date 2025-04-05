@@ -92,4 +92,31 @@ final class MoveTests {
         #expect(sequence.moves(to: .e5) == [.e4 >>> .e5, .d4 >>> .e5])
     }
 
+    @Test("Init with SANMove and Board")
+    func initWithSanMoveAndBoard() async throws {
+        let board = Board()
+        let sanMove = try SanMoveParser().parse("e4")
+        let move = try Move(board: board, sanMove: sanMove, turn: .white)
+        #expect(move.start == .e2)
+        #expect(move.end == .e4)
+        
+        guard let board2 = Board(fen: "rnbqkbnr/ppp2ppp/8/3pp3/3P4/5N2/PPP1PPPP/RNBQKB1R") else {
+            Issue.record("board fen error")
+            return
+        }
+        let sanMove2 = try SanMoveParser().parse("Nfd2")
+        let move2 = try Move(board: board2, sanMove: sanMove2, turn: .white)
+        #expect(move2.start == .f3)
+        #expect(move2.end == .d2)
+        
+        guard let board3 = Board(fen: "7k/8/2N5/8/5N2/8/3KN3/8") else {
+            Issue.record("board fen error")
+            return
+        }
+        
+        let sanMove3 = try SanMoveParser().parse("N2d4")
+        let move3 = try Move(board: board3, sanMove: sanMove3, turn: .white)
+        #expect(move3.start == .e2)
+        #expect(move3.end == .d4)
+    }
 }

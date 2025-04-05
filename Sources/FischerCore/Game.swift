@@ -1,5 +1,15 @@
 import Foundation
 
+/// A fully-featured representation of a chess game, including move history, board state, and rules enforcement.
+///
+/// The `Game` struct handles:
+/// - Board initialization (standard or custom FEN)
+/// - Execution and validation of legal moves
+/// - Castling, en passant, and promotion logic
+/// - Move history tracking and undo operations
+/// - Detection of game outcome and king safety
+///
+/// It can be used for analysis, game playback, and engine integration.
 public struct Game {
     public struct GameToken {
         public var token: [String] = [String](repeating: UUID().uuidString, count: 64)

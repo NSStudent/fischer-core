@@ -1,6 +1,16 @@
 import Foundation
 
-/// 
+/// A bitboard is a 64-bit integer where each bit represents a square on a chessboard.
+///
+/// This struct encapsulates a rich set of bitboard operations for efficient chess logic, including:
+/// - Bitwise operations (`&`, `|`, `^`, `~`, shifts)
+/// - Square iteration and pop operations
+/// - Attack generation for all pieces
+/// - Board manipulation (flipping, masking, shifting)
+///
+/// Bitboards are commonly used in chess engines to represent piece positions and calculate move generation.
+///
+/// - Note: Square 0 is the least-significant bit (a1), and Square 63 is the most-significant bit (h8).
 public struct Bitboard: Equatable, Hashable {
 
     private(set) var rawValue: UInt64 = 0
@@ -11,10 +21,14 @@ public struct Bitboard: Equatable, Hashable {
 
     public init() {}
 
+    /// An iterator over the squares set in a `Bitboard`.
+    ///
+    /// Iterates by popping least significant bits until the bitboard is empty.
     public struct Iterator: IteratorProtocol {
 
         fileprivate var bitboard: Bitboard
 
+        /// Returns the next square in the bitboard by removing the least significant bit.
         public mutating func next() -> Square? {
             return bitboard.popLSBSquare()
         }
