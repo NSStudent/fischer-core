@@ -1,3 +1,6 @@
+<div align="center">
+    <img src="Fischer-core.png" alt="FischerCore Logo" height="250" />
+</div>
 # Fischer-core
 
 [![codecov](https://codecov.io/gh/NSStudent/fischer-core/branch/develop/graph/badge.svg?token=XHQP3Y1EHD)](https://codecov.io/gh/NSStudent/fischer-core)
@@ -38,8 +41,19 @@ This library is based on the code of other well-crafted chess engines and bitboa
 
 Special thanks to [Point-Free](https://www.pointfree.co/) for their fantastic [swift-parsing](https://github.com/pointfreeco/swift-parsing) library, which greatly simplified the implementation of our PGN parser.
 
+## Roadmap
 
-## TODO
+The following features are planned to improve the functionality and completeness of `FischerCore`:
 
-- [X] Parse PGN string into a struct 
-- [ ] add more kind of PGN comments 
+- [ ] Support additional PGN comment types (e.g. clock time, evaluation, annotations).
+- [ ] Add performance benchmarks for parsers and move generation.
+- [ ] Improve FEN parsing using a unified parser approach.
+
+### ✅ What's Implemented
+
+The following core features are already available:
+
+- `Bitboard`: Efficient low-level representation of board state using bitwise operations.
+- `Game`: Rule-enforced move execution, undo functionality, outcome detection, and full board state management.
+- `PGN parsing`: Conversion of PGN text into structured data with support for tags, comments, and moves.
+- `Move`: Encapsulates move logic with origin and destination squares, and supports conversion from `SANMove` to drive game mechanics.
