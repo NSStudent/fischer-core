@@ -100,6 +100,11 @@ final class MoveTests {
         #expect(move.start == .e2)
         #expect(move.end == .e4)
         
+        #expect(throws: FischerCoreError.illegalMove) {
+            let sanIllegalMove = try SanMoveParser().parse("e6")
+            let _ = try Move(board: board, sanMove: sanIllegalMove, turn: .white)
+        }
+        
         guard let board2 = Board(fen: "rnbqkbnr/ppp2ppp/8/3pp3/3P4/5N2/PPP1PPPP/RNBQKB1R") else {
             Issue.record("board fen error")
             return
@@ -118,5 +123,37 @@ final class MoveTests {
         let move3 = try Move(board: board3, sanMove: sanMove3, turn: .white)
         #expect(move3.start == .e2)
         #expect(move3.end == .d4)
+        
+        
+        #expect(throws: FischerCoreError.illegalMove) {
+            let sanIllegalMove2 = try SanMoveParser().parse("N3d4")
+            let _ = try Move(board: board, sanMove: sanIllegalMove2, turn: .white)
+        }
+        
+        let sanMove5 = try SanMoveParser().parse("O-O")
+        let move5 = try Move(board: board, sanMove: sanMove5, turn: .white)
+        #expect(move5.start == .e1)
+        #expect(move5.end == .g1)
+        
+        let sanMove6 = try SanMoveParser().parse("O-O-O")
+        let move6 = try Move(board: board, sanMove: sanMove6, turn: .white)
+        #expect(move6.start == .e1)
+        #expect(move6.end == .c1)
+        
+        
+        let sanMove7 = try SanMoveParser().parse("O-O")
+        let move7 = try Move(board: board, sanMove: sanMove7, turn: .black)
+        #expect(move7.start == .e8)
+        #expect(move7.end == .g8)
+        
+        let sanMove8 = try SanMoveParser().parse("O-O-O")
+        let move8 = try Move(board: board, sanMove: sanMove8, turn: .black)
+        #expect(move8.start == .e8)
+        #expect(move8.end == .c8)
+        
+        let sanMove9 = try SanMoveParser().parse("Ne2d4")
+        let move9 = try Move(board: board3, sanMove: sanMove9, turn: .white)
+        #expect(move9.start == .e2)
+        #expect(move9.end == .d4)
     }
 }
