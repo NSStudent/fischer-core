@@ -22,7 +22,7 @@ class PGNParserTest {
             """
         let tagListParse = TagParser()
         let result = try tagListParse.parse(tagsString)
-        //print(result)
+        print(result)
         #expect(result.count == 7)
     }
 
@@ -62,7 +62,7 @@ class PGNParserTest {
         let sanParse = SanMoveParser()
 
         //        let result = try sanParse.parse("bxa1=N+")
-        //        //print(result)
+        //        print(result)
 
         let result = try sanMoves.map{ move in
             let sanMove = try sanParse.parse(move)
@@ -97,7 +97,7 @@ class PGNParserTest {
 
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        //print(result)
+        print(result)
         #expect(result.tags.count == 7)
         #expect(result.elements.count == 43)
 
@@ -118,7 +118,7 @@ class PGNParserTest {
         1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 *
         """
         let result2 = try parser.parse(input2)
-        //print(result2)
+        print(result2)
         #expect(result2.tags.count == 11)
         #expect(result2.elements.count == 4)
     }
@@ -152,7 +152,7 @@ class PGNParserTest {
 
         let parser = PGNGameParser()
         let result3 = try parser.parse(input3)
-        //print(result3)
+        print(result3)
         #expect(result3.tags.count == 11)
         #expect(result3.elements.count == 5)
     }
@@ -178,7 +178,7 @@ class PGNParserTest {
         
         let parser = PGNGameParser()
         let result3 = try parser.parse(input3)
-        //print(result3)
+        print(result3)
         #expect(result3.tags.count == 11)
         #expect(result3.elements.count == 45)
     }
@@ -203,7 +203,7 @@ class PGNParserTest {
         """
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        //print(result)
+        print(result)
         #expect(result.tags.count == 11)
         #expect(result.elements.count == 8)
     }
@@ -280,7 +280,7 @@ class PGNParserTest {
         """
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        //print(result)
+        print(result)
         #expect(result.elements.count == 39)
     }
     
@@ -324,9 +324,9 @@ class PGNParserTest {
         """
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        //print(result)
+        print(result)
 //        #expect(result.elements.count == 6)
-//        //print(Board(fen: result.tags[.fen]!)!.ascii())
+//        print(Board(fen: result.tags[.fen]!)!.ascii())
         #expect(result.elements.count == 13)
     }
     
@@ -416,7 +416,7 @@ class PGNParserTest {
         
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        //print(result)
+        print(result)
         #expect(result.elements.count == 70)
     }
 }
