@@ -9,12 +9,12 @@
 ///
 /// SANMove supports normal piece moves, captures, promotions, check/checkmate flags,
 /// and also castling moves (kingside and queenside).
-enum SANMove {
+public enum SANMove {
     /// Specifies how the origin of a move is disambiguated in SAN.
     ///
     /// When two identical pieces can move to the same square, disambiguation is needed.
     /// This enum helps represent the disambiguation component: by file, rank, or full square.
-    enum FromPosition {
+    public enum FromPosition {
         case file(File)
         case rank(Rank)
         case square(Square)
@@ -27,7 +27,7 @@ enum SANMove {
     /// - R: Rook
     /// - B: Bishop
     /// - N: Knight
-    enum PromotionPiece: String, CaseIterable {
+    public enum PromotionPiece: String, CaseIterable {
         case knight = "N"
         case bishop = "B"
         case rook = "R"
@@ -38,23 +38,23 @@ enum SANMove {
     ///
     /// Includes the piece, origin (if disambiguated), capture flag, destination,
     /// promotion (if any), and whether the move results in check or checkmate.
-    struct SANDefaultMove {
+    public struct SANDefaultMove {
         /// The type of piece making the move.
-        let piece: Piece.Kind
+        public let piece: Piece.Kind
         /// The disambiguation of the origin square, if required.
-        let from: FromPosition?
+        public let from: FromPosition?
         /// Whether the move is a capture.
-        let isCapture: Bool
+        public let isCapture: Bool
         /// The target square of the move.
-        let toSquare: Square
+        public let toSquare: Square
         /// The piece to which a pawn is promoted, if any.
-        let promotionTo: PromotionPiece?
+        public let promotionTo: PromotionPiece?
         /// Whether the move results in a check.
-        let isCheck: Bool
+        public let isCheck: Bool
         /// Whether the move results in a checkmate.
-        let isCheckmate: Bool
+        public let isCheckmate: Bool
     }
-
+    
     case san(SANDefaultMove)
     case kingsideCastling
     case queensideCastling
@@ -80,8 +80,8 @@ extension SANMove.SANDefaultMove {
             isCheckmate: isCheckmate ?? false
         )
     }
-
-
+    
+    
     init(
         kind: Piece.Kind,
         isCapture: Bool?,
@@ -103,7 +103,7 @@ extension SANMove.SANDefaultMove {
 }
 
 extension SANMove: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .kingsideCastling:
             return "O-O"
@@ -118,9 +118,9 @@ extension SANMove: CustomStringConvertible {
 extension SANMove.SANDefaultMove: CustomStringConvertible {
     /// A string representation of the SAN move, including disambiguation,
     /// captures, promotion, and check or checkmate indicators.
-    var description: String {
+    public var description: String {
         var result = ""
-
+        
         switch piece {
         case .pawn:
             break
@@ -135,7 +135,7 @@ extension SANMove.SANDefaultMove: CustomStringConvertible {
         case .king:
             result += "K"
         }
-
+        
         if let from = from {
             switch from {
             case .file(let f):
@@ -146,23 +146,23 @@ extension SANMove.SANDefaultMove: CustomStringConvertible {
                 result += s.description
             }
         }
-
+        
         if isCapture {
             result += "x"
         }
-
+        
         result += toSquare.description
-
+        
         if let promo = promotionTo {
             result += "=\(promo.rawValue)"
         }
-
+        
         if isCheckmate {
             result += "#"
         } else if isCheck {
             result += "+"
         }
-
+        
         return result
     }
 }

@@ -183,7 +183,7 @@ extension Sequence where Iterator.Element == Square {
 
 
 extension Move {
-    init(board: Board, sanMove: SANMove, turn: PlayerColor) throws {
+    public init(board: Board, sanMove: SANMove, turn: PlayerColor) throws {
         switch sanMove {
         case .san(let sanDefaultMove):
             try self.init(board: board, sanDefaultMove: sanDefaultMove, turn: turn)

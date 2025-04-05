@@ -33,3 +33,13 @@ The API reference and detailed documentation for `FischerCore` is available at:
 ## References
 
 This library is based on the code of other well-crafted chess engines and bitboard libraries in Swift. Notably, it builds upon the work in [Sage by @nvzqz](https://github.com/nvzqz/Sage/tree/develop), adapting and updating it to be compatible with the current state of the Swift language and modern development practices.
+
+## Acknowledgements
+
+Special thanks to [Point-Free](https://www.pointfree.co/) for their fantastic [swift-parsing](https://github.com/pointfreeco/swift-parsing) library, which greatly simplified the implementation of our PGN parser.
+
+
+## TODO
+
+- [X] Parse PGN string into a struct 
+- [ ] add more kind of PGN comments 
