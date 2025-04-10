@@ -19,7 +19,7 @@ public struct PGNElement {
     let previousWhiteCommentList: [PGNComment]?
 
     /// The move played by white on this turn.
-    let whiteMove: SANMove?
+    public let whiteMove: SANMove?
 
     /// Optional NAG annotations evaluating the white move.
     let whiteEvaluation: [NAG]?
@@ -34,7 +34,7 @@ public struct PGNElement {
     let previousBlackCommentList: [PGNComment]?
 
     /// The move played by black on this turn.
-    let blackMove: SANMove?
+    public let blackMove: SANMove?
 
     /// Optional NAG annotations evaluating the black move.
     let blackEvaluation: [NAG]?
