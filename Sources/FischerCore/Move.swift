@@ -223,7 +223,7 @@ extension Move {
             self.init(start: start, end: sanDefaultMove.toSquare)
         } else {
             guard let start = bitboard.first(where: { currentSquare in
-                Move.isLegal(start: currentSquare, end: sanDefaultMove.toSquare, piece: piece)
+                Move.isLegal(start: currentSquare, end: sanDefaultMove.toSquare, piece: piece, isCapture: sanDefaultMove.isCapture)
             }) else {
                 throw FischerCoreError.illegalMove
             }
@@ -231,7 +231,7 @@ extension Move {
         }
     }
     
-    internal static func isLegal(start: Square, end: Square, piece: Piece) -> Bool {
+    internal static func isLegal(start: Square, end: Square, piece: Piece, isCapture: Bool) -> Bool {
         var allEndSquareMoves = start.attacks(for: piece, stoppers: 0)
         if piece.kind == .pawn {
             let squareBitboard = Bitboard(square: start)
@@ -240,7 +240,7 @@ extension Move {
             let doublePushes = (squareBitboard & Bitboard(startFor: piece))
                 .pawnPushes(for: piece.color, empty: ~0)
                 .pawnPushes(for: piece.color, empty: ~0)
-            allEndSquareMoves = allEndSquareMoves | pushes | doublePushes
+            allEndSquareMoves = isCapture ? allEndSquareMoves : pushes | doublePushes
         }
         return allEndSquareMoves.contains(end)
     }
