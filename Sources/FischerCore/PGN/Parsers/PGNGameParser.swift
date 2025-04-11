@@ -27,6 +27,7 @@ public struct PGNGameParser: Parser {
                 Whitespace()
                 PGNOutcome.parser()
             }
+            Whitespace()
         }
     }
 }
