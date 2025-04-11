@@ -124,5 +124,8 @@ public enum PGNTag: String, CaseIterable, Equatable {
     case whiteFideId = "WhiteFideId"
     /// FIDE ID of the player with black pieces.
     case blackFideId = "BlackFideId"
+    
+    case blackRatingDiff = "BlackRatingDiff"
+    case whiteRatingDiff = "WhiteRatingDiff"
 
 }
