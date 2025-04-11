@@ -208,14 +208,27 @@ extension Move {
         let piece = Piece(kind: sanDefaultMove.piece, color: turn)
         let bitboard = board[piece]
         if let from = sanDefaultMove.from {
-            guard let start = bitboard.first(where: { currentSquare in
-                switch from {
-                case .file(let file):
-                    currentSquare.file == file
+            guard let start = bitboard.first(
+                where: { currentSquare in
+                    switch from {
+                    case .file(let file):
+                        return (currentSquare.file == file) && Move.isLegal(
+                            start: currentSquare,
+                            end: sanDefaultMove.toSquare,
+                            piece: piece,
+                            board: board,
+                            isCapture: sanDefaultMove.isCapture
+                        )
                 case .rank(let rank):
-                    currentSquare.rank == rank
+                    return (currentSquare.rank == rank) && Move.isLegal(
+                        start: currentSquare,
+                        end: sanDefaultMove.toSquare,
+                        piece: piece,
+                        board: board,
+                        isCapture: sanDefaultMove.isCapture
+                    )
                 case .square(let sqr):
-                    sqr == currentSquare
+                    return sqr == currentSquare
                 }
             }) else {
                     throw FischerCoreError.illegalMove
