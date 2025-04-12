@@ -84,12 +84,4 @@ final class BoardTests {
         #expect(Board(fen: "g7/8/8/8/8/8/8/K7") == nil)
         #expect(Board(fen: "PPPPPPPPPP/8/8/8/8/8/8/K7") == nil)
     }
-
-    @Test("Board Variant Handling")
-    func testVariant() throws {
-        let sut = Board(variant: .upsideDown)
-        #expect(sut[.a1] == Piece("r"))
-        #expect(sut.space(at: .a1) == Board.Space(piece: Piece("r"), square: .a1))
-        #expect(sut.space(at: .h1) == Board.Space(piece: Piece("r"), location: (file: .h, rank: .one)))
-    }
 }

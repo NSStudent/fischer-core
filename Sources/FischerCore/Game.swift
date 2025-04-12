@@ -164,16 +164,15 @@ public struct Game {
     }
 
     public init(whitePlayer: String = "",
-                blackPlayer: String = "",
-                variant: Variant = .standard) {
+                blackPlayer: String = "") {
         self.moveHistory = []
         self.undoHistory = []
-        self.board = Board(variant: variant)
+        self.board = Board()
         self.playerTurn = .white
         self.castlingRights = .all
         self.whitePlayer = whitePlayer
         self.blackPlayer = blackPlayer
-        self.variant = variant
+        self.variant = .standard
         self.attackersToKing = 0
         self.halfmoves = 0
         self.fullmoves = 1

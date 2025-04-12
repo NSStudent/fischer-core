@@ -2,13 +2,9 @@ import Foundation
 
 public enum Variant {
     case standard
-    case upsideDown
+    case chess960
 
     public var isStandard: Bool {
         return self == .standard
-    }
-
-    public var isUpsideDown: Bool {
-        return self == .upsideDown
     }
 }
