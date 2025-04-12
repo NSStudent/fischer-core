@@ -133,7 +133,7 @@ public struct Game {
                       fullmoves: fullmoves)
         }
 
-        func fen() -> String {
+        public func fen() -> String {
             return board.fen()
             + " \(playerTurn.isWhite() ? "w" : "b") \(castlingRights.description) "
             + (enPassantTarget.map { "\($0 as Square)".lowercased() } ?? "-")
