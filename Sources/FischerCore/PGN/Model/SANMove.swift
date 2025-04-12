@@ -9,12 +9,12 @@
 ///
 /// SANMove supports normal piece moves, captures, promotions, check/checkmate flags,
 /// and also castling moves (kingside and queenside).
-public enum SANMove {
+public enum SANMove: Equatable {
     /// Specifies how the origin of a move is disambiguated in SAN.
     ///
     /// When two identical pieces can move to the same square, disambiguation is needed.
     /// This enum helps represent the disambiguation component: by file, rank, or full square.
-    public enum FromPosition {
+    public enum FromPosition: Equatable {
         case file(File)
         case rank(Rank)
         case square(Square)
@@ -38,7 +38,7 @@ public enum SANMove {
     ///
     /// Includes the piece, origin (if disambiguated), capture flag, destination,
     /// promotion (if any), and whether the move results in check or checkmate.
-    public struct SANDefaultMove {
+    public struct SANDefaultMove: Equatable {
         /// The type of piece making the move.
         public let piece: Piece.Kind
         /// The disambiguation of the origin square, if required.
@@ -164,5 +164,76 @@ extension SANMove.SANDefaultMove: CustomStringConvertible {
         }
         
         return result
+    }
+}
+
+public extension Position {
+    func sanMove(from uci: String) throws -> SANMove {
+        guard uci.count >= 4 else { throw FischerCoreError.illegalMove }
+        
+        let fromString = String(uci.prefix(2))
+        let toString = String(uci.dropFirst(2).prefix(2))
+        let promotionChar = uci.count == 5 ? uci.last : nil
+        
+        guard
+            let from = Square(fromString),
+            let to = Square(toString),
+            let piece = board[from]
+        else {
+            throw FischerCoreError.illegalMove
+        }
+        
+        // Detectar enroques
+        if piece.kind == .king && from.file == .e {
+            if to.file == .g {
+                return .kingsideCastling
+            } else if to.file == .c {
+                return .queensideCastling
+            }
+        }
+
+        let isCapture = board[to] != nil || (piece.kind == .pawn && to == enPassantTarget)
+
+        let promotionTo: SANMove.PromotionPiece? = {
+            guard let char = promotionChar else { return nil }
+            return SANMove.PromotionPiece(rawValue: String(char).uppercased())
+        }()
+
+        let possibleDisambiguations = board.bitboard(for: piece)
+            .filter { $0 != from }
+            .filter {
+                Move.isLegal(start: $0, end: to, piece: piece, board: board, isCapture: isCapture)
+            }
+
+        let disambiguation: SANMove.FromPosition? = {
+            guard !possibleDisambiguations.isEmpty else { return nil }
+            let fileUnique = !possibleDisambiguations.contains(where: { $0.file == from.file && $0 != from })
+            let rankUnique = !possibleDisambiguations.contains(where: { $0.rank == from.rank && $0 != from })
+
+            if fileUnique {
+                return .file(from.file)
+            } else if rankUnique {
+                return .rank(from.rank)
+            } else {
+                return .square(from)
+            }
+        }()
+
+        
+        var game = try Game(position: Position(board: board))
+        try game.execute(move: Move(start: from, end: to))
+        let updatedBoard = game.board
+
+        let sanDefault = SANMove.SANDefaultMove(
+            piece: piece.kind,
+            from: disambiguation,
+            isCapture: isCapture,
+            toSquare: to,
+            promotionTo: promotionTo,
+            isCheck: game.kingIsChecked,
+            isCheckmate: game.isFinished
+        )
+
+        return .san(sanDefault)
     }
 }
