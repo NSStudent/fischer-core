@@ -39,9 +39,11 @@ struct PGNElementBasicParser: Parser {
             }
 
             Optionally {
+                Whitespace()
                 Many {
-                    Whitespace()
                     VariationParser()
+                } separator: {
+                    Whitespace()
                 }
             }
         }

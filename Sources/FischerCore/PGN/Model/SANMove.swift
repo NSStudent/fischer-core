@@ -9,12 +9,12 @@
 ///
 /// SANMove supports normal piece moves, captures, promotions, check/checkmate flags,
 /// and also castling moves (kingside and queenside).
-public enum SANMove {
+public enum SANMove: Equatable {
     /// Specifies how the origin of a move is disambiguated in SAN.
     ///
     /// When two identical pieces can move to the same square, disambiguation is needed.
     /// This enum helps represent the disambiguation component: by file, rank, or full square.
-    public enum FromPosition {
+    public enum FromPosition: Equatable {
         case file(File)
         case rank(Rank)
         case square(Square)
@@ -32,13 +32,22 @@ public enum SANMove {
         case bishop = "B"
         case rook = "R"
         case queen = "Q"
+        
+        public var kind: Piece.Kind {
+            switch self {
+            case .knight: return .knight
+            case .bishop: return .bishop
+            case .rook: return .rook
+            case .queen: return .queen
+            }
+        }
     }
 
     /// A default SAN move representing a non-castling move in chess.
     ///
     /// Includes the piece, origin (if disambiguated), capture flag, destination,
     /// promotion (if any), and whether the move results in check or checkmate.
-    public struct SANDefaultMove {
+    public struct SANDefaultMove: Equatable {
         /// The type of piece making the move.
         public let piece: Piece.Kind
         /// The disambiguation of the origin square, if required.
@@ -63,7 +72,7 @@ public enum SANMove {
 extension SANMove.SANDefaultMove {
     init(
         kind: Piece.Kind,
-        from: SANMove.FromPosition,
+        from: SANMove.FromPosition?,
         isCapture: Bool?,
         toSquare: Square,
         promotion: SANMove.PromotionPiece?,

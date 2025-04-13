@@ -94,65 +94,67 @@ final class MoveTests {
 
     @Test("Init with SANMove and Board")
     func initWithSanMoveAndBoard() async throws {
-        let board = Board()
+        let game = Game()
         let sanMove = try SanMoveParser().parse("e4")
-        let move = try Move(board: board, sanMove: sanMove, turn: .white)
+        let move = try Move(game: game, sanMove: sanMove)
         #expect(move.start == .e2)
         #expect(move.end == .e4)
         
         #expect(throws: FischerCoreError.illegalMove) {
             let sanIllegalMove = try SanMoveParser().parse("e6")
-            let _ = try Move(board: board, sanMove: sanIllegalMove, turn: .white)
+            let _ = try Move(game: game, sanMove: sanIllegalMove)
         }
         
-        guard let board2 = Board(fen: "rnbqkbnr/ppp2ppp/8/3pp3/3P4/5N2/PPP1PPPP/RNBQKB1R") else {
+        guard let game2 = try? Game(with: "rnbqkbnr/ppp2ppp/8/3pp3/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 1") else {
             Issue.record("board fen error")
             return
         }
         let sanMove2 = try SanMoveParser().parse("Nfd2")
-        let move2 = try Move(board: board2, sanMove: sanMove2, turn: .white)
+        let move2 = try Move(game: game2, sanMove: sanMove2)
         #expect(move2.start == .f3)
         #expect(move2.end == .d2)
         
-        guard let board3 = Board(fen: "7k/8/2N5/8/5N2/8/3KN3/8") else {
+        guard let game3 = try? Game(with: "7k/8/2N5/8/5N2/8/3KN3/8 w - - 0 1") else {
             Issue.record("board fen error")
             return
         }
         
         let sanMove3 = try SanMoveParser().parse("N2d4")
-        let move3 = try Move(board: board3, sanMove: sanMove3, turn: .white)
+        let move3 = try Move(game: game3, sanMove: sanMove3)
         #expect(move3.start == .e2)
         #expect(move3.end == .d4)
         
         
         #expect(throws: FischerCoreError.illegalMove) {
             let sanIllegalMove2 = try SanMoveParser().parse("N3d4")
-            let _ = try Move(board: board, sanMove: sanIllegalMove2, turn: .white)
+            let _ = try Move(game: game, sanMove: sanIllegalMove2)
         }
         
         let sanMove5 = try SanMoveParser().parse("O-O")
-        let move5 = try Move(board: board, sanMove: sanMove5, turn: .white)
+        let move5 = try Move(game: game, sanMove: sanMove5)
         #expect(move5.start == .e1)
         #expect(move5.end == .g1)
         
         let sanMove6 = try SanMoveParser().parse("O-O-O")
-        let move6 = try Move(board: board, sanMove: sanMove6, turn: .white)
+        let move6 = try Move(game: game, sanMove: sanMove6)
         #expect(move6.start == .e1)
         #expect(move6.end == .c1)
         
+        let blackStartGame = try Game(with: "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R b KQkq - 0 1")
         
         let sanMove7 = try SanMoveParser().parse("O-O")
-        let move7 = try Move(board: board, sanMove: sanMove7, turn: .black)
+        
+        let move7 = try Move(game: blackStartGame, sanMove: sanMove7)
         #expect(move7.start == .e8)
         #expect(move7.end == .g8)
         
         let sanMove8 = try SanMoveParser().parse("O-O-O")
-        let move8 = try Move(board: board, sanMove: sanMove8, turn: .black)
+        let move8 = try Move(game: blackStartGame, sanMove: sanMove8)
         #expect(move8.start == .e8)
         #expect(move8.end == .c8)
         
         let sanMove9 = try SanMoveParser().parse("Ne2d4")
-        let move9 = try Move(board: board3, sanMove: sanMove9, turn: .white)
+        let move9 = try Move(game: game3, sanMove: sanMove9)
         #expect(move9.start == .e2)
         #expect(move9.end == .d4)
     }

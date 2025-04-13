@@ -9,11 +9,13 @@ import Parsing
 struct VariationParser: Parser {
     var body: some Parser<Substring, [PGNElement]> {
         "("
+        Whitespace()
         Many {
             PGNElementBasicParser()
         } separator: {
             Whitespace()
         }
+        Whitespace()
         ")"
     }
 }

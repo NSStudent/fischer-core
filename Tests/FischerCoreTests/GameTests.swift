@@ -203,8 +203,8 @@ final class GameTests {
     
     @Test("Game Outcome - Win")
     func testGameOutcomeWin() {
-        let whiteWin = Game.Outcome.win(.white)
-        let blackWin = Game.Outcome.win(.black)
+        let whiteWin = Outcome.win(.white)
+        let blackWin = Outcome.win(.black)
 
         #expect(whiteWin.isWin)
         #expect(!whiteWin.isDraw)
@@ -219,7 +219,7 @@ final class GameTests {
 
     @Test("Game Outcome - Draw")
     func testGameOutcomeDraw() {
-        let draw = Game.Outcome.draw
+        let draw = Outcome.draw
 
         #expect(draw.isDraw)
         #expect(!draw.isWin)
@@ -229,17 +229,17 @@ final class GameTests {
 
     @Test("Game Outcome - Initialization from String")
     func testGameOutcomeInitFromString() {
-        #expect(Game.Outcome("1-0") == .win(.white))
-        #expect(Game.Outcome("0-1") == .win(.black))
-        #expect(Game.Outcome("1/2-1/2") == .draw)
-        #expect(Game.Outcome("invalid") == nil)
+        #expect(Outcome("1-0") == .win(.white))
+        #expect(Outcome("0-1") == .win(.black))
+        #expect(Outcome("1/2-1/2") == .draw)
+        #expect(Outcome("invalid") == nil)
     }
 
     @Test("Game Outcome - Value for Player")
     func testGameOutcomeValueForPlayer() {
-        let whiteWin = Game.Outcome.win(.white)
-        let blackWin = Game.Outcome.win(.black)
-        let draw = Game.Outcome.draw
+        let whiteWin = Outcome.win(.white)
+        let blackWin = Outcome.win(.black)
+        let draw = Outcome.draw
 
         #expect(whiteWin.value(for: .white) == 1.0)
         #expect(whiteWin.value(for: .black) == 0.0)
@@ -268,4 +268,6 @@ final class GameTests {
         let error = Game.ExecutionError.invalidPromotion(.king)
         #expect(error.message == "Invalid promoton: king")
     }
+    
+    
 }

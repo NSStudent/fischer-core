@@ -17,7 +17,7 @@ struct TagParser: Parser {
                 "\"]"
             }
         } separator: {
-            "\n"
+            Whitespace()
         }.map(Dictionary.init)
     }
 }

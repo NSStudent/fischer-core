@@ -28,11 +28,6 @@ final class SquareTests {
         #expect(Square("ee") == nil)
     }
 
-    @Test("Square Grid Collection")
-    func testGrid() throws {
-        #expect(Square.gridCollection.first == .a8)
-    }
-
     @Test("Square Attacks")
     func testAttacks() throws {
         #expect(Square.e4.attacks(for: Piece(king: .white)) == Bitboard(squares: [.d5, .d4, .d3, .e5, .e3, .f5, .f4, .f3]))

@@ -13,37 +13,37 @@
 /// rich PGN parsing and serialization.
 public struct PGNElement {
     /// The turn number of this PGN element.
-    let turn: UInt
+    public let turn: UInt
 
     /// Optional comments appearing before the white move.
-    let previousWhiteCommentList: [PGNComment]?
+    public let previousWhiteCommentList: [PGNComment]?
 
     /// The move played by white on this turn.
-    let whiteMove: SANMove?
+    public let whiteMove: SANMove?
 
     /// Optional NAG annotations evaluating the white move.
-    let whiteEvaluation: [NAG]?
+    public let whiteEvaluation: [NAG]?
 
     /// Optional comments appearing after the white move.
-    let postWhiteCommentList: [PGNComment]?
+    public let postWhiteCommentList: [PGNComment]?
 
     /// Optional variations starting after the white move.
-    let postWhiteVariation: [[PGNElement]]?
+    public let postWhiteVariation: [[PGNElement]]?
 
     /// Optional comments appearing before the black move.
-    let previousBlackCommentList: [PGNComment]?
+    public let previousBlackCommentList: [PGNComment]?
 
     /// The move played by black on this turn.
-    let blackMove: SANMove?
+    public let blackMove: SANMove?
 
     /// Optional NAG annotations evaluating the black move.
-    let blackEvaluation: [NAG]?
+    public let blackEvaluation: [NAG]?
 
     /// Optional comments appearing after the black move.
-    let postBlackCommentList: [PGNComment]?
+    public let postBlackCommentList: [PGNComment]?
 
     /// Optional variations starting after the black move.
-    let postBlackVariation: [[PGNElement]]?
+    public let postBlackVariation: [[PGNElement]]?
 }
 
 extension Array where Element == [PGNElement] {

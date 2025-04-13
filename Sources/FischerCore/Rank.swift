@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Rank: Int {
+public enum Rank: Int, Equatable {
     public enum Direction {
         case up
         case down

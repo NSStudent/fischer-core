@@ -550,4 +550,66 @@ class PGNParserTests {
         print(result)
         #expect(result.games.count == 3)
     }
+    
+    @Test("test liches match")
+    func lichesMatch() async throws {
+        let input =
+        """
+        [Event "Rated Bullet game"]
+        [Site "https://lichess.org/QYJK65fM"]
+        [Date "2025.03.16"]
+        [White "Icarium_Jagh"]
+        [Black "NSStudent"]
+        [Result "1-0"]
+        [WhiteElo "1945"]
+        [BlackElo "1979"]
+        [WhiteRatingDiff "+7"]
+        [BlackRatingDiff "-25"]
+        [Variant "Standard"]
+        [TimeControl "60+0"]
+        [ECO "B06"]
+        [Opening "Modern Defense"]
+
+        1. e4 { [%clk 0:01:00.03] } g6 { [%clk 0:01:00.03] } 2. Nc3 { [%emt 0:00:00] [%clk 0:01:00.03] } Bg7 { [%emt 0:00:00.48] [%clk 0:00:59.55] } 3. d3 { [%emt 0:00:00.72] [%clk 0:00:59.31] } d6 { [%emt 0:00:00.4] [%clk 0:00:59.15] } 4. Be2 { [%emt 0:00:00.88] [%clk 0:00:58.43] } a6 { [%emt 0:00:00.48] [%clk 0:00:58.67] } 5. Nf3 { [%emt 0:00:00] [%clk 0:00:58.43] } b5 { [%emt 0:00:00.56] [%clk 0:00:58.11] } 6. h3 { [%emt 0:00:00.16] [%clk 0:00:58.27] } Bb7 { [%emt 0:00:00.72] [%clk 0:00:57.39] } 7. O-O { [%emt 0:00:00.64] [%clk 0:00:57.63] } Nd7 { [%emt 0:00:00.56] [%clk 0:00:56.83] } 8. Nh2 { [%emt 0:00:01.04] [%clk 0:00:56.59] } c5 { [%emt 0:00:00.56] [%clk 0:00:56.27] } 9. f4 { [%emt 0:00:00.64] [%clk 0:00:55.95] } b4 { [%emt 0:00:00.8] [%clk 0:00:55.47] } 10. Nb1 { [%emt 0:00:00.96] [%clk 0:00:54.99] } e6 { [%emt 0:00:00.48] [%clk 0:00:54.99] } 11. Bf3 { [%emt 0:00:00] [%clk 0:00:54.99] } Ne7 { [%emt 0:00:00.56] [%clk 0:00:54.43] } 12. Nd2 { [%emt 0:00:00.64] [%clk 0:00:54.35] } d5 { [%emt 0:00:01.28] [%clk 0:00:53.15] } 13. a3 { [%emt 0:00:02] [%clk 0:00:52.35] } a5 { [%emt 0:00:03.2] [%clk 0:00:49.95] } 14. a4 { [%emt 0:00:02.32] [%clk 0:00:50.03] } c4 { [%emt 0:00:01.44] [%clk 0:00:48.51] } 15. Rb1 { [%emt 0:00:01.76] [%clk 0:00:48.27] } cxd3 { [%emt 0:00:01.04] [%clk 0:00:47.47] } 16. cxd3 { [%emt 0:00:00.72] [%clk 0:00:47.55] } dxe4 { [%emt 0:00:00.8] [%clk 0:00:46.67] } 17. Bxe4 { [%emt 0:00:01.52] [%clk 0:00:46.03] } O-O { [%emt 0:00:02.48] [%clk 0:00:44.19] } 18. Bxb7 { [%emt 0:00:01.28] [%clk 0:00:44.75] } Rb8 { [%emt 0:00:01.36] [%clk 0:00:42.83] } 19. Be4 { [%emt 0:00:01.2] [%clk 0:00:43.55] } Nc5 { [%emt 0:00:00.96] [%clk 0:00:41.87] } 20. b3 { [%emt 0:00:02.16] [%clk 0:00:41.39] } f5 { [%emt 0:00:02] [%clk 0:00:39.87] } 21. Bf3 { [%emt 0:00:03.28] [%clk 0:00:38.11] } Nxd3 { [%emt 0:00:01.84] [%clk 0:00:38.03] } 22. Nc4 { [%emt 0:00:02.96] [%clk 0:00:35.15] } Nxc1 { [%emt 0:00:02.16] [%clk 0:00:35.87] } 23. Qxc1 { [%emt 0:00:01.04] [%clk 0:00:34.11] } Rc8 { [%emt 0:00:01.12] [%clk 0:00:34.75] } 24. Qe1 { [%emt 0:00:01.92] [%clk 0:00:32.19] } Qd7 { [%emt 0:00:06] [%clk 0:00:28.75] } 25. Ne5 { [%emt 0:00:01.04] [%clk 0:00:31.15] } Bxe5 { [%emt 0:00:01.44] [%clk 0:00:27.31] } 26. Qxe5 { [%emt 0:00:00] [%clk 0:00:31.15] } Nc6 { [%emt 0:00:01.2] [%clk 0:00:26.11] } 27. Qe2 { [%emt 0:00:04.4] [%clk 0:00:26.75] } Nd4 { [%emt 0:00:01.36] [%clk 0:00:24.75] } 28. Qf2 { [%emt 0:00:01.28] [%clk 0:00:25.47] } Rc2 { [%emt 0:00:01.76] [%clk 0:00:22.99] } 29. Qe3 { [%emt 0:00:02.08] [%clk 0:00:23.39] } Rfc8 { [%emt 0:00:03.92] [%clk 0:00:19.07] } 30. Rfd1 { [%emt 0:00:03.76] [%clk 0:00:19.63] } Re2 { [%emt 0:00:11.91] [%clk 0:00:07.16] } 31. Qd3 { [%emt 0:00:06.08] [%clk 0:00:13.55] } Rd8 { [%emt 0:00:02.74] [%clk 0:00:04.42] } 32. Bxe2 { [%emt 0:00:01.12] [%clk 0:00:12.43] } Nxe2+ { [%emt 0:00:00.84] [%clk 0:00:03.58] } 33. Qxe2 { [%emt 0:00:00.08] [%clk 0:00:12.35] } Qxd1+ { [%emt 0:00:01.34] [%clk 0:00:02.24] } 34. Rxd1 { [%emt 0:00:00.4] [%clk 0:00:11.95] } Rf8 { [%emt 0:00:01.42] [%clk 0:00:00.82] } 35. Qxe6+ { [%emt 0:00:00.88] [%clk 0:00:11.07] } Kg7 { [%emt 0:00:00] [%clk 0:00:00.82] } 36. Rd7+ { [%emt 0:00:00.96] [%clk 0:00:10.11] } Rf7 { [%emt 0:00:00] [%clk 0:00:00.82] } 37. Qxf7+ { [%emt 0:00:01.32] [%clk 0:00:08.79] } Kh6 { [%emt 0:00:00] [%clk 0:00:00.82] } 38. Qxh7# { [%eval #0,0] [%emt 0:00:00.8] [%clk 0:00:07.99] } 1-0
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.elements.count == 38)
+    }
+    
+    @Test("evaluated lichess match")
+    func evaluatedLichessMatch() async throws {
+        let input =
+        """
+        [Event "Rated Bullet game"]
+        [Site "https://lichess.org/LhHZFxSb"]
+        [Date "2025.03.09"]
+        [White "NSStudent"]
+        [Black "Vancho-Rotor"]
+        [Result "1-0"]
+        [WhiteElo "1998"]
+        [BlackElo "2021"]
+        [WhiteRatingDiff "+29"]
+        [BlackRatingDiff "-6"]
+        [Variant "Standard"]
+        [TimeControl "60+0"]
+        [ECO "C41"]
+        [Opening "Philidor Defense: Exchange Variation"]
+
+        1. e4 { [%clk 0:01:00.03] } { [%eval 0.18] } e5 { [%clk 0:01:00.03] } { [%eval 0.21] } 2. Nf3 { [%emt 0:00:00.56] [%clk 0:00:59.47] } { [%eval 0.13] } d6 { [%emt 0:00:00.56] [%clk 0:00:59.47] } { [%eval 0.48] } 3. d4 { [%emt 0:00:00] [%clk 0:00:59.47] } { [%eval 0.58] } exd4 { [%emt 0:00:01.44] [%clk 0:00:58.03] } { [%eval 0.45] } 4. Qxd4 { [%emt 0:00:00.8] [%clk 0:00:58.67] } { [%eval 0.41] } c5 $6 { [%emt 0:00:00.32] [%clk 0:00:57.71] } { Inaccuracy. a6 was best. [%eval 1.30] } ( 4... a6 5. Be3 Nc6 6. Qd2 Nf6 7. Nc3 Be7 8. O-O-O b5 9. Kb1 ) 5. Qd1 $6 { [%emt 0:00:01.28] [%clk 0:00:57.39] } { Inaccuracy. Qd3 was best. [%eval 0.64] } ( 5. Qd3 Nf6 6. Nc3 Nc6 7. Bf4 Be6 8. O-O-O Qa5 9. a3 O-O-O ) 5... g6 $6 { [%emt 0:00:02] [%clk 0:00:55.71] } { Inaccuracy. Nc6 was best. [%eval 1.20] } ( 5... Nc6 6. Nc3 Nf6 7. Bf4 Be7 8. Qd2 Be6 9. Ng5 Qb6 10. O-O-O ) 6. Bc4 { [%emt 0:00:00.48] [%clk 0:00:56.91] } { [%eval 0.98] } Bg7 { [%emt 0:00:00.88] [%clk 0:00:54.83] } { [%eval 1.40] } 7. Nc3 { [%emt 0:00:01.28] [%clk 0:00:55.63] } { [%eval 1.35] } a6 $2 { [%emt 0:00:02] [%clk 0:00:52.83] } { Mistake. Be6 was best. [%eval 3.09] } ( 7... Be6 8. Nb5 Bxc4 9. Nxd6+ Ke7 10. Nxc4 ) 8. Bd2 $4 { [%emt 0:00:00.64] [%clk 0:00:54.99] } { Blunder. e5 was best. [%eval 0.44] } ( 8. e5 ) 8... b5 { [%emt 0:00:00.56] [%clk 0:00:52.27] } { [%eval 0.49] } 9. Bd5 { [%emt 0:00:02.32] [%clk 0:00:52.67] } { [%eval 0.17] } Ra7 { [%emt 0:00:03.52] [%clk 0:00:48.75] } { [%eval 0.22] } 10. Qe2 $6 { [%emt 0:00:01.76] [%clk 0:00:50.91] } { Inaccuracy. a3 was best. [%eval -0.52] } ( 10. a3 Ne7 ) 10... Bb7 $4 { [%emt 0:00:00.88] [%clk 0:00:47.87] } { Blunder. Ne7 was best. [%eval 1.36] } ( 10... Ne7 11. a3 ) 11. O-O $6 { [%emt 0:00:02.08] [%clk 0:00:48.83] } { Inaccuracy. O-O-O was best. [%eval 0.62] } ( 11. O-O-O ) 11... Nf6 { [%emt 0:00:02.88] [%clk 0:00:44.99] } { [%eval 0.93] } 12. Bxb7 { [%emt 0:00:01.76] [%clk 0:00:47.07] } { [%eval 0.89] } Rxb7 { [%emt 0:00:01.44] [%clk 0:00:43.55] } { [%eval 0.86] } 13. Nd5 $2 { [%emt 0:00:00.48] [%clk 0:00:46.59] } { Mistake. e5 was best. [%eval -0.41] } ( 13. e5 ) 13... O-O { [%emt 0:00:02.48] [%clk 0:00:41.07] } { [%eval -0.02] } 14. Nxf6+ { [%emt 0:00:00.88] [%clk 0:00:45.71] } { [%eval 0.05] } Bxf6 { [%emt 0:00:00.4] [%clk 0:00:40.67] } { [%eval -0.02] } 15. Bh6 { [%emt 0:00:01.44] [%clk 0:00:44.27] } { [%eval -0.56] } Re8 { [%emt 0:00:01.28] [%clk 0:00:39.39] } { [%eval -0.66] } 16. Qd3 { [%emt 0:00:03.44] [%clk 0:00:40.83] } { [%eval -0.82] } Bxb2 { [%emt 0:00:02.8] [%clk 0:00:36.59] } { [%eval -0.71] } 17. Rad1 { [%emt 0:00:01.04] [%clk 0:00:39.79] } { [%eval -0.69] } Rd7 { [%emt 0:00:02.4] [%clk 0:00:34.19] } { [%eval -0.85] } 18. Rd2 $6 { [%emt 0:00:03.68] [%clk 0:00:36.11] } { Inaccuracy. c3 was best. [%eval -1.51] } ( 18. c3 Qa5 ) 18... c4 { [%emt 0:00:00.96] [%clk 0:00:33.23] } { [%eval -1.50] } 19. Qd5 { [%emt 0:00:01.76] [%clk 0:00:34.35] } { [%eval -1.52] } Nc6 $4 { [%emt 0:00:02.24] [%clk 0:00:30.99] } { Blunder. Qc7 was best. [%eval 3.91] } ( 19... Qc7 20. Re2 ) 20. Rfd1 $4 { [%emt 0:00:01.92] [%clk 0:00:32.43] } { Blunder. Qxc6 was best. [%eval -3.55] } ( 20. Qxc6 Qc7 21. Qxc7 Rxc7 22. Rxd6 ) 20... Re6 $4 { [%emt 0:00:02.96] [%clk 0:00:28.03] } { Blunder. Nb4 was best. [%eval 3.95] } ( 20... Nb4 21. Qg5 Qxg5 22. Bxg5 f6 ) 21. Qxc6 { [%emt 0:00:00.72] [%clk 0:00:31.71] } { [%eval 4.40] } Bf6 { [%emt 0:00:04.72] [%clk 0:00:23.31] } { [%eval 4.34] } 22. e5 { [%emt 0:00:01.12] [%clk 0:00:30.59] } { [%eval 3.99] } Be7 { [%emt 0:00:03.6] [%clk 0:00:19.71] } { [%eval 4.47] } 23. exd6 { [%emt 0:00:01.12] [%clk 0:00:29.47] } { [%eval 4.50] } Bf6 { [%emt 0:00:01.12] [%clk 0:00:18.59] } { [%eval 4.99] } 24. Qxa6 { [%emt 0:00:02.88] [%clk 0:00:26.59] } { [%eval 4.97] } Qe8 { [%emt 0:00:04] [%clk 0:00:14.59] } { [%eval 5.58] } 25. Qxb5 { [%emt 0:00:01.76] [%clk 0:00:24.83] } { [%eval 5.32] } g5 { [%emt 0:00:05.09] [%clk 0:00:09.5] } { [%eval 5.93] } 26. h3 { [%emt 0:00:00.64] [%clk 0:00:24.19] } { [%eval 5.94] } g4 { [%eval 6.56,27] [%emt 0:00:01.18] [%clk 0:00:08.32] } { [%eval 6.56,27] } 27. Nh2 { [%emt 0:00:02.8] [%clk 0:00:21.39] } { [%eval 4.61] } Re1+ $6 { [%emt 0:00:01.79] [%clk 0:00:06.53] } { Inaccuracy. gxh3 was best. [%eval 6.81] } ( 27... gxh3 28. Qf5 Bc3 29. Qxh3 Bxd2 30. Rxd2 f5 31. Nf3 Rdxd6 ) 28. Rxe1 { [%emt 0:00:01.2] [%clk 0:00:20.19] } { [%eval 6.88] } Qxe1+ { [%emt 0:00:00.05] [%clk 0:00:06.48] } { [%eval 6.90] } 29. Nf1 { [%emt 0:00:00.96] [%clk 0:00:19.23] } { [%eval 6.81] } Qe8 { [%emt 0:00:00.71] [%clk 0:00:05.77] } { [%eval 7.51] } 30. Qf5 { [%emt 0:00:04.08] [%clk 0:00:15.15] } { [%eval 7.43] } gxh3 $2 { [%emt 0:00:00] [%clk 0:00:05.77] } { Checkmate is now unavoidable. Ba1 was best. [%eval #4] } ( 30... Ba1 31. Qxg4+ Kh8 32. Qxc4 Be5 33. Re2 f6 34. Rxe5 fxe5 35. Qd5 e4 ) 31. Qxf6 { [%emt 0:00:00.8] [%clk 0:00:14.35] } { [%eval #3] } Qe6 { [%emt 0:00:01.23] [%clk 0:00:04.54] } { [%eval #1] } 32. Qxe6 $2 { [%emt 0:00:00.96] [%clk 0:00:13.39] } { Lost forced checkmate sequence. Qg7# was best. [%eval 8.32] } ( 32. Qg7# ) 32... fxe6 { [%emt 0:00:01.05] [%clk 0:00:03.49] } { [%eval 8.25] } 33. Ne3 { [%emt 0:00:00.8] [%clk 0:00:12.59] } { [%eval 8.12] } Kf7 { [%emt 0:00:01.21] [%clk 0:00:02.28] } { [%eval 8.30] } 34. Ng4 { [%emt 0:00:00.64] [%clk 0:00:11.95] } { [%eval 7.98] } Kg6 $2 { [%emt 0:00:00] [%clk 0:00:02.28] } { Checkmate is now unavoidable. Rd8 was best. [%eval #11] } ( 34... Rd8 35. d7 c3 36. Rd1 e5 37. gxh3 e4 38. Bg5 Rb8 39. Bf6 ) 35. Ne5+ { [%emt 0:00:00.48] [%clk 0:00:11.47] } { [%eval #13] } Kxh6 { [%emt 0:00:00.44] [%clk 0:00:01.84] } { [%eval #13] } 36. Nxd7 { [%emt 0:00:00] [%clk 0:00:11.47] } { [%eval #14] } e5 { [%emt 0:00:00.98] [%clk 0:00:00.86] } { [%eval #8] } 37. Nxe5 { [%emt 0:00:00.64] [%clk 0:00:10.83] } { [%eval #7] } c3 { [%emt 0:00:00.72] [%clk 0:00:00.14] } { [%eval #7] } 38. d7 { [%eval #7,58] [%emt 0:00:00] [%clk 0:00:10.87] } { [%eval #7,58] } 1-0
+
+        """
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.elements.count == 38)
+    }
+    
+    @Test func variationParserTest() async throws {
+        let input = "( 4... a6 5. Be3 Nc6 6. Qd2 Nf6 7. Nc3 Be7 8. O-O-O b5 9. Kb1 )"
+        let parser = VariationParser()
+        let resutl = try parser.parse(input)
+        print(resutl)
+    }
 }
