@@ -183,19 +183,19 @@ extension Sequence where Iterator.Element == Square {
 
 
 extension Move {
-    public init(game: Game, sanMove: SANMove, turn: PlayerColor) throws {
+    public init(game: Game, sanMove: SANMove) throws {
         switch sanMove {
         case .san(let sanDefaultMove):
-            try self.init(game: game, sanDefaultMove: sanDefaultMove, turn: turn)
+            try self.init(game: game, sanDefaultMove: sanDefaultMove)
         case .kingsideCastling:
-            switch turn {
+            switch game.playerTurn {
             case .white:
                 self.init(start: .e1, end: .g1)
             case .black:
                 self.init(start: .e8, end: .g8)
             }
         case .queensideCastling:
-            switch turn {
+            switch game.playerTurn {
             case .white:
                 self.init(start: .e1, end: .c1)
             case .black:
@@ -204,8 +204,8 @@ extension Move {
         }
     }
     
-    init(game: Game, sanDefaultMove: SANMove.SANDefaultMove, turn: PlayerColor) throws {
-        let piece = Piece(kind: sanDefaultMove.piece, color: turn)
+    init(game: Game, sanDefaultMove: SANMove.SANDefaultMove) throws {
+        let piece = Piece(kind: sanDefaultMove.piece, color: game.playerTurn)
         let bitboard = game.board[piece]
         if let from = sanDefaultMove.from {
             guard let start = bitboard.first(
