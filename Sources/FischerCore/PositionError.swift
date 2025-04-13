@@ -5,6 +5,8 @@
 //  Created by Omar Megdadi on 12/4/25.
 //
 
+import Foundation
+
 public enum PositionError: Error {
     case wrongKingCount(PlayerColor)
     case missingKing(CastlingRights.Right)

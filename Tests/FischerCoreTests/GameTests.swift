@@ -203,8 +203,8 @@ final class GameTests {
     
     @Test("Game Outcome - Win")
     func testGameOutcomeWin() {
-        let whiteWin = Game.Outcome.win(.white)
-        let blackWin = Game.Outcome.win(.black)
+        let whiteWin = Outcome.win(.white)
+        let blackWin = Outcome.win(.black)
 
         #expect(whiteWin.isWin)
         #expect(!whiteWin.isDraw)
@@ -219,7 +219,7 @@ final class GameTests {
 
     @Test("Game Outcome - Draw")
     func testGameOutcomeDraw() {
-        let draw = Game.Outcome.draw
+        let draw = Outcome.draw
 
         #expect(draw.isDraw)
         #expect(!draw.isWin)
@@ -229,17 +229,17 @@ final class GameTests {
 
     @Test("Game Outcome - Initialization from String")
     func testGameOutcomeInitFromString() {
-        #expect(Game.Outcome("1-0") == .win(.white))
-        #expect(Game.Outcome("0-1") == .win(.black))
-        #expect(Game.Outcome("1/2-1/2") == .draw)
-        #expect(Game.Outcome("invalid") == nil)
+        #expect(Outcome("1-0") == .win(.white))
+        #expect(Outcome("0-1") == .win(.black))
+        #expect(Outcome("1/2-1/2") == .draw)
+        #expect(Outcome("invalid") == nil)
     }
 
     @Test("Game Outcome - Value for Player")
     func testGameOutcomeValueForPlayer() {
-        let whiteWin = Game.Outcome.win(.white)
-        let blackWin = Game.Outcome.win(.black)
-        let draw = Game.Outcome.draw
+        let whiteWin = Outcome.win(.white)
+        let blackWin = Outcome.win(.black)
+        let draw = Outcome.draw
 
         #expect(whiteWin.value(for: .white) == 1.0)
         #expect(whiteWin.value(for: .black) == 0.0)
@@ -269,45 +269,127 @@ final class GameTests {
         #expect(error.message == "Invalid promoton: king")
     }
     
-    @Test
-    func testCapture() throws {
+    @Test("LAN Pawn Capture move to San")
+    func testLanPawnCapture() throws {
         let position = Position(fen: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")!
         let move = try position.sanMove(from: "d4e5")
-        
-        #expect(
-            move == .san(
-                SANMove.SANDefaultMove(
-                    kind: .pawn,
-                    from: .file(.d),
-                    isCapture: true,
-                    toSquare: .e5,
-                    promotion: nil,
-                    isCheck: false,
-                    isCheckmate: false
-                )
+        let expectedMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .pawn,
+                from: .file(.d),
+                isCapture: true,
+                toSquare: .e5,
+                promotion: nil,
+                isCheck: false,
+                isCheckmate: false
             )
         )
-        
+        #expect(
+            move == expectedMove
+        )
     }
     
-//    @Test
-//    func testCastling() {
-//        let p1 = Position(fen: "8/8/8/8/8/8/8/4K2R w KQ - 0 1")!
-//        let wShortCastle = EngineLANParser.parse(move: "e1g1", for: .white, in: p1)
-//        XCTAssertEqual(wShortCastle?.result, .castle(.wK))
-//        
-//        let p2 = Position(fen: "8/8/8/8/8/8/8/R3K3 w KQ - 0 1")!
-//        let wLongCastle = EngineLANParser.parse(move: "e1c1", for: .white, in: p2)
-//        XCTAssertEqual(wLongCastle?.result, .castle(.wQ))
-//        
-//        let p3 = Position(fen: "4k2r/8/8/8/8/8/8/8 b kq - 0 1")!
-//        let bShortCastle = EngineLANParser.parse(move: "e8g8", for: .black, in: p3)
-//        XCTAssertEqual(bShortCastle?.result, .castle(.bK))
-//        
-//        let p4 = Position(fen: "r3k3/8/8/8/8/8/8/8 b kq - 0 1")!
-//        let bLongCastle = EngineLANParser.parse(move: "e8c8", for: .black, in: p4)
-//        XCTAssertEqual(bLongCastle?.result, .castle(.bQ))
-//    }
+    @Test("LAN Pawn avance move to San")
+    func testPawnAvanceCapture() throws {
+        let position = Position(fen: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")!
+        let move = try position.sanMove(from: "d4d5")
+        let expectedMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .pawn,
+                from: nil,
+                isCapture: false,
+                toSquare: .d5,
+                promotion: nil,
+                isCheck: false,
+                isCheckmate: false
+            )
+        )
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("Pawn doble move to San")
+    func PawnDobleMove() async throws {
+        let position = Position(fen: "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1")!
+        let move = try position.sanMove(from: "e2e4")
+        let expectedMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .pawn,
+                from: nil,
+                isCapture: false,
+                toSquare: .e4,
+                promotion: nil,
+                isCheck: false,
+                isCheckmate: false
+            )
+        )
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("Kingside castling move to San")
+    func kingsideCastlingMove() async throws {
+        let position = Position(fen: "r3k2r/8/8/8/8/8/4P3/R3K2R w KQkq - 0 1")!
+        let move = try position.sanMove(from: "e1g1")
+        let expectedMove = SANMove.kingsideCastling
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("Kingside castling black move to San")
+    func kingsideCastlingBlackMove() async throws {
+        let position = Position(fen: "r3k2r/8/8/8/8/8/4P3/R3K2R b KQkq - 0 1")!
+        let move = try position.sanMove(from: "e8g8")
+        let expectedMove = SANMove.kingsideCastling
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("Queenside castling move to San")
+    func queensideCastlingMove() async throws {
+        let position = Position(fen: "r3k2r/8/8/8/8/8/4P3/R3K2R w KQkq - 0 1")!
+        let move = try position.sanMove(from: "e1c1")
+        let expectedMove = SANMove.queensideCastling
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("Queenside castling Black move to San")
+    func queensideCastlingBlackMove() async throws {
+        let position = Position(fen: "r3k2r/8/8/8/8/8/4P3/R3K2R b KQkq - 0 1")!
+        let move = try position.sanMove(from: "e8c8")
+        let expectedMove = SANMove.queensideCastling
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    
+    @Test("white promotion to knight move to San")
+    func promotionWhiteKnightMove() async throws {
+        let position = Position(fen: "8/k6P/8/8/8/8/K6p/8 w - - 0 1")!
+        let move = try position.sanMove(from: "h7h8N")
+        let expectedMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .pawn,
+                from: nil,
+                isCapture: false,
+                toSquare: .h8,
+                promotion: SANMove.PromotionPiece.knight,
+                isCheck: false,
+                isCheckmate: false
+            )
+        )
+        #expect(
+            move == expectedMove
+        )
+    }
+
 //    
 //    @Test
 //    func testPromotion() {

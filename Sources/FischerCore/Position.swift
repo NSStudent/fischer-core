@@ -5,6 +5,8 @@
 //  Created by Omar Megdadi on 12/4/25.
 //
 
+import Foundation
+
 public struct Position: Equatable, CustomStringConvertible {
     public var board: Board
     public var playerTurn: PlayerColor
@@ -86,6 +88,7 @@ public struct Position: Equatable, CustomStringConvertible {
                 return .wrongKingCount(color)
             }
         }
+        
         for right in castlingRights {
             let color = right.color
             let king = Piece(king: color)

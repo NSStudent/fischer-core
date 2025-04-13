@@ -32,6 +32,15 @@ public enum SANMove: Equatable {
         case bishop = "B"
         case rook = "R"
         case queen = "Q"
+        
+        var kind: Piece.Kind {
+            switch self {
+            case .knight: return .knight
+            case .bishop: return .bishop
+            case .rook: return .rook
+            case .queen: return .queen
+            }
+        }
     }
 
     /// A default SAN move representing a non-castling move in chess.
@@ -63,7 +72,7 @@ public enum SANMove: Equatable {
 extension SANMove.SANDefaultMove {
     init(
         kind: Piece.Kind,
-        from: SANMove.FromPosition,
+        from: SANMove.FromPosition?,
         isCapture: Bool?,
         toSquare: Square,
         promotion: SANMove.PromotionPiece?,
@@ -183,7 +192,6 @@ public extension Position {
             throw FischerCoreError.illegalMove
         }
         
-        // Detectar enroques
         if piece.kind == .king && from.file == .e {
             if to.file == .g {
                 return .kingsideCastling
@@ -206,6 +214,7 @@ public extension Position {
             }
 
         let disambiguation: SANMove.FromPosition? = {
+            if isCapture && piece.kind == .pawn { return .file(from.file) }
             guard !possibleDisambiguations.isEmpty else { return nil }
             let fileUnique = !possibleDisambiguations.contains(where: { $0.file == from.file && $0 != from })
             let rankUnique = !possibleDisambiguations.contains(where: { $0.rank == from.rank && $0 != from })
@@ -220,7 +229,7 @@ public extension Position {
         }()
 
         
-        var game = try Game(position: Position(board: board))
+        var game = try Game(position: self)
         try game.execute(move: Move(start: from, end: to))
         let updatedBoard = game.board
 
@@ -233,7 +242,7 @@ public extension Position {
             isCheck: game.kingIsChecked,
             isCheckmate: game.isFinished
         )
-
+        print(sanDefault.description)
         return .san(sanDefault)
     }
 }
