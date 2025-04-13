@@ -33,7 +33,7 @@ public enum SANMove: Equatable {
         case rook = "R"
         case queen = "Q"
         
-        var kind: Piece.Kind {
+        public var kind: Piece.Kind {
             switch self {
             case .knight: return .knight
             case .bishop: return .bishop
