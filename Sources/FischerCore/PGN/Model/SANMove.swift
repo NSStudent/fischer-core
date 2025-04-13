@@ -176,7 +176,7 @@ extension SANMove.SANDefaultMove: CustomStringConvertible {
     }
 }
 
-public extension Position {
+public extension Game {
     func sanMove(from uci: String) throws -> SANMove {
         guard uci.count >= 4 else { throw FischerCoreError.illegalMove }
         
@@ -200,17 +200,17 @@ public extension Position {
             }
         }
 
-        let isCapture = board[to] != nil || (piece.kind == .pawn && to == enPassantTarget)
+        let isCapture = self.board[to] != nil || (piece.kind == .pawn && to == enPassantTarget)
 
         let promotionTo: SANMove.PromotionPiece? = {
             guard let char = promotionChar else { return nil }
             return SANMove.PromotionPiece(rawValue: String(char).uppercased())
         }()
 
-        let possibleDisambiguations = board.bitboard(for: piece)
+        let possibleDisambiguations = self.board.bitboard(for: piece)
             .filter { $0 != from }
             .filter {
-                Move.isLegal(start: $0, end: to, piece: piece, board: board, isCapture: isCapture)
+                self.isLegal(move: $0 >>> to)
             }
 
         let disambiguation: SANMove.FromPosition? = {
@@ -228,10 +228,8 @@ public extension Position {
             }
         }()
 
-        
-        var game = try Game(position: self)
-        try game.execute(move: Move(start: from, end: to))
-        let updatedBoard = game.board
+        var gameAfterMove = self
+        try gameAfterMove.execute(move: Move(start: from, end: to))
 
         let sanDefault = SANMove.SANDefaultMove(
             piece: piece.kind,
@@ -239,9 +237,10 @@ public extension Position {
             isCapture: isCapture,
             toSquare: to,
             promotionTo: promotionTo,
-            isCheck: game.kingIsChecked,
-            isCheckmate: game.isFinished
+            isCheck: gameAfterMove.kingIsChecked,
+            isCheckmate: gameAfterMove.isFinished
         )
+        
         print(sanDefault.description)
         return .san(sanDefault)
     }

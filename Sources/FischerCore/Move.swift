@@ -183,10 +183,10 @@ extension Sequence where Iterator.Element == Square {
 
 
 extension Move {
-    public init(board: Board, sanMove: SANMove, turn: PlayerColor) throws {
+    public init(game: Game, sanMove: SANMove, turn: PlayerColor) throws {
         switch sanMove {
         case .san(let sanDefaultMove):
-            try self.init(board: board, sanDefaultMove: sanDefaultMove, turn: turn)
+            try self.init(game: game, sanDefaultMove: sanDefaultMove, turn: turn)
         case .kingsideCastling:
             switch turn {
             case .white:
@@ -204,29 +204,17 @@ extension Move {
         }
     }
     
-    init(board: Board, sanDefaultMove: SANMove.SANDefaultMove, turn: PlayerColor) throws {
+    init(game: Game, sanDefaultMove: SANMove.SANDefaultMove, turn: PlayerColor) throws {
         let piece = Piece(kind: sanDefaultMove.piece, color: turn)
-        let bitboard = board[piece]
+        let bitboard = game.board[piece]
         if let from = sanDefaultMove.from {
             guard let start = bitboard.first(
                 where: { currentSquare in
                     switch from {
                     case .file(let file):
-                        return (currentSquare.file == file) && Move.isLegal(
-                            start: currentSquare,
-                            end: sanDefaultMove.toSquare,
-                            piece: piece,
-                            board: board,
-                            isCapture: sanDefaultMove.isCapture
-                        )
+                        return (currentSquare.file == file) && game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare)
                 case .rank(let rank):
-                    return (currentSquare.rank == rank) && Move.isLegal(
-                        start: currentSquare,
-                        end: sanDefaultMove.toSquare,
-                        piece: piece,
-                        board: board,
-                        isCapture: sanDefaultMove.isCapture
-                    )
+                    return (currentSquare.rank == rank) && game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare)
                 case .square(let sqr):
                     return sqr == currentSquare
                 }
@@ -236,32 +224,12 @@ extension Move {
             self.init(start: start, end: sanDefaultMove.toSquare)
         } else {
             guard let start = bitboard.first(where: { currentSquare in
-                Move.isLegal(start: currentSquare, end: sanDefaultMove.toSquare, piece: piece, board: board, isCapture: sanDefaultMove.isCapture)
+                game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare)
             }) else {
                 throw FischerCoreError.illegalMove
             }
             self.init(start: start, end: sanDefaultMove.toSquare)
         }
-    }
-    
-    internal static func isLegal(start: Square, end: Square, piece: Piece, board: Board, isCapture: Bool) -> Bool {
-        let playerBitboard = board.bitboard(for: piece.color)
-        let enemyBitboard = board.bitboard(for: piece.color.inverse())
-        let allBitboard = playerBitboard | enemyBitboard
-
-        let attacks = start.attacks(for: piece, stoppers: allBitboard)
-        
-        var allEndSquareMoves = attacks
-        if piece.kind == .pawn {
-            let squareBitboard = Bitboard(square: start)
-            let pushes = squareBitboard.pawnPushes(for: piece.color,
-                                                   empty: ~0)
-            let doublePushes = (squareBitboard & Bitboard(startFor: piece))
-                .pawnPushes(for: piece.color, empty: ~0)
-                .pawnPushes(for: piece.color, empty: ~0)
-            allEndSquareMoves = isCapture ? allEndSquareMoves : pushes | doublePushes
-        }
-        return allEndSquareMoves.contains(end)
     }
 }
 
