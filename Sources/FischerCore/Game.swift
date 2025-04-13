@@ -30,175 +30,6 @@ public struct Game {
         }
     }
 
-    public enum Outcome: Hashable, CustomStringConvertible {
-        case win(PlayerColor)
-        case draw
-
-        public var description: String {
-            if let color = winColor {
-                return color.isWhite() ? "1-0" : "0-1"
-            } else {
-                return "1/2-1/2"
-            }
-        }
-
-        public var winColor: PlayerColor? {
-            guard case let .win(color) = self else { return nil }
-            return color
-        }
-
-        public var isWin: Bool {
-            if case .win = self { return true } else { return false }
-        }
-
-        public var isDraw: Bool {
-            return !isWin
-        }
-
-        public init?(_ string: String) {
-            let stripped = string.split(separator: " ").map(String.init).joined(separator: "")
-            switch stripped {
-            case "1-0":
-                self = .win(.white)
-            case "0-1":
-                self = .win(.black)
-            case "1/2-1/2":
-                self = .draw
-            default:
-                return nil
-            }
-        }
-
-        public func value(for playerColor: PlayerColor) -> Double {
-            return winColor.map({ $0 == playerColor ? 1 : 0 }) ?? 0.5
-        }
-
-    }
-    public struct Position: Equatable, CustomStringConvertible {
-        public var board: Board
-        public var playerTurn: PlayerColor
-        public var castlingRights: CastlingRights
-        public var enPassantTarget: Square?
-        public var halfmoves: UInt
-        public var fullmoves: UInt
-
-        public var description: String {
-            return "Position(\(fen()))"
-        }
-
-        public init(board: Board = Board(),
-                    playerTurn: PlayerColor = .white,
-                    castlingRights: CastlingRights = .all,
-                    enPassantTarget: Square? = nil,
-                    halfmoves: UInt = 0,
-                    fullmoves: UInt = 1) {
-            self.board = board
-            self.playerTurn = playerTurn
-            self.castlingRights = castlingRights
-            self.enPassantTarget = enPassantTarget
-            self.halfmoves = halfmoves
-            self.fullmoves = fullmoves
-        }
-
-        public init?(fen: String) {
-                let parts = fen.split(separator: " ").map(String.init)
-                guard
-                    parts.count == 6,
-                    let board = Board(fen: parts[0]),
-                    parts[1].count == 1,
-                    let playerTurn = PlayerColor.init(string: parts[1]),
-                    let rights = CastlingRights(string: parts[2]),
-                    let halfmoves = UInt(parts[4]),
-                    let fullmoves = UInt(parts[5]),
-                    fullmoves > 0 else {
-                        return nil
-                }
-            var target: Square?
-            let targetStr = parts[3]
-            if targetStr.count == 2 {
-                guard let square = Square(targetStr) else {
-                    return nil
-                }
-                target = square
-            } else {
-                guard targetStr == "-" else {
-                    return nil
-                }
-            }
-            self.init(board: board,
-                      playerTurn: playerTurn,
-                      castlingRights: rights,
-                      enPassantTarget: target,
-                      halfmoves: halfmoves,
-                      fullmoves: fullmoves)
-        }
-
-        func fen() -> String {
-            return board.fen()
-            + " \(playerTurn.isWhite() ? "w" : "b") \(castlingRights.description) "
-            + (enPassantTarget.map { "\($0 as Square)".lowercased() } ?? "-")
-            + " \(halfmoves) \(fullmoves)"
-        }
-
-        public static func == (lhs: Game.Position, rhs: Game.Position) -> Bool {
-            return lhs.playerTurn == rhs.playerTurn
-                && lhs.castlingRights == rhs.castlingRights
-                && lhs.halfmoves == rhs.halfmoves
-                && lhs.fullmoves == rhs.fullmoves
-                && lhs.enPassantTarget == rhs.enPassantTarget
-                && lhs.board == rhs.board
-        }
-
-        internal func validationError() -> PositionError? {
-            for color in PlayerColor.allCases {
-                guard board.count(of: Piece(king: color)) == 1 else {
-                    return .wrongKingCount(color)
-                }
-            }
-            for right in castlingRights {
-                let color = right.color
-                let king = Piece(king: color)
-                guard board.bitboard(for: king) == Bitboard(startFor: king) else {
-                    return .missingKing(right)                }
-                let rook = Piece(rook: color)
-                let square = Square(file: right.side.isKingside ? .h : .a,
-                                    rank: Rank(startFor: color))
-                guard board.bitboard(for: rook)[square] else {
-                    return .missingRook(right)
-                }
-            }
-            if let target = enPassantTarget {
-                guard target.rank == (playerTurn.isWhite() ? 6 : 3) else {
-                    return .wrongEnPassantTargetRank(target.rank)
-                }
-                if let piece = board[target] {
-                    return .nonEmptyEnPassantTarget(target, piece)
-                }
-                let pawnSquare = Square(file: target.file, rank: playerTurn.isWhite() ? 5 : 4)
-                guard board[pawnSquare] == Piece(pawn: playerTurn.inverse()) else {
-                    return .missingEnPassantPawn(pawnSquare)
-                }
-                let startSquare = Square(file: target.file, rank: playerTurn.isWhite() ? 7 : 2)
-                if let piece = board[startSquare] {
-                    return .nonEmptyEnPassantSquare(startSquare, piece)
-
-                }
-            }
-            return nil
-        }
-    }
-
-    public enum PositionError: Error {
-        case wrongKingCount(PlayerColor)
-        case missingKing(CastlingRights.Right)
-        case missingRook(CastlingRights.Right)
-        case wrongEnPassantTargetRank(Rank)
-        case nonEmptyEnPassantTarget(Square, Piece)
-        case missingEnPassantPawn(Square)
-        case nonEmptyEnPassantSquare(Square, Piece)
-        case fenMalformed
-    }
-
     public enum ExecutionError: Error {
 
         case missingPiece(Square)
@@ -288,16 +119,15 @@ public struct Game {
     }
 
     public init(whitePlayer: String = "",
-                blackPlayer: String = "",
-                variant: Variant = .standard) {
+                blackPlayer: String = "") {
         self.moveHistory = []
         self.undoHistory = []
-        self.board = Board(variant: variant)
+        self.board = Board()
         self.playerTurn = .white
         self.castlingRights = .all
         self.whitePlayer = whitePlayer
         self.blackPlayer = blackPlayer
-        self.variant = variant
+        self.variant = .standard
         self.attackersToKing = 0
         self.halfmoves = 0
         self.fullmoves = 1
@@ -603,5 +433,86 @@ extension Game {
                      whitePlayer:  whitePlayer,
                      blackPlayer:  blackPlayer,
                      variant: variant)
+    }
+}
+
+public extension Game {
+    func sanMove(from uci: String) throws -> SANMove {
+        guard uci.count >= 4 else { throw FischerCoreError.illegalMove }
+        
+        let fromString = String(uci.prefix(2))
+        let toString = String(uci.dropFirst(2).prefix(2))
+        let promotionChar = uci.count == 5 ? uci.last : nil
+        
+        guard
+            let from = Square(fromString),
+            let to = Square(toString),
+            let piece = board[from]
+        else {
+            throw FischerCoreError.illegalMove
+        }
+        
+        guard isLegal(move: from >>> to) else { throw FischerCoreError.illegalMove }
+        
+        if piece.kind == .king && from.file == .e {
+            if to.file == .g {
+                return .kingsideCastling
+            } else if to.file == .c {
+                return .queensideCastling
+            }
+        }
+
+        let isCapture = self.board[to] != nil || (piece.kind == .pawn && to == enPassantTarget)
+
+        let promotionTo: SANMove.PromotionPiece? = {
+            guard let char = promotionChar else { return nil }
+            return SANMove.PromotionPiece(rawValue: String(char).uppercased())
+        }()
+
+        let possibleDisambiguations = self.board.bitboard(for: piece)
+            .filter { $0 != from }
+            .filter {
+                self.isLegal(move: $0 >>> to)
+            }
+
+        let disambiguation: SANMove.FromPosition? = {
+            if isCapture && piece.kind == .pawn { return .file(from.file) }
+            guard !possibleDisambiguations.isEmpty else { return nil }
+            let fileUnique = !possibleDisambiguations.contains(where: { $0.file == from.file && $0 != from })
+            let rankUnique = !possibleDisambiguations.contains(where: { $0.rank == from.rank && $0 != from })
+
+            if fileUnique {
+                return .file(from.file)
+            } else if rankUnique {
+                return .rank(from.rank)
+            } else {
+                return .square(from)
+            }
+        }()
+
+        var gameAfterMove = self
+        try gameAfterMove.execute(move: Move(start: from, end: to))
+
+        let sanDefault = SANMove.SANDefaultMove(
+            piece: piece.kind,
+            from: disambiguation,
+            isCapture: isCapture,
+            toSquare: to,
+            promotionTo: promotionTo,
+            isCheck: gameAfterMove.kingIsChecked,
+            isCheckmate: gameAfterMove.isFinished
+        )
+        return .san(sanDefault)
+    }
+    
+    func sanMoveList(from uciArray: [String]) throws -> [SANMove] {
+        var sanMoves: [SANMove] = []
+        var currentGame = self
+        for uci in uciArray {
+            let sanMove = try currentGame.sanMove(from: uci)
+            try currentGame.execute(move: Move.init(game: currentGame, sanMove: sanMove))
+            sanMoves.append(sanMove)
+        }
+        return sanMoves
     }
 }

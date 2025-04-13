@@ -6,7 +6,7 @@ import Foundation
 /// and initialization from characters or strings. It is used in board representation and SAN parsing.
 ///
 /// Files are 1-based internally (`.a = 1`) but expose a zero-based `index` for array-like access.
-public enum File: Int {
+public enum File: Int, Equatable {
 
     public enum Direction {
         case left
