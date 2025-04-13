@@ -138,37 +138,65 @@ final class UCITests {
             move == expectedMove
         )
     }
-
-//
-//    @Test
-//    func testPromotion() {
-//        let p = Position(fen: "8/P7/8/8/8/8/8/8 w - - 0 1")
-//
-//        let qPromotion = EngineLANParser.parse(move: "a7a8q", for: .white, in: p)
-//        let promotedQueen = Piece(.queen, color: .white, square: .a8)
-//        XCTAssertEqual(qPromotion?.promotedPiece, promotedQueen)
-//
-//        let rPromotion = EngineLANParser.parse(move: "a7a8r", for: .white, in: p)
-//        let promotedRook = Piece(.rook, color: .white, square: .a8)
-//        XCTAssertEqual(rPromotion?.promotedPiece, promotedRook)
-//
-//        let bPromotion = EngineLANParser.parse(move: "a7a8b", for: .white, in: p)
-//        let promotedBishop = Piece(.bishop, color: .white, square: .a8)
-//        XCTAssertEqual(bPromotion?.promotedPiece, promotedBishop)
-//
-//        let nPromotion = EngineLANParser.parse(move: "a7a8n", for: .white, in: p)
-//        let promotedKnight = Piece(.knight, color: .white, square: .a8)
-//        XCTAssertEqual(nPromotion?.promotedPiece, promotedKnight)
-//    }
-//
-//    @Test
-//    func testValidLANButInvalidMove() {
-//        XCTAssertNil(EngineLANParser.parse(move: "a4b5", for: .white, in: .standard))
-//        XCTAssertNil(EngineLANParser.parse(move: "f8b5", for: .black, in: .standard))
-//    }
-//
-//    @Test
-//    func testInvalidLAN() {
-//        XCTAssertNil(EngineLANParser.parse(move: "bad move", for: .white, in: .standard))
-//    }
+    
+    @Test("Iligal Move in current Game")
+    func testIligalMoveinCurrentGame() throws {
+        let game = try Game(with: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")
+        #expect(throws: FischerCoreError.illegalMove) {
+            let move = try game.sanMove(from: "d4d7")
+        }
+    }
+    
+    @Test("LAN array with game")
+    func testLANarraywithgame() throws {
+        let game = try Game()
+        let lanList: [String] = ["e2e4","e7e5","g1f3","b8c6"]
+        let expectedSanMoveList: [SANMove] = [
+            .san(
+                SANMove.SANDefaultMove(
+                    kind: .pawn,
+                    from: nil,
+                    isCapture: false,
+                    toSquare: .e4,
+                    promotion: nil,
+                    isCheck: false,
+                    isCheckmate: false
+                )
+            ),
+            .san(
+                SANMove.SANDefaultMove(
+                    kind: .pawn,
+                    from: nil,
+                    isCapture: false,
+                    toSquare: .e5,
+                    promotion: nil,
+                    isCheck: false,
+                    isCheckmate: false
+                )
+            ),
+            .san(
+                SANMove.SANDefaultMove(
+                    kind: .knight,
+                    from: nil,
+                    isCapture: false,
+                    toSquare: .f3,
+                    promotion: nil,
+                    isCheck: false,
+                    isCheckmate: false
+                )
+            ),
+            .san(
+                SANMove.SANDefaultMove(
+                    kind: .knight,
+                    from: nil,
+                    isCapture: false,
+                    toSquare: .c6,
+                    promotion: nil,
+                    isCheck: false,
+                    isCheckmate: false
+                )
+            )
+        ]
+        #expect( try game.sanMoveList(from: lanList) == expectedSanMoveList)
+    }
 }
