@@ -509,9 +509,7 @@ public extension Game {
         var sanMoves: [SANMove] = []
         var currentGame = self
         for uci in uciArray {
-            print(currentGame.position.board.ascii())
             let sanMove = try currentGame.sanMove(from: uci)
-            print("Move: \(sanMove)")
             try currentGame.execute(move: Move.init(game: currentGame, sanMove: sanMove))
             sanMoves.append(sanMove)
         }
