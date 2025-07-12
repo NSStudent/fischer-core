@@ -612,4 +612,47 @@ class PGNParserTests {
         let resutl = try parser.parse(input)
         print(resutl)
     }
+    
+    @Test func eventsInChessComTest() async throws {
+        let input = """
+        [Event "Live Chess"]
+        [Site "Chess.com"]
+        [Date "2025.07.12"]
+        [Round "-"]
+        [White "djgggg"]
+        [Black "nsstudent"]
+        [Result "0-1"]
+        [CurrentPosition "r4rk1/6b1/3p2pp/2pPp3/1pP1q3/7P/PB2N3/1K1Q3R w - - 0 30"]
+        [Timezone "UTC"]
+        [ECO "A40"]
+        [ECOUrl "https://www.chess.com/openings/Modern-Defense-with-1-d4...3.Nf3-d6-4.e4-e5"]
+        [UTCDate "2025.07.12"]
+        [UTCTime "11:27:27"]
+        [WhiteElo "1436"]
+        [BlackElo "1459"]
+        [TimeControl "180"]
+        [Termination "nsstudent won on time"]
+        [StartTime "11:27:27"]
+        [EndDate "2025.07.12"]
+        [EndTime "11:27:27"]
+        [Link "https://www.chess.com/analysis/game/live/140609505268/analysis?move=57"]
+        [WhiteUrl "https://www.chess.com/bundles/web/images/noavatar_l.84a92436.gif"]
+        [WhiteCountry "231"]
+        [WhiteTitle ""]
+        [BlackUrl "https://images.chesscomfiles.com/uploads/v1/user/17698432.739dcb00.50x50o.dd9d56a69cea.jpeg"]
+        [BlackCountry "163"]
+        [BlackTitle ""]
+
+        1. d4 g6 2. c4 Bg7 3. Nf3 d6 4. e4 e5 5. d5 c6 $6 6. Nc3 f5 $6 7. Bd3 $6 f4 8. b3
+        Nd7 9. Bb2 $6 Nc5 $6 10. Qd2 $6 Nf6 $6 11. Ba3 $6 Nxd3+ 12. Qxd3 c5 13. Ng5 Qe7 14.
+        Nb5 a6 15. Nc3 h6 16. Nf3 Bd7 17. h3 $6 Nh5 $6 18. O-O-O $6 b5 19. Bb2 b4 20. Ne2
+        a5 21. Kb1 $6 a4 22. g4 fxg3 $1 23. fxg3 axb3 24. Qxb3 $2 Ba4 $1 25. Qd3 Bxd1 26. Qxd1
+        O-O 27. Nh4 Nxg3 $3 28. Nxg3 Qxh4 29. Ne2 $6 Qxe4+ 0-1
+        """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        print(result)
+        #expect(result.elements.count == 29)
+    }
 }
