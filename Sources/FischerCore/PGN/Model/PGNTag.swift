@@ -127,5 +127,18 @@ public enum PGNTag: String, CaseIterable, Equatable {
     
     case blackRatingDiff = "BlackRatingDiff"
     case whiteRatingDiff = "WhiteRatingDiff"
+    
+    // CurrentPosition in chess.com PGN sharing
+    case currentPosition = "CurrentPosition"
+    case timeZone = "Timezone"
+    case ecoUrl = "ECOUrl"
+    case startTime = "StartTime"
+    case endTime = "EndTime"
+    case endDate = "EndDate"
+    case link = "Link"
+    case whiteUrl = "WhiteUrl"
+    case whiteCountry = "WhiteCountry"
+    case blackUrl = "BlackUrl"
+    case blackCountry = "BlackCountry"
 
 }
