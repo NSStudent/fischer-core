@@ -237,3 +237,21 @@ enum FischerCoreError: Error {
     case illegalMove
     
 }
+
+
+extension Move {
+    public init?(with uci: String) throws {
+        let parser = UCIMoveParser()
+        do {
+            let uciMove = try parser.parse(uci)
+            switch uciMove {
+            case .nullMove:
+                return nil
+            case let .move(uciMove):
+                self = Move(start: uciMove.start, end: uciMove.end)
+            }
+        } catch {
+            throw FischerCoreError.illegalMove
+        }
+    }
+}
