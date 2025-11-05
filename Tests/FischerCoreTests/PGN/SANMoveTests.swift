@@ -12,7 +12,7 @@ import Parsing
 class SANMoveTests {
     @Test("validate all kind of promotions")
     func testPromotions() {
-        let result = SANMove.PromotionPiece.allCases.map(\.kind.name)
+        let result = PromotionPiece.allCases.map(\.kind.name)
         #expect(result == ["knight", "bishop", "rook", "queen"])
     }
 }

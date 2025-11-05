@@ -8,8 +8,8 @@ import Foundation
 /// - `whiteQueenside`: White may castle queenside (O-O-O).
 /// - `blackKingside`: Black may castle kingside (O-O).
 /// - `blackQueenside`: Black may castle queenside (O-O-O).
-public struct CastlingRights {
-    public enum Right: String, CaseIterable, CustomStringConvertible {
+public struct CastlingRights: Equatable {
+    public enum Right: String, CaseIterable, CustomStringConvertible, Equatable {
         case whiteKingside
         case whiteQueenside
         case blackKingside

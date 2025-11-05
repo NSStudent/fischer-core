@@ -14,7 +14,7 @@
 /// - `*`: Undefined or ongoing game.
 ///
 /// Use this enum to interpret or assign result values when parsing or writing PGN data.
-public enum PGNOutcome: String, CaseIterable {
+public enum PGNOutcome: String, CaseIterable, Equatable {
     /// White wins the game.
     case win = "1-0"
     

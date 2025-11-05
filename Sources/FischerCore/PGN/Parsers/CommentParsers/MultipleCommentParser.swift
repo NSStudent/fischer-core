@@ -15,6 +15,9 @@ struct MultipleCommentParser: Parser {
             OneOf{
                 CALParser()
                 CSLParser()
+                EMTParser()
+                EvalParser()
+                CLKParser()
             }
         } separator: {
             OneOf {

@@ -14,7 +14,7 @@ final class UCITests {
     func testIligalMove() throws {
         let game = try Game(with: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")
         #expect(throws: FischerCoreError.illegalMove) {
-            let move = try game.sanMove(from: "tests")
+            let _ = try game.sanMove(from: "tests")
         }
     }
     
@@ -39,7 +39,7 @@ final class UCITests {
     }
     
     @Test("LAN Pawn avance move to San")
-    func testPawnAvanceCapture() throws {
+    func testPawnAvance() throws {
         let game = try Game(with: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")
         let move = try game.sanMove(from: "d4d5")
         let expectedMove = SANMove.san(
@@ -50,6 +50,47 @@ final class UCITests {
                 toSquare: .d5,
                 promotion: nil,
                 isCheck: false,
+                isCheckmate: false
+            )
+        )
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("LAN Pawn capture move to San")
+    func testPawnCapture() throws {
+        let game = try Game(with: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")
+        let move = try game.sanMove(from: "d4e5")
+        let expectedMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .pawn,
+                from: .file(.d),
+                isCapture: true,
+                toSquare: .e5,
+                promotion: nil,
+                isCheck: false,
+                isCheckmate: false
+            )
+        )
+        #expect(
+            move == expectedMove
+        )
+    }
+    
+    @Test("knight capture and check")
+    func testKnightCaptureAndCheck() async throws {
+        let game = try Game(with: "8/4k3/5N2/3p4/1N3N2/8/8/3K4 w - - 0 1")
+        print(game.board.ascii())
+        let move = try game.sanMove(from: "f4d5")
+        let expectedMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .knight,
+                from: .square(.f4),
+                isCapture: true,
+                toSquare: .d5,
+                promotion: nil,
+                isCheck: true,
                 isCheckmate: false
             )
         )
@@ -129,7 +170,7 @@ final class UCITests {
                 from: nil,
                 isCapture: false,
                 toSquare: .h8,
-                promotion: SANMove.PromotionPiece.knight,
+                promotion: PromotionPiece.knight,
                 isCheck: false,
                 isCheckmate: false
             )
@@ -143,13 +184,13 @@ final class UCITests {
     func testIligalMoveinCurrentGame() throws {
         let game = try Game(with: "K7/8/8/4p3/3P4/8/8/7k w - - 0 1")
         #expect(throws: FischerCoreError.illegalMove) {
-            let move = try game.sanMove(from: "d4d7")
+            let _ = try game.sanMove(from: "d4d7")
         }
     }
     
     @Test("LAN array with game")
     func testLANarraywithgame() throws {
-        let game = try Game()
+        let game = Game()
         let lanList: [String] = ["e2e4","e7e5","g1f3","b8c6"]
         let expectedSanMoveList: [SANMove] = [
             .san(

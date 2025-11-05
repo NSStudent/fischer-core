@@ -13,5 +13,6 @@ class PGNTagTests {
     @Test()
     func example() {
         #expect(PGNTag(rawValue: "Fen") != PGNTag(rawValue: "Event"))
+        #expect(PGNTag(rawValue: "Omar") == .custom("Omar"))
     }
 }

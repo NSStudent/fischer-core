@@ -9,7 +9,7 @@
 ///
 /// `PGNGame` encapsulates the full information of a chess game including tags, comments,
 /// moves and game outcome.
-public struct PGNGame {
+public struct PGNGame: Equatable {
     /// The collection of PGN tags (e.g., Event, Site, Date, etc.) describing metadata about the game.
     public var tags: [PGNTag: String]
 
@@ -66,5 +66,52 @@ extension PGNGame: CustomStringConvertible {
         Game:
         \(gameDescription)
         """
+    }
+}
+
+extension PGNGame {
+    func startGame() -> Game {
+        guard let fen = self.fen(),
+              let game = try? Game(with: fen) else {
+            return Game()
+        }
+        return game
+    }
+}
+
+public extension Game {
+    func transform(sanMove: SANMove) throws -> Move {
+        try Move(game: self, sanMove: sanMove)
+    }
+
+    mutating func execute(move: SANMove) throws {
+        try execute(move: try transform(sanMove: move))
+    }
+
+    init(loading pgnGame: PGNGame, moveToEnd: Bool = false) throws {
+        self = pgnGame.startGame()
+        for columnElement in pgnGame.elements.asColumnElements {
+            if let sanMove = columnElement?.move {
+                try self.execute(move: sanMove)
+            }
+        }
+        guard !moveToEnd else { return }
+        while !self.moveHistory.isEmpty {
+            _ = self.undoMove()
+        }
+    }
+}
+
+extension Array where Element == PGNElement {
+    func variations(for color:PlayerColor, turn: Int) -> [[PGNElement]]? {
+        guard let element = self.first(where: { element in element.turn == turn }) else {
+            return nil
+        }
+        switch color {
+        case .white:
+            return element.postWhiteVariation
+        case .black:
+            return element.postBlackVariation
+        }
     }
 }
