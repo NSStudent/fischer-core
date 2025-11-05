@@ -20,29 +20,6 @@ public enum SANMove: Equatable {
         case square(Square)
     }
 
-    /// Pieces to which a pawn may be promoted in SAN.
-    ///
-    /// These correspond to the letters used in SAN notation:
-    /// - Q: Queen
-    /// - R: Rook
-    /// - B: Bishop
-    /// - N: Knight
-    public enum PromotionPiece: String, CaseIterable {
-        case knight = "N"
-        case bishop = "B"
-        case rook = "R"
-        case queen = "Q"
-        
-        public var kind: Piece.Kind {
-            switch self {
-            case .knight: return .knight
-            case .bishop: return .bishop
-            case .rook: return .rook
-            case .queen: return .queen
-            }
-        }
-    }
-
     /// A default SAN move representing a non-castling move in chess.
     ///
     /// Includes the piece, origin (if disambiguated), capture flag, destination,
@@ -75,7 +52,7 @@ extension SANMove.SANDefaultMove {
         from: SANMove.FromPosition?,
         isCapture: Bool?,
         toSquare: Square,
-        promotion: SANMove.PromotionPiece?,
+        promotion: PromotionPiece?,
         isCheck: Bool?,
         isCheckmate: Bool?
     ) {
@@ -95,7 +72,7 @@ extension SANMove.SANDefaultMove {
         kind: Piece.Kind,
         isCapture: Bool?,
         toSquare: Square,
-        promotion: SANMove.PromotionPiece?,
+        promotion: PromotionPiece?,
         isCheck: Bool?,
         isCheckmate: Bool?
     ) {

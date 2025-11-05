@@ -19,10 +19,19 @@ public enum PGNComment: Equatable {
 
     /// A list of highlighted squares on the board.
     case squareList([PGNSquare])
-//    case clockTime(String)
-//    case elapsedMoveTime(String)
-//    case evaluation(String)
-//    case depth(String)
+    case clockTime(String)
+    case elapsedMoveTime(String)
+    case evaluation(String)
+    
+    var arrowArray: [PGNArrow]? {
+        guard case let .arrowList(value) = self else { return nil }
+        return value
+    }
+    
+    var squareArray: [PGNSquare]? {
+        guard case let .squareList(value) = self else { return nil }
+        return value
+    }
 }
 
 extension PGNComment: CustomStringConvertible {
@@ -37,6 +46,12 @@ extension PGNComment: CustomStringConvertible {
             return "{ [arrow list:\(comment)] }"
         case .squareList(let comment):
             return "{ [square list:\(comment)] }"
+        case let .clockTime(comment):
+            return "{ [clockTime: \(comment)] }"
+        case let .elapsedMoveTime(comment):
+            return "{ [elapsedMoveTime: \(comment)] }"
+        case let .evaluation(comment):
+            return "{ [evaluation: \(comment)] }"
         }
     }
 }
@@ -48,5 +63,19 @@ extension PGNComment: CustomStringConvertible {
 extension Array where Element == PGNComment {
     var description: String {
         return self.map{$0.description}.joined(separator: " ")
+    }
+}
+
+extension Array where Element == PGNComment {
+    var arrowArray: [PGNArrow]? {
+        return self
+            .compactMap { $0.arrowArray }
+            .flatMap { $0 }
+    }
+    
+    var squareArray: [PGNSquare]? {
+        return self
+            .compactMap { $0.squareArray }
+            .flatMap { $0 }
     }
 }

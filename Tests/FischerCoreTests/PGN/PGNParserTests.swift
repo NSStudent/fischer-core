@@ -18,12 +18,13 @@ class PGNParserTests {
             [Round "29"]
             [White "Fischer, Robert J."]
             [Black "Spassky, Boris V."]
+            [Custom Event, "test custom event TAG"]
             [Result "1/2-1/2"]
             """
         let tagListParse = TagParser()
         let result = try tagListParse.parse(tagsString)
         print(result)
-        #expect(result.count == 7)
+        #expect(result.count == 8)
     }
 
     @Test("Parse San moves")
@@ -228,7 +229,7 @@ class PGNParserTests {
         """
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        guard case let .squareList(squares) = result.elements[0].postWhiteCommentList?[0] else {
+        guard let squares = result.elements[0].postWhiteCommentList?.squareArray else {
             Issue.record("no square color list")
             return
         }
@@ -251,7 +252,7 @@ class PGNParserTests {
         """
         let parser = PGNGameParser()
         let result = try parser.parse(input)
-        guard case let .arrowList(arrows) = result.elements[0].postWhiteCommentList?[0] else {
+        guard let arrows = result.elements[0].postWhiteCommentList?.arrowArray else {
             Issue.record("no arrow color list")
             return
         }
@@ -654,5 +655,109 @@ class PGNParserTests {
         let result = try parser.parse(input)
         print(result)
         #expect(result.elements.count == 29)
+    }
+
+    @Test func pgn_to_game_Test() async throws {
+        let input = """
+        [Event "Live Chess"]
+        [Site "Chess.com"]
+        [Date "2025.07.12"]
+        [Round "-"]
+        [White "djgggg"]
+        [Black "nsstudent"]
+        [Result "0-1"]
+        [CurrentPosition "r4rk1/6b1/3p2pp/2pPp3/1pP1q3/7P/PB2N3/1K1Q3R w - - 0 30"]
+        [Timezone "UTC"]
+        [ECO "A40"]
+        [ECOUrl "https://www.chess.com/openings/Modern-Defense-with-1-d4...3.Nf3-d6-4.e4-e5"]
+        [UTCDate "2025.07.12"]
+        [UTCTime "11:27:27"]
+        [WhiteElo "1436"]
+        [BlackElo "1459"]
+        [TimeControl "180"]
+        [Termination "nsstudent won on time"]
+        [StartTime "11:27:27"]
+        [EndDate "2025.07.12"]
+        [EndTime "11:27:27"]
+        [Link "https://www.chess.com/analysis/game/live/140609505268/analysis?move=57"]
+        [WhiteUrl "https://www.chess.com/bundles/web/images/noavatar_l.84a92436.gif"]
+        [WhiteCountry "231"]
+        [WhiteTitle ""]
+        [BlackUrl "https://images.chesscomfiles.com/uploads/v1/user/17698432.739dcb00.50x50o.dd9d56a69cea.jpeg"]
+        [BlackCountry "163"]
+        [BlackTitle ""]
+
+        1. d4 g6 2. c4 Bg7 3. Nf3 d6 4. e4 e5 5. d5 c6 $6 6. Nc3 f5 $6 7. Bd3 $6 f4 8. b3
+        Nd7 9. Bb2 $6 Nc5 $6 10. Qd2 $6 Nf6 $6 11. Ba3 $6 Nxd3+ 12. Qxd3 c5 13. Ng5 Qe7 14.
+        Nb5 a6 15. Nc3 h6 16. Nf3 Bd7 17. h3 $6 Nh5 $6 18. O-O-O $6 b5 19. Bb2 b4 20. Ne2
+        a5 21. Kb1 $6 a4 22. g4 fxg3 $1 23. fxg3 axb3 24. Qxb3 $2 Ba4 $1 25. Qd3 Bxd1 26. Qxd1
+        O-O 27. Nh4 Nxg3 $3 28. Nxg3 Qxh4 29. Ne2 $6 Qxe4+ 0-1
+        """
+
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        let game = try Game.init(loading: result, moveToEnd: true)
+        #expect(game.moveCount == 58)
+        var gameMoveToStart = try Game.init(loading: result)
+        #expect(gameMoveToStart.moveCount == 0)
+        #expect(gameMoveToStart.undoHistory.count == 58)
+        _ = gameMoveToStart.redoMove()
+        #expect(gameMoveToStart.moveCount == 1)
+        #expect(gameMoveToStart.undoHistory.count == 57)
+    }
+    
+    @Test func pgn_variations_Test() async throws {
+        let input =
+        """
+        [Event "HKnight64's Study: ruy lopez berlin"]
+        [Site "https://lichess.org/study/dnszSFnZ/2Z88wfoL"]
+        [Result "*"]
+        [Variant "Standard"]
+        [ECO "C67"]
+        [Opening "Ruy Lopez: Berlin Defense, Rio Gambit Accepted"]
+        [Annotator "https://lichess.org/@/HKnight64"]
+        [StudyName "HKnight64's Study"]
+        [ChapterName "ruy lopez berlin"]
+        [UTCDate "2025.02.10"]
+        [UTCTime "11:05:29"]
+
+        1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. Re1 Nf6 (5... Nd6 6. Nxe5 Be7 7. Nxc6 dxc6 8. Bf1 Bf5 9. c3 O-O 10. d4 Re8 11. Nd2 Nb5) *
+        """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        let variations = result.elements.variations(for: .black, turn: 5)
+        #expect(variations?.count == 1)
+    }
+    
+    @Test func pgn_lichess_studies_Test() async throws {
+        let input =
+                """
+                [Event "International de Sants 2004"]
+                [Site "International de Sants 2004"]
+                [Date "2022.11.09"]
+                [White "Marc Ghannoum"]
+                [Black "Tiger Hillarp Persson"]
+                [Result "0-1"]
+                [Variant "Standard"]
+                [ECO "B06"]
+                [Opening "Modern Defense: Pseudo-Austrian Attack"]
+                [StudyName "Defensa Moderna [ESP]"]
+                [ChapterName "Game 1"]
+                [ChapterURL "https://lichess.org/study/fDei0xwJ/sAtiEcFj"]
+                [Annotator "https://lichess.org/@/NSStudent"]
+                [UTCDate "2022.11.09"]
+                [UTCTime "12:49:32"]
+
+                1. e4 g6 2. d4 Bg7 3. Nc3 d6 4. f4 a6 5. Nf3 { [%csl Ga4,Gb8,Gb7] } 5... b5! { Se recomienda hacer este movimiento antes que Cd7 para adelantarse al a4! } (5... Nd7 6. a4 b6 7. Bc4 { esta posición es mucho mas ventajosa para las blancas por no haber adelantado el peón de b antes de la salida del peon de a de las blancas. }) 6. Bd3 Nd7! { Se recomienda la salida del caballo antes que Ab7 ya que amenazamos con un rapido ataque en c5 } 7. e5!? { [%csl Gd7] } 7... c5! 8. Ng5! cxd4!? 9. e6 f5! 10. Nd5! Nc5 11. Nf7 Bxe6 12. Nxd8 Bxd5 13. O-O Rxd8 14. b3 Nh6!? 15. Qe1?! O-O? 16. a4!? bxa4 17. Bc4 Bxc4 18. bxc4 Ng4?! 19. h3 Nf6 20. Qxe7 Nfe4 21. Bb2 Rd7 22. Qh4 Rb7 23. Ra2 Rfb8 24. Ba3 Rb1 25. Bxc5 Rxf1+ 26. Kxf1 dxc5!? 27. g4! Bf6 28. Qe1?? Rb1! 29. Rxa4 Rxe1+ 30. Kxe1 Bh4+ 31. Kf1 Bg3 0-1
+
+
+
+                """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        let variations = result.elements.variations(for: .black, turn: 5)
+        #expect(variations?.count == 1)
     }
 }

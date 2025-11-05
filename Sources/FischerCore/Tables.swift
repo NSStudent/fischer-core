@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Tables {
+public enum Tables {
     public static func pawnAttackTable(for color: PlayerColor) -> [Bitboard] {
         if color.isWhite() {
             return Tables.whitePawnAttackTable

@@ -10,8 +10,8 @@ import Foundation
 /// - Detection of game outcome and king safety
 ///
 /// It can be used for analysis, game playback, and engine integration.
-public struct Game {
-    public struct GameToken {
+public struct Game: Equatable {
+    public struct GameToken: Equatable {
         public var token: [String] = [String](repeating: UUID().uuidString, count: 64)
         private var piecesCount: [Int] = [Int](repeating: 0, count: 12)
         init(board: Board) {
@@ -31,10 +31,10 @@ public struct Game {
     }
 
     public enum ExecutionError: Error {
-
         case missingPiece(Square)
         case illegalMove(Move, PlayerColor, Board)
         case invalidPromotion(Piece.Kind)
+        
         public var message: String {
             switch self {
             case let .missingPiece(square):
@@ -47,22 +47,18 @@ public struct Game {
         }
     }
 
-    public var moveHistory: [(move: Move,
-                                piece: Piece,
-                                capture: Piece?,
-                                enPassantTarget: Square?,
-                                kingAttackers: Bitboard,
-                                halfmoves: UInt,
-                                rights: CastlingRights)]
-    private var undoHistory: [(move: Move, promotion: Piece.Kind?, kingAttackers: Bitboard)]
+    var undoHistory: [UndoMoveElement]
+    public var moveHistory: [MoveHistoryElement]
     public private(set) var board: Board
     public private(set) var playerTurn: PlayerColor
     public private(set) var castlingRights: CastlingRights
     public var whitePlayer: String
     public var blackPlayer: String
+    public var initialFen: String
     public let variant: Variant
-    private var attackersToKing: Bitboard
+    var attackersToKing: Bitboard
     public private(set) var fullmoves: UInt
+    public private(set) var initalFullmoves: UInt
     public private(set) var halfmoves: UInt
     public private(set) var enPassantTarget: Square?
 
@@ -103,23 +99,27 @@ public struct Game {
 
     /// Create a game from another.
     private init(game: Game) {
-        self.moveHistory    = game.moveHistory
-        self.undoHistory    = game.undoHistory
-        self.board           = game.board
-        self.playerTurn      = game.playerTurn
-        self.castlingRights  = game.castlingRights
-        self.whitePlayer     = game.whitePlayer
-        self.blackPlayer     = game.blackPlayer
-        self.variant         = game.variant
-        self.attackersToKing = game.attackersToKing
-        self.halfmoves       = game.halfmoves
-        self.fullmoves       = game.fullmoves
-        self.enPassantTarget = game.enPassantTarget
+        self.moveHistory      = game.moveHistory
+        self.undoHistory      = game.undoHistory
+        self.board            = game.board
+        self.playerTurn       = game.playerTurn
+        self.castlingRights   = game.castlingRights
+        self.whitePlayer      = game.whitePlayer
+        self.blackPlayer      = game.blackPlayer
+        self.variant          = game.variant
+        self.attackersToKing  = game.attackersToKing
+        self.halfmoves        = game.halfmoves
+        self.fullmoves        = game.fullmoves
+        self.initalFullmoves  = game.initalFullmoves
+        self.enPassantTarget  = game.enPassantTarget
         self.token = GameToken(board: self.board)
+        self.initialFen = game.initialFen
     }
 
-    public init(whitePlayer: String = "",
-                blackPlayer: String = "") {
+    public init(
+        whitePlayer: String = "",
+        blackPlayer: String = ""
+    ) {
         self.moveHistory = []
         self.undoHistory = []
         self.board = Board()
@@ -131,13 +131,23 @@ public struct Game {
         self.attackersToKing = 0
         self.halfmoves = 0
         self.fullmoves = 1
+        self.initalFullmoves = 1
         self.token = GameToken(board: self.board)
+        let position = Position(board: board,
+                                playerTurn: playerTurn,
+                                castlingRights: castlingRights,
+                                enPassantTarget: enPassantTarget,
+                                halfmoves: halfmoves,
+                                fullmoves: fullmoves)
+        self.initialFen = position.fen()
     }
 
-    public init(position: Position,
-                whitePlayer: String = "",
-                blackPlayer: String = "",
-                variant: Variant = .standard) throws {
+    public init(
+        position: Position,
+        whitePlayer: String = "",
+        blackPlayer: String = "",
+        variant: Variant = .standard
+    ) throws {
         if let error = position.validationError() {
             throw error
         }
@@ -153,10 +163,13 @@ public struct Game {
         self.attackersToKing = position.board.attackersToKing(for: position.playerTurn)
         self.halfmoves = position.halfmoves
         self.fullmoves = position.fullmoves
+        self.initalFullmoves = position.fullmoves
         self.token = GameToken(board: self.board)
+        self.initialFen = position.fen()
     }
 }
 
+// MARK: - Execute movement
 extension Game {
 
     /// Returns `true` if the move is legal.
@@ -165,15 +178,11 @@ extension Game {
         return Bitboard(square: move.end).intersects(moves)
     }
 
-    public mutating func execute(move: Move, promotion: () -> Piece.Kind) throws {
+    public mutating func execute(move: Move, promotion: @autoclosure () -> PromotionPiece) throws {
         guard isLegal(move: move) else {
             throw ExecutionError.illegalMove(move, playerTurn, board)
         }
         try execute(uncheckedMove: move, promotion: promotion)
-    }
-
-    public mutating func execute(move: Move, promotion: Piece.Kind) throws {
-        try execute(move: move, promotion: { promotion })
     }
 
     public mutating func execute(move: Move) throws {
@@ -181,21 +190,20 @@ extension Game {
     }
 
     @inline(__always)
-    public mutating func execute(uncheckedMove move: Move, promotion: () -> Piece.Kind) throws {
+    public mutating func execute(uncheckedMove move: Move, promotion: () -> PromotionPiece) throws {
         guard let piece = board[move.start] else {
             throw ExecutionError.missingPiece(move.start)
         }
         var endPiece = piece
         var capture = board[move.end]
         var captureSquare = move.end
+        var promoted: PromotionPiece?
         let rights = castlingRights
         if piece.kind.isPawn {
             if move.end.rank == Rank(endFor: playerTurn) {
                 let promotion = promotion()
-                guard promotion.canPromote() else {
-                    throw ExecutionError.invalidPromotion(promotion)
-                }
-                endPiece = Piece(kind: promotion, color: playerTurn)
+                promoted = promotion
+                endPiece = Piece(kind: promotion.kind, color: playerTurn)
             } else if move.end == enPassantTarget {
                 capture = Piece(pawn: playerTurn.inverse())
                 captureSquare = Square(file: move.end.file, rank: move.start.rank)
@@ -232,7 +240,18 @@ extension Game {
             }
         }
 
-        moveHistory.append((move, piece, capture, enPassantTarget, attackersToKing, halfmoves, rights))
+        moveHistory.append(
+            MoveHistoryElement(
+                move: move,
+                piece: piece,
+                capture: capture,
+                enPassantTarget: enPassantTarget,
+                kingAttackers: attackersToKing,
+                halfmoves: halfmoves,
+                rights: rights,
+                promotionPiece: promoted
+            )
+        )
         if let capture = capture {
             board[capture][captureSquare] = false
         }
@@ -257,13 +276,27 @@ extension Game {
             attackersToKing = board.attackersToKing(for: playerTurn)
         }
 
-        fullmoves = 1 + (UInt(moveCount) / 2)
+        fullmoves = initalFullmoves + (UInt(moveCount) / 2)
         undoHistory = []
+    }
+    
+    public mutating func redoMove() -> Bool {
+        guard !undoHistory.isEmpty, let undoMove = undoHistory.popLast() else { return false }
+        let (move, promotion) = (undoMove.move, undoMove.promotion)
+        do {
+            let undoHistoryCopy = undoHistory
+            try execute(move: move, promotion: promotion ?? .queen )
+            undoHistory = undoHistoryCopy
+            return true
+        } catch {
+            return false
+        }
     }
 
     public func availableMoves() -> [Move] {
         return availableMoves(considerHalfmoves: true)
     }
+    
     private func availableMoves(considerHalfmoves flag: Bool) -> [Move] {
         let moves = Square.allCases.map({ movesForPiece(at: $0, considerHalfmoves: flag) })
         return Array(moves.joined())
@@ -346,16 +379,25 @@ extension Game {
 
     @discardableResult
     public mutating func undoMove() -> Move? {
-        guard let (move, piece, capture, enPassantTarget, attackers, halfmoves, rights) = moveHistory.popLast() else {
+        guard let moveHistoryElement = moveHistory.popLast() else {
             return nil
         }
+        let (move, piece, capture, enPassantTarget, attackers, halfmoves, rights) = (
+            moveHistoryElement.move,
+            moveHistoryElement.piece,
+            moveHistoryElement.capture,
+            moveHistoryElement.enPassantTarget,
+            moveHistoryElement.kingAttackers,
+            moveHistoryElement.halfmoves,
+            moveHistoryElement.rights
+        )
         var captureSquare = move.end
-        var promotionKind: Piece.Kind?
+        var promotionKind: PromotionPiece?
         if piece.kind.isPawn {
             if move.end == enPassantTarget {
                 captureSquare = Square(file: move.end.file, rank: move.start.rank)
-            } else if move.end.rank == Rank(endFor: playerTurn.inverse()), let promotion = board[move.end] {
-                promotionKind = promotion.kind
+            } else if move.end.rank == Rank(endFor: playerTurn.inverse()), let promotion = board[move.end], let promotionPiece = promotion.kind.asPromotionPiece() {
+                promotionKind = promotionPiece
                 board[promotion][move.end] = false
             }
         } else if piece.kind.isKing && abs(move.fileChange) == 2 {
@@ -368,151 +410,27 @@ extension Game {
         if let capture = capture {
             board[capture][captureSquare] = true
         }
-        undoHistory.append((move, promotionKind, attackers))
+        undoHistory.append(UndoMoveElement(move: move, promotion: promotionKind, kingAttackers: attackers))
         board[piece][move.end] = false
         board[piece][move.start] = true
         token.update(with: move.start, oldSquare: move.end)
         playerTurn.invert()
         self.enPassantTarget = enPassantTarget
         self.attackersToKing = attackers
-        self.fullmoves = 1 + (UInt(moveCount) / 2)
+        self.fullmoves = initalFullmoves + (UInt(moveCount) / 2)
         self.halfmoves = halfmoves
         self.castlingRights = rights
         return move
     }
 }
 
-extension Game {
-    public func sanRepresentation() -> String {
-        var string = ""
-        for (index, element) in moveHistory.enumerated() {
-            if index % 2 == 0 {
-                string += "\((index / 2 + 1) == 1 ? "" : " ")\(index / 2 + 1)."
-            } else {
-                string += " "
-            }
-            if element.piece.kind.isPawn {
-                if element.capture != nil {
-                    string += "\(element.move.start.file.description)x\(element.move.end)"
-                } else {
-                    string += "\(element.move.end)"
-                }
-            } else {
-                if element.piece.kind.isKing && element.move.isShortCastle() {
-                    string += "O-O"
-                } else if element.piece.kind.isKing && element.move.isLongCastle() {
-                    string += "O-O-O"
-                } else {
-                    if element.capture != nil {
-                        string += "\(element.piece.fenName.uppercased())x\(element.move.end)"
-                    } else {
-                        string += "\(element.piece.fenName.uppercased())\(element.move.end)"
-                    }
-                }
-            }
-        }
-        if attackersToKing != 0 {
-            if self.isFinished {
-                string += "#"
-            } else {
-                string += "+"
-            }
-        }
-        
-        return string
-    }
-}
 
-extension Game {
-    public init(with fen: String,
-                whitePlayer: String = "",
-                blackPlayer: String = "",
-                variant: Variant = .standard) throws {
-        guard let position = Position(fen: fen) else { throw PositionError.fenMalformed }
-        self = try .init(position: position,
-                     whitePlayer:  whitePlayer,
-                     blackPlayer:  blackPlayer,
-                     variant: variant)
-    }
-}
 
-public extension Game {
-    func sanMove(from uci: String) throws -> SANMove {
-        guard uci.count >= 4 else { throw FischerCoreError.illegalMove }
-        
-        let fromString = String(uci.prefix(2))
-        let toString = String(uci.dropFirst(2).prefix(2))
-        let promotionChar = uci.count == 5 ? uci.last : nil
-        
-        guard
-            let from = Square(fromString),
-            let to = Square(toString),
-            let piece = board[from]
-        else {
-            throw FischerCoreError.illegalMove
-        }
-        
-        guard isLegal(move: from >>> to) else { throw FischerCoreError.illegalMove }
-        
-        if piece.kind == .king && from.file == .e {
-            if to.file == .g {
-                return .kingsideCastling
-            } else if to.file == .c {
-                return .queensideCastling
-            }
-        }
 
-        let isCapture = self.board[to] != nil || (piece.kind == .pawn && to == enPassantTarget)
 
-        let promotionTo: SANMove.PromotionPiece? = {
-            guard let char = promotionChar else { return nil }
-            return SANMove.PromotionPiece(rawValue: String(char).uppercased())
-        }()
 
-        let possibleDisambiguations = self.board.bitboard(for: piece)
-            .filter { $0 != from }
-            .filter {
-                self.isLegal(move: $0 >>> to)
-            }
 
-        let disambiguation: SANMove.FromPosition? = {
-            if isCapture && piece.kind == .pawn { return .file(from.file) }
-            guard !possibleDisambiguations.isEmpty else { return nil }
-            let fileUnique = !possibleDisambiguations.contains(where: { $0.file == from.file && $0 != from })
-            let rankUnique = !possibleDisambiguations.contains(where: { $0.rank == from.rank && $0 != from })
 
-            if fileUnique {
-                return .file(from.file)
-            } else if rankUnique {
-                return .rank(from.rank)
-            } else {
-                return .square(from)
-            }
-        }()
 
-        var gameAfterMove = self
-        try gameAfterMove.execute(move: Move(start: from, end: to))
 
-        let sanDefault = SANMove.SANDefaultMove(
-            piece: piece.kind,
-            from: disambiguation,
-            isCapture: isCapture,
-            toSquare: to,
-            promotionTo: promotionTo,
-            isCheck: gameAfterMove.kingIsChecked,
-            isCheckmate: gameAfterMove.isFinished
-        )
-        return .san(sanDefault)
-    }
-    
-    func sanMoveList(from uciArray: [String]) throws -> [SANMove] {
-        var sanMoves: [SANMove] = []
-        var currentGame = self
-        for uci in uciArray {
-            let sanMove = try currentGame.sanMove(from: uci)
-            try currentGame.execute(move: Move.init(game: currentGame, sanMove: sanMove))
-            sanMoves.append(sanMove)
-        }
-        return sanMoves
-    }
-}
+
