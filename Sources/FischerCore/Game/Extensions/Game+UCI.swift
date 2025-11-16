@@ -63,7 +63,7 @@ public extension Game {
             if to.file == .g {
                 return .kingsideCastling(isCheck: gameAfterMove.kingIsChecked, isCheckMate: gameAfterMove.isFinished)
             } else if to.file == .c {
-                return .kingsideCastling(isCheck: gameAfterMove.kingIsChecked, isCheckMate: gameAfterMove.isFinished)
+                return .queensideCastling(isCheck: gameAfterMove.kingIsChecked, isCheckMate: gameAfterMove.isFinished)
             }
         }
 
