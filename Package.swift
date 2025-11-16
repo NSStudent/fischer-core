@@ -29,6 +29,10 @@ let package = Package(
             dependencies: [
                 "FischerCore",
                 .product(name: "Parsing", package: "swift-parsing")
-            ]),
+            ],
+            resources: [
+                .process("Resources")
+            ]
+        ),
     ]
 )
