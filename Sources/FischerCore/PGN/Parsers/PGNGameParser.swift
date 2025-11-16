@@ -12,7 +12,7 @@ public struct PGNGameParser: Parser {
         Parse(PGNGame.init(tags:initialComment:elements:result:)) {
             TagParser()
             "\n"
-            "\n"
+            Whitespace()
             Optionally {
                 CommentListParser()
             }
