@@ -760,4 +760,28 @@ class PGNParserTests {
         let variations = result.elements.variations(for: .black, turn: 5)
         #expect(variations?.count == 1)
     }
+    
+    
+    @Test func pgn_chess_personal_Test() async throws {
+        let input =
+                """
+                [Event "?"]
+                [Site "Chess.com iPhone"]
+                [Date "2025.11.15"]
+                [Round "?"]
+                [White "nsstudent"]
+                [Black "bigrockcandymountain"]
+                [Result "1-0"]
+                [FEN "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"]
+                [WhiteElo "1505"]
+                [BlackElo "1523"]
+                1. e4 c6 2. d4 d5 3. exd5 cxd5 4. c4 e6 5. Nc3 Nc6 6. Be3 Nf6 7. c5 Be7 8. Bd3 O-O 9. h4 e5 10. dxe5 Nxe5 11. Bc2 Re8 12. Bd4 Nc4 13. Nce2 Bg4 14. f3 Bh5 15. b3 Na3 16. Bd3 Bxc5 17. Bxc5 Qd7  {1-0}
+                """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        let elements = result.elements
+        #expect(elements.count == 17)
+    }
+    
 }
