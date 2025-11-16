@@ -123,7 +123,7 @@ final class UCITests {
     func kingsideCastlingMove() async throws {
         let game = try Game(with: "r3k2r/8/8/8/8/8/4P3/R3K2R w KQkq - 0 1")
         let move = try game.sanMove(from: "e1g1")
-        let expectedMove = SANMove.kingsideCastling
+        let expectedMove = SANMove.kingsideCastling(isCheck: false, isCheckMate: false)
         #expect(
             move == expectedMove
         )
@@ -133,7 +133,7 @@ final class UCITests {
     func kingsideCastlingBlackMove() async throws {
         let game = try Game(with: "r3k2r/8/8/8/8/8/4P3/R3K2R b KQkq - 0 1")
         let move = try game.sanMove(from: "e8g8")
-        let expectedMove = SANMove.kingsideCastling
+        let expectedMove = SANMove.kingsideCastling(isCheck: false, isCheckMate: false)
         #expect(
             move == expectedMove
         )
@@ -143,7 +143,7 @@ final class UCITests {
     func queensideCastlingMove() async throws {
         let game = try Game(with: "r3k2r/8/8/8/8/8/4P3/R3K2R w KQkq - 0 1")
         let move = try game.sanMove(from: "e1c1")
-        let expectedMove = SANMove.queensideCastling
+        let expectedMove = SANMove.queensideCastling(isCheck: false, isCheckMate: false)
         #expect(
             move == expectedMove
         )
@@ -153,7 +153,7 @@ final class UCITests {
     func queensideCastlingBlackMove() async throws {
         let game = try Game(with: "r3k2r/8/8/8/8/8/4P3/R3K2R b KQkq - 0 1")
         let move = try game.sanMove(from: "e8c8")
-        let expectedMove = SANMove.queensideCastling
+        let expectedMove = SANMove.queensideCastling(isCheck: false, isCheckMate: false)
         #expect(
             move == expectedMove
         )

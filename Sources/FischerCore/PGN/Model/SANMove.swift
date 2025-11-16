@@ -42,8 +42,8 @@ public enum SANMove: Equatable {
     }
     
     case san(SANDefaultMove)
-    case kingsideCastling
-    case queensideCastling
+    case kingsideCastling(isCheck: Bool, isCheckMate: Bool)
+    case queensideCastling(isCheck: Bool, isCheckMate: Bool)
 }
 
 extension SANMove.SANDefaultMove {

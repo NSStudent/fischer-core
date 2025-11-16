@@ -27,14 +27,6 @@ public extension Game {
         }
         
         guard isLegal(move: from >>> to) else { throw FischerCoreError.illegalMove }
-        
-        if piece.kind == .king && from.file == .e {
-            if to.file == .g {
-                return .kingsideCastling
-            } else if to.file == .c {
-                return .queensideCastling
-            }
-        }
 
         let isCapture = self.board[to] != nil || (piece.kind == .pawn && to == enPassantTarget)
 
@@ -66,6 +58,14 @@ public extension Game {
 
         var gameAfterMove = self
         try gameAfterMove.execute(move: Move(start: from, end: to))
+        
+        if piece.kind == .king && from.file == .e {
+            if to.file == .g {
+                return .kingsideCastling(isCheck: gameAfterMove.kingIsChecked, isCheckMate: gameAfterMove.isFinished)
+            } else if to.file == .c {
+                return .kingsideCastling(isCheck: gameAfterMove.kingIsChecked, isCheckMate: gameAfterMove.isFinished)
+            }
+        }
 
         let sanDefault = SANMove.SANDefaultMove(
             piece: piece.kind,

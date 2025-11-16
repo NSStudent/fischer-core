@@ -663,4 +663,39 @@ class PGNGameParserTests {
         #expect(elements.count == 17)
     }
     
+    @Test func pgn_castle_with_check_Test() async throws {
+        let input =
+                """
+                [Event "FIDE World Cup 2025"]
+                [Site "Goa IND"]
+                [Date "2025.11.07"]
+                [Round "3.1"]
+                [White "Erigaisi,Arjun"]
+                [Black "Vokhidov,Shamsiddin"]
+                [Result "1-0"]
+                [WhiteTitle "GM"]
+                [BlackTitle "GM"]
+                [WhiteElo "2769"]
+                [BlackElo "2640"]
+                [ECO "D41"]
+                [Opening "QGD"]
+                [Variation "Semi-Tarrasch, 5.cd"]
+                [WhiteFideId "35009192"]
+                [BlackFideId "14204223"]
+                [EventDate "2025.11.01"]
+                [EventType "k.o."]
+
+                1. d4 Nf6 2. c4 e6 3. Nf3 d5 4. Nc3 c5 5. cxd5 cxd4 6. Qa4+ Bd7 7. Qxd4 exd5 8.
+                Nxd5 Qa5+ 9. Nc3 Nc6 10. Qd1 Ne4 11. Bd2 Nxd2 12. Nxd2 Bb4 13. Rc1 Bxc3 14. Rxc3
+                Qxa2 15. Nc4 Be6 16. e4 Rd8 17. Nd6+ Kf8 18. Qd2 Qa4 19. f4 Qb4 20. e5 f6 21.
+                Bd3 fxe5 22. fxe5 Nxe5 23. O-O+ Kg8 24. Bf5 Bf7 25. Rc8 Qb6+ 26. Rf2 Rxc8 27.
+                Bxc8 h5 28. Nxf7 Nxf7 29. Qd5 Kh7 30. Qxf7 1-0
+                """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        let elements = result.elements
+        #expect(elements.count == 30)
+    }
+    
 }
