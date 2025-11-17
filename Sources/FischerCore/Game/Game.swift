@@ -178,15 +178,15 @@ extension Game {
         return Bitboard(square: move.end).intersects(moves)
     }
 
-    public mutating func execute(move: Move, promotion: @autoclosure () -> PromotionPiece) throws {
-        guard isLegal(move: move) else {
+    public mutating func execute(move: Move, considerHalfmoves: Bool = true, promotion: @autoclosure () -> PromotionPiece) throws {
+        guard isLegal(move: move, considerHalfmoves: considerHalfmoves) else {
             throw ExecutionError.illegalMove(move, playerTurn, board)
         }
         try execute(uncheckedMove: move, promotion: promotion)
     }
 
-    public mutating func execute(move: Move) throws {
-        try execute(move: move, promotion: .queen)
+    public mutating func execute(move: Move, considerHalfmoves: Bool = true) throws {
+        try execute(move: move, considerHalfmoves: considerHalfmoves, promotion: .queen)
     }
 
     @inline(__always)

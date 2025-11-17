@@ -80,19 +80,19 @@ extension PGNGame {
 }
 
 public extension Game {
-    func transform(sanMove: SANMove) throws -> Move {
-        try Move(game: self, sanMove: sanMove)
+    func transform(sanMove: SANMove, considerHalfmoves: Bool = true) throws -> Move {
+        try Move(game: self, sanMove: sanMove, considerHalfmoves: considerHalfmoves)
     }
 
-    mutating func execute(move: SANMove) throws {
-        try execute(move: try transform(sanMove: move))
+    mutating func execute(move: SANMove, considerHalfmoves: Bool = true) throws {
+        try execute(move: try transform(sanMove: move, considerHalfmoves: considerHalfmoves), considerHalfmoves: considerHalfmoves)
     }
 
-    init(loading pgnGame: PGNGame, moveToEnd: Bool = false) throws {
+    init(loading pgnGame: PGNGame, moveToEnd: Bool = false, considerHalfmoves: Bool = true) throws {
         self = pgnGame.startGame()
         for columnElement in pgnGame.elements.asColumnElements {
             if let sanMove = columnElement?.move {
-                try self.execute(move: sanMove)
+                try self.execute(move: sanMove, considerHalfmoves: considerHalfmoves)
             }
         }
         guard !moveToEnd else { return }
