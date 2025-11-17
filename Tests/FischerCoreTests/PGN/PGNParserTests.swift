@@ -447,4 +447,17 @@ class PGNParserTests {
         
         #expect(result.games.count == 5347)
     }
+    
+    @Test("TWIC file PGN parser")
+    func parseTWICFileToBasicPGN() async throws {
+        let fileURL = try #require(
+            Bundle.module.url(forResource: "twic1618", withExtension: "pgn")
+        )
+        
+        let fileContents = try String(contentsOf: fileURL, encoding: .utf8)
+        let parser = BasicPGNParser()
+        let result = try parser.parse(fileContents)
+        
+        #expect(result.count == 5347)
+    }
 }
