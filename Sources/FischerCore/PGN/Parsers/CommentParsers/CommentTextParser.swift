@@ -11,7 +11,8 @@ struct CommentTextParser: Parser {
     var body: some Parser<Substring.UTF8View, [PGNComment]> {
         "{".utf8
         Prefix { $0 !=  UInt8(ascii: "}")}
-            .compactMap{ [PGNComment.text(String($0)!)]}
+            .map(.string)
+            .compactMap{ [PGNComment.text($0)]}
         "}".utf8
     }
 }

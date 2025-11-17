@@ -11,7 +11,9 @@ struct TagParser: Parser {
         Many {
             Parse {
                 "[".utf8
-                PrefixUpTo(" \"".utf8).compactMap{PGNTag(rawValue: String($0)!) }
+                PrefixUpTo(" \"".utf8)
+                    .map(.string)
+                    .compactMap{PGNTag(rawValue: $0) }
                 " \"".utf8
                 Prefix{ $0 != UInt8(ascii:"\"")}.map(.string)
                 "\"]".utf8
