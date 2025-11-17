@@ -183,10 +183,10 @@ extension Sequence where Iterator.Element == Square {
 
 
 extension Move {
-    public init(game: Game, sanMove: SANMove) throws {
+    public init(game: Game, sanMove: SANMove, considerHalfmoves: Bool = true) throws {
         switch sanMove {
         case .san(let sanDefaultMove):
-            try self.init(game: game, sanDefaultMove: sanDefaultMove)
+            try self.init(game: game, sanDefaultMove: sanDefaultMove, considerHalfmoves: considerHalfmoves)
         case .kingsideCastling:
             switch game.playerTurn {
             case .white:
@@ -204,7 +204,7 @@ extension Move {
         }
     }
     
-    init(game: Game, sanDefaultMove: SANMove.SANDefaultMove) throws {
+    init(game: Game, sanDefaultMove: SANMove.SANDefaultMove, considerHalfmoves: Bool = true) throws {
         let piece = Piece(kind: sanDefaultMove.piece, color: game.playerTurn)
         let bitboard = game.board[piece]
         if let from = sanDefaultMove.from {
@@ -224,7 +224,7 @@ extension Move {
             self.init(start: start, end: sanDefaultMove.toSquare)
         } else {
             guard let start = bitboard.first(where: { currentSquare in
-                game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare)
+                game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare, considerHalfmoves: considerHalfmoves)
             }) else {
                 throw FischerCoreError.illegalMove
             }
