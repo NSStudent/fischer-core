@@ -280,12 +280,12 @@ extension Game {
         undoHistory = []
     }
     
-    public mutating func redoMove() -> Bool {
+    public mutating func redoMove(considerHalfmoves: Bool = true) -> Bool {
         guard !undoHistory.isEmpty, let undoMove = undoHistory.popLast() else { return false }
         let (move, promotion) = (undoMove.move, undoMove.promotion)
         do {
             let undoHistoryCopy = undoHistory
-            try execute(move: move, promotion: promotion ?? .queen )
+            try execute(move: move, considerHalfmoves: considerHalfmoves, promotion: promotion ?? .queen )
             undoHistory = undoHistoryCopy
             return true
         } catch {
