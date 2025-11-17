@@ -7,14 +7,14 @@
 
 import Parsing
 struct TagParser: Parser {
-    var body: some Parser<Substring, [PGNTag: String]> {
+    var body: some Parser<Substring.UTF8View, [PGNTag: String]> {
         Many {
             Parse {
-                "["
-                PrefixUpTo(" \"").compactMap{PGNTag(rawValue: String($0)) }
-                " \""
-                Prefix{ $0 != "\""}.map(String.init)
-                "\"]"
+                "[".utf8
+                PrefixUpTo(" \"".utf8).compactMap{PGNTag(rawValue: String($0)!) }
+                " \"".utf8
+                Prefix{ $0 != UInt8(ascii:"\"")}.map(.string)
+                "\"]".utf8
             }
         } separator: {
             Whitespace()

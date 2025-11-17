@@ -8,14 +8,14 @@
 import Parsing
 
 struct PieceParser: Parser {
-    var body: some Parser<Substring, Piece.Kind> {
+    var body: some Parser<Substring.UTF8View, Piece.Kind> {
         Optionally {
             OneOf {
-                "K".map { Piece.Kind.king }
-                "Q".map { Piece.Kind.queen }
-                "R".map { Piece.Kind.rook }
-                "B".map { Piece.Kind.bishop }
-                "N".map { Piece.Kind.knight }
+                "K".utf8.map { Piece.Kind.king }
+                "Q".utf8.map { Piece.Kind.queen }
+                "R".utf8.map { Piece.Kind.rook }
+                "B".utf8.map { Piece.Kind.bishop }
+                "N".utf8.map { Piece.Kind.knight }
             }
         }.map { $0 ?? Piece.Kind.pawn }
     }

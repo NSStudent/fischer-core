@@ -8,7 +8,7 @@
 import Parsing
 public struct PGNGameParser: Parser {
     public init() {}
-    public var body: some Parser<Substring, PGNGame> {
+    public var body: some Parser<Substring.UTF8View, PGNGame> {
         Parse(PGNGame.init(tags:initialComment:elements:result:)) {
             TagParser()
             Whitespace(1...)

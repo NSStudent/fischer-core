@@ -8,8 +8,8 @@
 import Parsing
 
 struct CommentArrowListParser: Parser {
-    var body: some Parser<Substring, [PGNComment]> {
-        "{"
+    var body: some Parser<Substring.UTF8View, [PGNComment]> {
+        "{".utf8
         Whitespace()
         Many {
             CALParser()
@@ -17,6 +17,6 @@ struct CommentArrowListParser: Parser {
             Whitespace()
         }
         Whitespace()
-        "}"
+        "}".utf8
     }
 }

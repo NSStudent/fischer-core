@@ -8,11 +8,10 @@
 import Parsing
 
 struct CommentTextParser: Parser {
-    var body: some Parser<Substring, [PGNComment]> {
-        "{"
-        Prefix { $0 != "}"}
-            .map(String.init)
-            .compactMap{ [PGNComment.text($0)]}
-        "}"
+    var body: some Parser<Substring.UTF8View, [PGNComment]> {
+        "{".utf8
+        Prefix { $0 !=  UInt8(ascii: "}")}
+            .compactMap{ [PGNComment.text(String($0)!)]}
+        "}".utf8
     }
 }

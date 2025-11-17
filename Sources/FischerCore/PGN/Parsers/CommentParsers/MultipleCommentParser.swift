@@ -8,8 +8,8 @@
 import Parsing
 
 struct MultipleCommentParser: Parser {
-    var body: some Parser<Substring, [PGNComment]> {
-        "{"
+    var body: some Parser<Substring.UTF8View, [PGNComment]> {
+        "{".utf8
         Whitespace()
         Many {
             OneOf{
@@ -25,6 +25,6 @@ struct MultipleCommentParser: Parser {
             }
         }
         Whitespace()
-        "}"
+        "}".utf8
     }
 }

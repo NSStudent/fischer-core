@@ -7,11 +7,11 @@
 
 import Parsing
 struct PGNArrowListParser: Parser {
-    var body: some Parser<Substring, [PGNArrow]> {
+    var body: some Parser<Substring.UTF8View, [PGNArrow]> {
         Many {
             PGNArrowParser()
         } separator: {
-            ","
+            ",".utf8
         }
     }
 }

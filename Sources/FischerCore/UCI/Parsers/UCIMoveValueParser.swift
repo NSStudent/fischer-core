@@ -9,7 +9,7 @@
 import Parsing
 public struct UCIMoveValueParser: Parser {
     public init() {}
-    public var body: some Parser<Substring, UCIMoveValue> {
+    public var body: some Parser<Substring.UTF8View, UCIMoveValue> {
         Parse() {
             SquareParser()
             SquareParser()

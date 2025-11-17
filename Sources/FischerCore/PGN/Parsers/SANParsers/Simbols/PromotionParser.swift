@@ -8,9 +8,9 @@
 import Parsing
 
 struct PromotionParser: Parser {
-    var body: some Parser<Substring, PromotionPiece?> {
+    var body: some Parser<Substring.UTF8View, PromotionPiece?> {
         Optionally {
-            "="
+            "=".utf8
             PromotionPiece.parser()
         }
     }

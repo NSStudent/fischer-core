@@ -8,8 +8,12 @@
 import Parsing
 
 struct FromRankParser: Parser {
-    var body: some Parser<Substring, SANMove.FromPosition> {
-        Prefix(1) { $0.isNumber }.map(String.init).compactMap(Int.init).compactMap(Rank.init(integerLiteral:)).compactMap {
+    var body: some Parser<Substring.UTF8View, SANMove.FromPosition> {
+        Prefix(1) { String(bytes: [$0], encoding: .utf8)!.first!.isNumber }
+            .map(.string)
+            .compactMap(Int.init)
+            .compactMap(Rank.init(integerLiteral:))
+            .compactMap {
             SANMove.FromPosition.rank($0)
         }
     }

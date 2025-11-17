@@ -8,9 +8,9 @@
 import Parsing
 
 struct CheckParser: Parser {
-    var body: some Parser<Substring, Bool?> {
+    var body: some Parser<Substring.UTF8View, Bool?> {
         Optionally {
-            "+".map{ true }
+            "+".utf8.map{ true }
         }
     }
 }

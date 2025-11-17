@@ -8,7 +8,7 @@
 import Parsing
 
 struct FromPositionParser: Parser {
-    var body: some Parser<Substring, SANMove.FromPosition> {
+    var body: some Parser<Substring.UTF8View, SANMove.FromPosition> {
         OneOf {
             SquareParser().map(SANMove.FromPosition.square)
             FromRankParser()

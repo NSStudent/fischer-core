@@ -8,13 +8,13 @@
 import Parsing
 
 struct CSLParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
-        "[%csl"
+    var body: some Parser<Substring.UTF8View, PGNComment> {
+        "[%csl".utf8
         Whitespace()
         PGNSquareListParser().compactMap{
             PGNComment.squareList($0)
         }
         Whitespace()
-        "]"
+        "]".utf8
     }
 }

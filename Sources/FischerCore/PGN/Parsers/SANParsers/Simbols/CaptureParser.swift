@@ -8,9 +8,9 @@
 import Parsing
 
 struct CaptureParser: Parser {
-    var body: some Parser<Substring, Bool?> {
+    var body: some Parser<Substring.UTF8View, Bool?> {
         Optionally {
-            "x".map{ true }
+            "x".utf8.map{ true }
         }
     }
 }

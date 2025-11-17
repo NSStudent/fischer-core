@@ -8,9 +8,10 @@
 import Parsing
 
 struct SquareParser: Parser {
-    var body: some Parser<Substring, Square> {
+    var body: some Parser<Substring.UTF8View, Square> {
         Prefix(2)
-            .map(String.init).compactMap {
+            .map(.string)
+            .compactMap {
                 Square.init($0)
             }
     }

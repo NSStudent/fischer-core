@@ -8,7 +8,7 @@
 import Parsing
 
 struct BasicSANParser: Parser {
-    var body: some Parser<Substring, SANMove> {
+    var body: some Parser<Substring.UTF8View, SANMove> {
         Parse(SANMove.SANDefaultMove.init(kind:isCapture:toSquare:promotion:isCheck:isCheckmate:)) {
             PieceParser()
             CaptureParser()

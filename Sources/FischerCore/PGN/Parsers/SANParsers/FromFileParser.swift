@@ -8,8 +8,13 @@
 import Parsing
 
 struct FromFileParser: Parser {
-    var body: some Parser<Substring, SANMove.FromPosition> {
-        Prefix(1) { $0.isLetter }.map(String.init).compactMap(File.init(string:)).compactMap {
+    var body: some Parser<Substring.UTF8View, SANMove.FromPosition> {
+        Prefix(1) { String(bytes: [$0], encoding: .utf8)!.first!.isLetter }
+            .map(.string)
+//            .map(String.init)
+            .compactMap { string in
+                return File.init(string: string)
+            }.compactMap {
             SANMove.FromPosition.file($0)
         }
     }

@@ -8,7 +8,7 @@
 import Parsing
 
 struct NAGParser: Parser {
-    var body: some Parser<Substring, [NAG]> {
+    var body: some Parser<Substring.UTF8View, [NAG]> {
         Many {
             OneOf{
                 NAGSimbolParser()
@@ -21,21 +21,21 @@ struct NAGParser: Parser {
 }
 
 struct NAGSimbolParser: Parser {
-    var body: some Parser<Substring, NAG> {
+    var body: some Parser<Substring.UTF8View, NAG> {
         OneOf {
-            Parse { "!!" }.map { NAG.veryGoodMove }
-            Parse { "??" }.map { NAG.veryPoorMove }
-            Parse { "!?" }.map { NAG.speculativeMove }
-            Parse { "?!" }.map { NAG.questionableMove }
-            Parse { "!" }.map { NAG.goodMove }
-            Parse { "?" }.map { NAG.poorMove }
+            Parse { "!!".utf8 }.map { NAG.veryGoodMove }
+            Parse { "??".utf8 }.map { NAG.veryPoorMove }
+            Parse { "!?".utf8 }.map { NAG.speculativeMove }
+            Parse { "?!".utf8 }.map { NAG.questionableMove }
+            Parse { "!".utf8 }.map { NAG.goodMove }
+            Parse { "?".utf8 }.map { NAG.poorMove }
         }
     }
 }
 
 struct NAGNumberParser: Parser {
-    var body: some Parser<Substring, NAG> {
-        "$"
+    var body: some Parser<Substring.UTF8View, NAG> {
+        "$".utf8
         NAG.parser()
     }
 }

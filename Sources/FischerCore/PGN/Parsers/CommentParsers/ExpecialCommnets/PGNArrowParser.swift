@@ -7,7 +7,7 @@
 
 import Parsing
 struct PGNArrowParser: Parser {
-    var body: some Parser<Substring, PGNArrow> {
+    var body: some Parser<Substring.UTF8View, PGNArrow> {
         Parse(PGNArrow.init(color:fromSquare:toSquare:)) {
             PGNColor.parser()
             SquareParser()

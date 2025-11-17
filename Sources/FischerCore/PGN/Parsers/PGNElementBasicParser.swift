@@ -7,7 +7,7 @@
 
 import Parsing
 struct PGNElementBasicParser: Parser {
-    var body: some Parser<Substring, PGNElement> {
+    var body: some Parser<Substring.UTF8View, PGNElement> {
         Parse(PGNElement.init(turn:previousWhiteCommentList:whiteMove:whiteEvaluation:postWhiteCommentList:postWhiteVariation:previousBlackCommentList:blackMove:blackEvaluation:postBlackCommentList:postBlackVariation:)) {
             InitParse()
             Optionally {
@@ -22,7 +22,7 @@ struct PGNElementBasicParser: Parser {
                         Skip {
                             UInt.parser()
                         }
-                        "..."
+                        "...".utf8
                         Whitespace()
                         SanMoveParser()
                     }
@@ -52,7 +52,7 @@ struct PGNElementBasicParser: Parser {
 
 
 struct InitParse: Parser {
-    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring.UTF8View,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
         OneOf {
             BlackParser()
             WhiteParser()
@@ -61,9 +61,9 @@ struct InitParse: Parser {
 }
 
 struct WhiteParser: Parser {
-    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring.UTF8View,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
         UInt.parser()
-        "."
+        ".".utf8
         Optionally {
             Whitespace()
             CommentListParser()
@@ -94,9 +94,9 @@ struct WhiteParser: Parser {
 }
 
 struct BlackParser: Parser {
-    var body: some Parser<Substring,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
+    var body: some Parser<Substring.UTF8View,(UInt,[PGNComment]?,SANMove?,[NAG]?,[PGNComment]?,[[PGNElement]]?)> {
         UInt.parser()
-        "..."
+        "...".utf8
         Whitespace()
         Always([PGNComment]?.none)
         Always(SANMove?.none)

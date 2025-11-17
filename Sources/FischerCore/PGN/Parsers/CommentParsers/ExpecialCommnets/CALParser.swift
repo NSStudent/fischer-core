@@ -7,11 +7,11 @@
 
 import Parsing
 struct CALParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
-        "[%cal"
+    var body: some Parser<Substring.UTF8View, PGNComment> {
+        "[%cal".utf8
         Whitespace()
         PGNArrowListParser().compactMap(PGNComment.arrowList)
         Whitespace()
-        "]"
+        "]".utf8
     }
 }

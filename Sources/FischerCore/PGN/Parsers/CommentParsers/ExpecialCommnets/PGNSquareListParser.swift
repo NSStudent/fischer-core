@@ -7,11 +7,11 @@
 
 import Parsing
 struct PGNSquareListParser: Parser {
-    var body: some Parser<Substring, [PGNSquare]> {
+    var body: some Parser<Substring.UTF8View, [PGNSquare]> {
         Many {
             PGNSquareParser()
         } separator: {
-            ","
+            ",".utf8
         }
     }
 }

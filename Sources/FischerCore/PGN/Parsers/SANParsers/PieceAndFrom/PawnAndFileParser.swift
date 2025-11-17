@@ -8,7 +8,7 @@
 import Parsing
 
 struct PawnAndFileParser: Parser {
-    var body: some Parser<Substring, (Piece.Kind, SANMove.FromPosition)> {
+    var body: some Parser<Substring.UTF8View, (Piece.Kind, SANMove.FromPosition)> {
         Always(Piece.Kind.pawn)
         FromFileParser()
     }

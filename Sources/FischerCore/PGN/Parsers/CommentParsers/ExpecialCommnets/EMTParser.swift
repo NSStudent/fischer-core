@@ -8,32 +8,32 @@
 import Parsing
 
 struct EMTParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
-        "[%emt"
-        Prefix { $0 != "]"}
-            .map(String.init)
+    var body: some Parser<Substring.UTF8View, PGNComment> {
+        "[%emt".utf8
+        Prefix { $0 != UInt8(ascii:"]")}
+            .map(.string)
             .compactMap{ PGNComment.elapsedMoveTime($0)}
-        "]"
+        "]".utf8
     }
 }
 
 struct EvalParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
-        "[%eval"
-        Prefix { $0 != "]"}
-            .map(String.init)
+    var body: some Parser<Substring.UTF8View, PGNComment> {
+        "[%eval".utf8
+        Prefix { $0 != UInt8(ascii:"]")}
+            .map(.string)
             .compactMap{ PGNComment.evaluation($0)}
-        "]"
+        "]".utf8
     }
 }
 
 struct CLKParser: Parser {
-    var body: some Parser<Substring, PGNComment> {
-        "[%clk"
-        Prefix { $0 != "]"}
-            .map(String.init)
+    var body: some Parser<Substring.UTF8View, PGNComment> {
+        "[%clk".utf8
+        Prefix { $0 != UInt8(ascii:"]")}
+            .map(.string)
             .compactMap{ PGNComment.clockTime($0)}
-        "]"
+        "]".utf8
     }
 }
 

@@ -7,7 +7,7 @@
 
 import Parsing
 struct CommentListParser: Parser {
-    var body: some Parser<Substring, [PGNComment]> {
+    var body: some Parser<Substring.UTF8View, [PGNComment]> {
         Many {
             OneOf {
                 MultipleCommentParser()

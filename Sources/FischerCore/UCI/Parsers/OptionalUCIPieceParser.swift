@@ -7,13 +7,13 @@
 
 import Parsing
 struct OptionalUCIPieceParser: Parser {
-    var body: some Parser<Substring, PromotionPiece?> {
+    var body: some Parser<Substring.UTF8View, PromotionPiece?> {
         Optionally {
             OneOf {
-                "q".map { PromotionPiece.queen }
-                "r".map { PromotionPiece.rook }
-                "b".map { PromotionPiece.bishop }
-                "n".map { PromotionPiece.knight }
+                "q".utf8.map { PromotionPiece.queen }
+                "r".utf8.map { PromotionPiece.rook }
+                "b".utf8.map { PromotionPiece.bishop }
+                "n".utf8.map { PromotionPiece.knight }
             }
         }
     }

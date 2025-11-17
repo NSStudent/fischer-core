@@ -7,8 +7,8 @@
 
 import Parsing
 struct VariationParser: Parser {
-    var body: some Parser<Substring, [PGNElement]> {
-        "("
+    var body: some Parser<Substring.UTF8View, [PGNElement]> {
+        "(".utf8
         Whitespace()
         Many {
             PGNElementBasicParser()
@@ -16,6 +16,6 @@ struct VariationParser: Parser {
             Whitespace()
         }
         Whitespace()
-        ")"
+        ")".utf8
     }
 }
