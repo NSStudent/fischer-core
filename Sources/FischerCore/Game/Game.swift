@@ -173,8 +173,8 @@ public struct Game: Equatable {
 extension Game {
 
     /// Returns `true` if the move is legal.
-    public func isLegal(move: Move) -> Bool {
-        let moves = movesBitboardForPiece(at: move.start)
+    public func isLegal(move: Move, considerHalfmoves: Bool = true) -> Bool {
+        let moves = movesBitboardForPiece(at: move.start, considerHalfmoves: considerHalfmoves)
         return Bitboard(square: move.end).intersects(moves)
     }
 
