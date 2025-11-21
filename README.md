@@ -8,6 +8,7 @@
 
 `FischerCore` is a Swift library that encapsulates the core logic and data structures necessary for building chess games.
 Named in honor of the legendary chess grandmaster **Bobby Fischer**, this library provides a comprehensive foundation for creating, managing, and enforcing the rules of chess
+It also powers the MindChess project as its chess logic core: https://nsstudent.dev/MindChessLanding/
 
 ## Swift Package Manager
 
@@ -46,7 +47,8 @@ Special thanks to [Point-Free](https://www.pointfree.co/) for their fantastic [s
 
 The following features are planned to improve the functionality and completeness of `FischerCore`:
 
-- [ ] Support additional PGN comment types (e.g. clock time, evaluation, annotations).
+- [x] `BasicPGNParser` 
+- [x] Tests with some [TWIC](https://theweekinchess.com/twic) pgn files
 - [ ] Add performance benchmarks for parsers and move generation.
 - [ ] Improve FEN parsing using a unified parser approach.
 
@@ -54,7 +56,8 @@ The following features are planned to improve the functionality and completeness
 
 The following core features are already available:
 
-- `Bitboard`: Efficient low-level representation of board state using bitwise operations.
-- `Game`: Rule-enforced move execution, undo functionality, outcome detection, and full board state management.
-- `PGN parsing`: Conversion of PGN text into structured data with support for tags, comments, and moves.
-- `Move`: Encapsulates move logic with origin and destination squares, and supports conversion from `SANMove` to drive game mechanics.
+- `Bitboard & tables`: Dense bitboard representation with precomputed attack masks (king, knight, pawn, lines) for fast move queries and between/line lookup tables.
+- `Game`: Rule-enforced move execution (castling, en passant, promotion), move history with undo, outcome detection, threefold/50-move counters, and FEN-based initialization.
+- `Moves`: `SANMove` ↔ `Move` bridge so PGN moves can be executed inside `Game`, plus tokenized positions for quick state comparison.
+- `PGN parsing`: Full game parsing into `PGN`, `PGNGame`, and `PGNElement` with tags, variations, NAG evaluations, and rich comments.
+- `Comment types`: Text, arrows, highlighted squares, clock time (`[%clk ...]`), elapsed move time (`[%emt ...]`), and engine evaluation (`[%eval ...]`) comments are parsed and preserved.
