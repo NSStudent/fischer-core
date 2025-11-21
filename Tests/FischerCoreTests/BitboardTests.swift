@@ -117,4 +117,23 @@ final class BitboardTests {
     func testInitWithMove() {
         #expect(Bitboard(move: Move(start: .c1, end: .c8)) == Bitboard(squares: [.c1, .c8]))
     }
+    
+    @Test("Bitboard ASCII rendering")
+    func testAsciiRendering() {
+        let board = Bitboard(squares: [.e4, .b1])
+        let expected = """
+          +-----------------+
+        8 | . . . . . . . . |
+        7 | . . . . . . . . |
+        6 | . . . . . . . . |
+        5 | . . . . . . . . |
+        4 | . . . . 1 . . . |
+        3 | . . . . . . . . |
+        2 | . . . . . . . . |
+        1 | . 1 . . . . . . |
+          +-----------------+
+            a b c d e f g h
+        """
+        #expect(board.ascii == expected)
+    }
 }
