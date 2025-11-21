@@ -91,6 +91,22 @@ final class MoveTests {
         #expect(sequence.moves(from: .e2) == [.e2 >>> .e4, .e2 >>> .d4])
         #expect(sequence.moves(to: .e5) == [.e4 >>> .e5, .d4 >>> .e5])
     }
+    
+    @Test("Init with UCI string")
+    func initWithUCI() throws {
+        let move = try Move(with: "e2e4")
+        #expect(move == Move(start: .e2, end: .e4))
+        
+        let promotionMove = try Move(with: "a7a8q")
+        #expect(promotionMove == Move(start: .a7, end: .a8), "Promotion suffix is parsed but ignored in Move init")
+        
+        let nullMove = try Move(with: "0000")
+        #expect(nullMove == nil)
+        
+        #expect(throws: FischerCoreError.illegalMove) {
+            _ = try Move(with: "invalid")
+        }
+    }
 
     @Test("Init with SANMove and Board")
     func initWithSanMoveAndBoard() async throws {
