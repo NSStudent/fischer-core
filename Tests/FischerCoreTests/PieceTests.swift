@@ -75,6 +75,16 @@ final class PieceTests {
         #expect(!Piece(king: .black).kind.canPromote())
         #expect(Piece(queen: .black).kind.canPromote())
     }
+    
+    @Test("Piece asPromotionPiece mapping")
+    func testAsPromotionPiece() throws {
+        #expect(Piece.Kind.pawn.asPromotionPiece() == nil)
+        #expect(Piece.Kind.king.asPromotionPiece() == nil)
+        #expect(Piece.Kind.knight.asPromotionPiece() == .knight)
+        #expect(Piece.Kind.bishop.asPromotionPiece() == .bishop)
+        #expect(Piece.Kind.rook.asPromotionPiece() == .rook)
+        #expect(Piece.Kind.queen.asPromotionPiece() == .queen)
+    }
 
     @Test("Piece Boolean Functions")
     func testBooleanFunctions() throws {
