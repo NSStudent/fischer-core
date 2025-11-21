@@ -1,0 +1,436 @@
+import Foundation
+
+/// A fully-featured representation of a chess game, including move history, board state, and rules enforcement.
+///
+/// The `Game` struct handles:
+/// - Board initialization (standard or custom FEN)
+/// - Execution and validation of legal moves
+/// - Castling, en passant, and promotion logic
+/// - Move history tracking and undo operations
+/// - Detection of game outcome and king safety
+///
+/// It can be used for analysis, game playback, and engine integration.
+public struct Game: Equatable {
+    public struct GameToken: Equatable {
+        public var token: [String] = [String](repeating: UUID().uuidString, count: 64)
+        private var piecesCount: [Int] = [Int](repeating: 0, count: 12)
+        init(board: Board) {
+            for square in Square.allCases {
+                if let piece = board[square] {
+                    piecesCount[piece.bitValue] += 1
+                    token[square.rawValue] = "\(piece.fenName)\(piecesCount[piece.bitValue])"
+                } else {
+                    token[square.rawValue] = UUID().uuidString
+                }
+            }
+        }
+        
+        mutating func update(with startSquare: Square, oldSquare: Square, capturePice: Piece? = nil) {
+            (token[oldSquare.rawValue], token[startSquare.rawValue]) = (UUID().uuidString, token[oldSquare.rawValue])
+        }
+    }
+
+    public enum ExecutionError: Error {
+        case missingPiece(Square)
+        case illegalMove(Move, PlayerColor, Board)
+        case invalidPromotion(Piece.Kind)
+        
+        public var message: String {
+            switch self {
+            case let .missingPiece(square):
+                return "Missing piece: \(square)"
+            case let .illegalMove(move, color, board):
+                return "Illegal move: \(move) for \(color) on \(board)"
+            case let .invalidPromotion(pieceKind):
+                return "Invalid promoton: \(pieceKind)"
+            }
+        }
+    }
+
+    var undoHistory: [UndoMoveElement]
+    public var moveHistory: [MoveHistoryElement]
+    public private(set) var board: Board
+    public private(set) var playerTurn: PlayerColor
+    public private(set) var castlingRights: CastlingRights
+    public var whitePlayer: String
+    public var blackPlayer: String
+    public var initialFen: String
+    public let variant: Variant
+    var attackersToKing: Bitboard
+    public private(set) var fullmoves: UInt
+    public private(set) var initalFullmoves: UInt
+    public private(set) var halfmoves: UInt
+    public private(set) var enPassantTarget: Square?
+
+    public var kingIsChecked: Bool {
+        return attackersToKing != 0
+    }
+
+    public var kingIsDoubleChecked: Bool {
+        return attackersToKing.count > 1
+    }
+
+    public var playedMoves: [Move] {
+        return moveHistory.map({ $0.move })
+    }
+
+    public var moveCount: Int {
+        return moveHistory.count
+    }
+
+    public var captureForLastMove: Piece? {
+        return moveHistory.last?.capture
+    }
+
+    public var position: Position {
+        return Position(board: board,
+                        playerTurn: playerTurn,
+                        castlingRights: castlingRights,
+                        enPassantTarget: enPassantTarget,
+                        halfmoves: halfmoves,
+                        fullmoves: fullmoves)
+    }
+
+    public var isFinished: Bool {
+        return availableMoves().isEmpty
+    }
+    
+    public var token: GameToken
+
+    /// Create a game from another.
+    private init(game: Game) {
+        self.moveHistory      = game.moveHistory
+        self.undoHistory      = game.undoHistory
+        self.board            = game.board
+        self.playerTurn       = game.playerTurn
+        self.castlingRights   = game.castlingRights
+        self.whitePlayer      = game.whitePlayer
+        self.blackPlayer      = game.blackPlayer
+        self.variant          = game.variant
+        self.attackersToKing  = game.attackersToKing
+        self.halfmoves        = game.halfmoves
+        self.fullmoves        = game.fullmoves
+        self.initalFullmoves  = game.initalFullmoves
+        self.enPassantTarget  = game.enPassantTarget
+        self.token = GameToken(board: self.board)
+        self.initialFen = game.initialFen
+    }
+
+    public init(
+        whitePlayer: String = "",
+        blackPlayer: String = ""
+    ) {
+        self.moveHistory = []
+        self.undoHistory = []
+        self.board = Board()
+        self.playerTurn = .white
+        self.castlingRights = .all
+        self.whitePlayer = whitePlayer
+        self.blackPlayer = blackPlayer
+        self.variant = .standard
+        self.attackersToKing = 0
+        self.halfmoves = 0
+        self.fullmoves = 1
+        self.initalFullmoves = 1
+        self.token = GameToken(board: self.board)
+        let position = Position(board: board,
+                                playerTurn: playerTurn,
+                                castlingRights: castlingRights,
+                                enPassantTarget: enPassantTarget,
+                                halfmoves: halfmoves,
+                                fullmoves: fullmoves)
+        self.initialFen = position.fen()
+    }
+
+    public init(
+        position: Position,
+        whitePlayer: String = "",
+        blackPlayer: String = "",
+        variant: Variant = .standard
+    ) throws {
+        if let error = position.validationError() {
+            throw error
+        }
+        self.moveHistory = []
+        self.undoHistory = []
+        self.board = position.board
+        self.playerTurn = position.playerTurn
+        self.castlingRights = position.castlingRights
+        self.whitePlayer = whitePlayer
+        self.blackPlayer = blackPlayer
+        self.variant = variant
+        self.enPassantTarget = position.enPassantTarget
+        self.attackersToKing = position.board.attackersToKing(for: position.playerTurn)
+        self.halfmoves = position.halfmoves
+        self.fullmoves = position.fullmoves
+        self.initalFullmoves = position.fullmoves
+        self.token = GameToken(board: self.board)
+        self.initialFen = position.fen()
+    }
+}
+
+// MARK: - Execute movement
+extension Game {
+
+    /// Returns `true` if the move is legal.
+    public func isLegal(move: Move, considerHalfmoves: Bool = true) -> Bool {
+        let moves = movesBitboardForPiece(at: move.start, considerHalfmoves: considerHalfmoves)
+        return Bitboard(square: move.end).intersects(moves)
+    }
+
+    public mutating func execute(move: Move, considerHalfmoves: Bool = true, promotion: @autoclosure () -> PromotionPiece) throws {
+        guard isLegal(move: move, considerHalfmoves: considerHalfmoves) else {
+            throw ExecutionError.illegalMove(move, playerTurn, board)
+        }
+        try execute(uncheckedMove: move, promotion: promotion)
+    }
+
+    public mutating func execute(move: Move, considerHalfmoves: Bool = true) throws {
+        try execute(move: move, considerHalfmoves: considerHalfmoves, promotion: .queen)
+    }
+
+    @inline(__always)
+    public mutating func execute(uncheckedMove move: Move, promotion: () -> PromotionPiece) throws {
+        guard let piece = board[move.start] else {
+            throw ExecutionError.missingPiece(move.start)
+        }
+        var endPiece = piece
+        var capture = board[move.end]
+        var captureSquare = move.end
+        var promoted: PromotionPiece?
+        let rights = castlingRights
+        if piece.kind.isPawn {
+            if move.end.rank == Rank(endFor: playerTurn) {
+                let promotion = promotion()
+                promoted = promotion
+                endPiece = Piece(kind: promotion.kind, color: playerTurn)
+            } else if move.end == enPassantTarget {
+                capture = Piece(pawn: playerTurn.inverse())
+                captureSquare = Square(file: move.end.file, rank: move.start.rank)
+            }
+        } else if piece.kind.isRook {
+            switch move.start {
+            case .a1: castlingRights.remove(.whiteQueenside)
+            case .h1: castlingRights.remove(.whiteKingside)
+            case .a8: castlingRights.remove(.blackQueenside)
+            case .h8: castlingRights.remove(.blackKingside)
+            default:
+                break
+            }
+        } else if piece.kind.isKing {
+            for option in castlingRights where option.color == playerTurn {
+                castlingRights.remove(option)
+            }
+            if move.isCastle(for: playerTurn) {
+                let (old, new) = move.castleSquares()
+                let rook = Piece(rook: playerTurn)
+                board[rook][old] = false
+                board[rook][new] = true
+                token.update(with: new, oldSquare: old)
+            }
+        }
+        if let capture = capture, capture.kind.isRook {
+            switch move.end {
+            case .a1 where playerTurn.isBlack(): castlingRights.remove(.whiteQueenside)
+            case .h1 where playerTurn.isBlack(): castlingRights.remove(.whiteKingside)
+            case .a8 where playerTurn.isWhite(): castlingRights.remove(.blackQueenside)
+            case .h8 where playerTurn.isWhite(): castlingRights.remove(.blackKingside)
+            default:
+                break
+            }
+        }
+
+        moveHistory.append(
+            MoveHistoryElement(
+                move: move,
+                piece: piece,
+                capture: capture,
+                enPassantTarget: enPassantTarget,
+                kingAttackers: attackersToKing,
+                halfmoves: halfmoves,
+                rights: rights,
+                promotionPiece: promoted
+            )
+        )
+        if let capture = capture {
+            board[capture][captureSquare] = false
+        }
+        if capture == nil && !piece.kind.isPawn {
+            halfmoves += 1
+        } else {
+            halfmoves = 0
+        }
+        board[piece][move.start] = false
+        board[endPiece][move.end] = true
+        playerTurn.invert()
+        let pieceMoved = board[move.end]!
+        token.update(with: move.end, oldSquare: move.start)
+        if pieceMoved.kind.isPawn && abs(move.rankChange) == 2 {
+            enPassantTarget = Square(file: move.start.file, rank: pieceMoved.color.isWhite() ? 3 : 6)
+        } else {
+            enPassantTarget = nil
+        }
+        if kingIsChecked {
+            attackersToKing = 0
+        } else {
+            attackersToKing = board.attackersToKing(for: playerTurn)
+        }
+
+        fullmoves = initalFullmoves + (UInt(moveCount) / 2)
+        undoHistory = []
+    }
+    
+    public mutating func redoMove(considerHalfmoves: Bool = true) -> Bool {
+        guard !undoHistory.isEmpty, let undoMove = undoHistory.popLast() else { return false }
+        let (move, promotion) = (undoMove.move, undoMove.promotion)
+        do {
+            let undoHistoryCopy = undoHistory
+            try execute(move: move, considerHalfmoves: considerHalfmoves, promotion: promotion ?? .queen )
+            undoHistory = undoHistoryCopy
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    public func availableMoves() -> [Move] {
+        return availableMoves(considerHalfmoves: true)
+    }
+    
+    private func availableMoves(considerHalfmoves flag: Bool) -> [Move] {
+        let moves = Square.allCases.map({ movesForPiece(at: $0, considerHalfmoves: flag) })
+        return Array(moves.joined())
+    }
+
+    public func movesBitboardForPiece(at square: Square) -> Bitboard {
+        return movesBitboardForPiece(at: square, considerHalfmoves: true)
+    }
+
+    private func movesForPiece(at square: Square, considerHalfmoves flag: Bool) -> [Move] {
+        return movesBitboardForPiece(at: square, considerHalfmoves: flag).moves(from: square)
+    }
+
+    private func movesBitboardForPiece(at square: Square, considerHalfmoves: Bool) -> Bitboard {
+       if considerHalfmoves && halfmoves >= 100 {
+           return 0
+       }
+       guard let piece = board[square] else { return 0 }
+       guard piece.color == playerTurn else { return 0 }
+       if kingIsDoubleChecked {
+           guard piece.kind.isKing else {
+               return 0
+           }
+       }
+
+       let playerBitboard = board.bitboard(for: playerTurn)
+       let enemyBitboard = board.bitboard(for: playerTurn.inverse())
+       let allBitboard = playerBitboard | enemyBitboard
+       let emptyBitboard = ~allBitboard
+       let squareBitboard = Bitboard(square: square)
+
+       var movesBitboard: Bitboard = 0
+       let attacks = square.attacks(for: piece, stoppers: allBitboard)
+
+       if piece.kind.isPawn {
+           let enPassant = enPassantTarget.map({ Bitboard(square: $0) }) ?? 0
+           let pushes = squareBitboard.pawnPushes(for: playerTurn,
+                                                  empty: emptyBitboard)
+           let doublePushes = (squareBitboard & Bitboard(startFor: piece))
+               .pawnPushes(for: playerTurn, empty: emptyBitboard)
+               .pawnPushes(for: playerTurn, empty: emptyBitboard)
+           movesBitboard = movesBitboard | pushes | doublePushes
+           | (attacks & enemyBitboard)
+               | (attacks & enPassant)
+       } else {
+           movesBitboard = movesBitboard | attacks & ~playerBitboard
+       }
+
+       if piece.kind.isKing && squareBitboard == Bitboard(startFor: piece) && !kingIsChecked {
+           rightLoop: for right in castlingRights {
+               let emptySquares = right.emptySquares
+               guard right.color == playerTurn && allBitboard & emptySquares == 0 else {
+                   continue
+               }
+               for square in emptySquares {
+                   guard board.attackers(to: square, color: piece.color.inverse()).isEmpty else {
+                       continue rightLoop
+                   }
+               }
+               movesBitboard = movesBitboard | Bitboard(square: right.castleSquare)
+           }
+       }
+
+       let player = playerTurn
+       for moveSquare in movesBitboard {
+           var copyGame = self.copy()
+           try? copyGame.execute(uncheckedMove: square >>> moveSquare, promotion: { .queen })
+               if copyGame.board.attackersToKing(for: player) != 0 {
+                   movesBitboard[moveSquare] = false
+               }
+
+       }
+
+       return movesBitboard
+   }
+
+    public func copy() -> Game {
+        return Game(game: self)
+    }
+
+    @discardableResult
+    public mutating func undoMove() -> Move? {
+        guard let moveHistoryElement = moveHistory.popLast() else {
+            return nil
+        }
+        let (move, piece, capture, enPassantTarget, attackers, halfmoves, rights) = (
+            moveHistoryElement.move,
+            moveHistoryElement.piece,
+            moveHistoryElement.capture,
+            moveHistoryElement.enPassantTarget,
+            moveHistoryElement.kingAttackers,
+            moveHistoryElement.halfmoves,
+            moveHistoryElement.rights
+        )
+        var captureSquare = move.end
+        var promotionKind: PromotionPiece?
+        if piece.kind.isPawn {
+            if move.end == enPassantTarget {
+                captureSquare = Square(file: move.end.file, rank: move.start.rank)
+            } else if move.end.rank == Rank(endFor: playerTurn.inverse()), let promotion = board[move.end], let promotionPiece = promotion.kind.asPromotionPiece() {
+                promotionKind = promotionPiece
+                board[promotion][move.end] = false
+            }
+        } else if piece.kind.isKing && abs(move.fileChange) == 2 {
+            let (old, new) = move.castleSquares()
+            let rook = Piece(rook: playerTurn.inverse())
+            board[rook][old] = true
+            board[rook][new] = false
+            token.update(with: old, oldSquare: new)
+        }
+        if let capture = capture {
+            board[capture][captureSquare] = true
+        }
+        undoHistory.append(UndoMoveElement(move: move, promotion: promotionKind, kingAttackers: attackers))
+        board[piece][move.end] = false
+        board[piece][move.start] = true
+        token.update(with: move.start, oldSquare: move.end)
+        playerTurn.invert()
+        self.enPassantTarget = enPassantTarget
+        self.attackersToKing = attackers
+        self.fullmoves = initalFullmoves + (UInt(moveCount) / 2)
+        self.halfmoves = halfmoves
+        self.castlingRights = rights
+        return move
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

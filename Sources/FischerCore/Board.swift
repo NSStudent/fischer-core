@@ -261,7 +261,6 @@ extension Board {
             return fen
         }
         return Rank.allCases.reversed().map(fen).joined(separator: "/")
-
     }
 
     public func spaces(at rank: Rank) -> [Space] {

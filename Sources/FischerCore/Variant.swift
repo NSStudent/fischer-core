@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Variant {
+public enum Variant: Equatable {
     case standard
     case chess960
 

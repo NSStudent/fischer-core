@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Square: Int, CaseIterable, Identifiable {
+public enum Square: Int, CaseIterable, Identifiable, Equatable {
     public enum Color {
         case light
         case dark

@@ -11,8 +11,7 @@ public struct PGNGameParser: Parser {
     public var body: some Parser<Substring, PGNGame> {
         Parse(PGNGame.init(tags:initialComment:elements:result:)) {
             TagParser()
-            "\n"
-            "\n"
+            Whitespace(1...)
             Optionally {
                 CommentListParser()
             }

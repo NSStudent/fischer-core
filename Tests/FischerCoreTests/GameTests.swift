@@ -92,8 +92,27 @@ final class GameTests {
         try game.execute(move: Move(start: .f6, end: .e4))
         try game.execute(move: Move(start: .e1, end: .c1))
 
-        let san = game.sanRepresentation()
+        let san = try game.sanRepresentation()
         #expect(san == "1.b3 g6 2.Bb2 Bg7 3.Nc3 Nf6 4.e4 O-O 5.Qe2 Nxe4 6.O-O-O")
+    }
+    
+    @Test("Game San Representation with no start position")
+    func testSanRepresentationWithFen() throws {
+        var game = try Game(with: "rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq - 0 1")
+
+        try game.execute(move: Move(start: .g7, end: .g6))
+        try game.execute(move: Move(start: .c1, end: .b2))
+        try game.execute(move: Move(start: .f8, end: .g7))
+        try game.execute(move: Move(start: .b1, end: .c3))
+        try game.execute(move: Move(start: .g8, end: .f6))
+        try game.execute(move: Move(start: .e2, end: .e4))
+        try game.execute(move: Move(start: .e8, end: .g8))
+        try game.execute(move: Move(start: .d1, end: .e2))
+        try game.execute(move: Move(start: .f6, end: .e4))
+        try game.execute(move: Move(start: .e1, end: .c1))
+
+        let san = try game.sanRepresentation()
+        #expect(san == "1... g6 2.Bb2 Bg7 3.Nc3 Nf6 4.e4 O-O 5.Qe2 Nxe4 6.O-O-O")
     }
 
     @Test("Game From FEN")
@@ -105,6 +124,8 @@ final class GameTests {
         #expect(game.castlingRights == .all)
         #expect(game.halfmoves == 0)
         #expect(game.fullmoves == 1)
+        
+        #expect(game.initialFen == fen)
     }
 
     @Test("Game Available Moves")
@@ -182,6 +203,12 @@ final class GameTests {
         #expect(game.board[.e4] == nil)
         #expect(game.board[.e2] == Piece(pawn: .white))
         #expect(game.playerTurn == .white)
+        let result = game.redoMove()
+        #expect(result)
+        #expect(game.board[.e4] == Piece(pawn: .white))
+        #expect(game.board[.e2] == nil)
+        #expect(game.playerTurn == .black)
+        
     }
 
     @Test("Game Undo Move - Castling")

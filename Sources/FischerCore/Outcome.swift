@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum Outcome: Hashable, CustomStringConvertible {
+public enum Outcome: Hashable, CustomStringConvertible, Equatable {
         case win(PlayerColor)
         case draw
 

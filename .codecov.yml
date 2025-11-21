@@ -1,4 +1,6 @@
 coverage:
+  ignore:
+    - Tests/**        # Excluye la carpeta de tests de los cálculos de cobertura
   status:
     project:
       default:

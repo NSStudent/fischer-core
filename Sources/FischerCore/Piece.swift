@@ -25,6 +25,23 @@ public struct Piece {
                 return "king"
             }
         }
+        
+        func asPromotionPiece() -> PromotionPiece? {
+            switch self {
+            case .pawn:
+                return nil
+            case .knight:
+                return .knight
+            case .bishop:
+                return .bishop
+            case .queen:
+                return .queen
+            case .rook:
+                return .rook
+            case .king:
+                return nil
+            }
+        }
     }
 
     public var kind: Kind

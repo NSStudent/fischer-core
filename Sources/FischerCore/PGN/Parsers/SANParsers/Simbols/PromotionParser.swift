@@ -8,10 +8,10 @@
 import Parsing
 
 struct PromotionParser: Parser {
-    var body: some Parser<Substring, SANMove.PromotionPiece?> {
+    var body: some Parser<Substring, PromotionPiece?> {
         Optionally {
             "="
-            SANMove.PromotionPiece.parser()
+            PromotionPiece.parser()
         }
     }
 }
