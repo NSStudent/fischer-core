@@ -74,6 +74,11 @@ public struct Piece {
         case .king:   return color.isBlack()  ? "♔" : "♚"
         }
     }
+    
+    public init(kind: Kind, color: PlayerColor) {
+        self.kind = kind
+        self.color = color
+    }
 }
 
 extension Piece {
