@@ -67,7 +67,7 @@ public extension PGNGame {
     }
 }
 
-private extension MoveTree {
+extension MoveTree {
     static func buildLine(from elements: [PGNElement]) -> MoveTree? {
         buildLine(from: elements[...])
     }
