@@ -10,8 +10,8 @@ import Parsing
 public struct MoveTreePGNParser: Parser {
     public init() {}
 
-    public var body: some Parser<Substring, MoveTree?> {
-        Parse {
+    public var body: some Parser<Substring, MoveTreePGN> {
+        Parse(MoveTreePGN.init(tags:initialComment:elements:result:)) {
             TagParser()
             Whitespace(1...)
             Optionally {
@@ -29,9 +29,6 @@ public struct MoveTreePGNParser: Parser {
                 PGNOutcome.parser()
             }
             Whitespace()
-        }
-        .map { _, _, elements, _ in
-            MoveTree.buildLine(from: elements)
         }
     }
 }
