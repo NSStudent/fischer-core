@@ -35,6 +35,16 @@ The API reference and detailed documentation for `FischerCore` is available at:
 
 👉 [https://nsstudent.dev/fischer-core/documentation/fischercore/](https://nsstudent.dev/fischer-core/documentation/fischercore/)
 
+## Command Line
+
+The FischerCore command line interface can be used to explore and test the package from a terminal:
+
+```sh
+swift run fischer-cli
+```
+
+It supports printing the board, showing the current FEN position, resetting to a custom FEN, and executing moves in standard algebraic notation.
+
 ## References
 
 This library is based on the code of other well-crafted chess engines and bitboard libraries in Swift. Notably, it builds upon the work in [Sage by @nvzqz](https://github.com/nvzqz/Sage/tree/develop), adapting and updating it to be compatible with the current state of the Swift language and modern development practices.
