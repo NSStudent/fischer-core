@@ -308,6 +308,92 @@ final class MoveTreeTests {
             "9.white"
         ])
     }
+
+    @Test("MoveTreePGN exposes FEN board and converted tree")
+    func moveTreePGNExposesFENBoardAndConvertedTree() async throws {
+        let fen = "8/8/8/8/8/8/8/K6k w - - 0 1"
+        let input =
+        """
+        [Event "MoveTreePGN model"]
+        [FEN "\(fen)"]
+        [SetUp "1"]
+        [Result "1/2-1/2"]
+
+        {Initial setup}
+        1. Ka2 Kg2 1/2-1/2
+        """
+
+        let game = try PGNGameParser().parse(input)
+        let pgn = game.moveTreePGN
+
+        #expect(pgn.tags[.event] == "MoveTreePGN model")
+        #expect(pgn.fen() == fen)
+        #expect(pgn.initialBoard().fen() == "8/8/8/8/8/8/8/K6k")
+        #expect(pgn.initialComment == [.text("Initial setup")])
+        #expect(pgn.result == .draw)
+        #expect(pgn.tree == game.moveTree)
+    }
+
+    @Test("MoveTreePGN falls back to default board")
+    func moveTreePGNFallsBackToDefaultBoard() async throws {
+        let pgnWithoutFEN = MoveTreePGN(tags: [:])
+        let pgnWithInvalidFEN = MoveTreePGN(tags: [.fen: "invalid fen"])
+
+        #expect(pgnWithoutFEN.fen() == nil)
+        #expect(pgnWithoutFEN.initialBoard() == Board())
+        #expect(pgnWithInvalidFEN.fen() == "invalid fen")
+        #expect(pgnWithInvalidFEN.initialBoard() == Board())
+    }
+
+    @Test("MoveTree skips empty elements and preserves black-only nodes")
+    func moveTreeSkipsEmptyElementsAndPreservesBlackOnlyNodes() async throws {
+        let blackMove = SANMove.san(
+            SANMove.SANDefaultMove(
+                kind: .pawn,
+                isCapture: false,
+                toSquare: .e5,
+                promotion: nil,
+                isCheck: false,
+                isCheckmate: false
+            )
+        )
+        let elements = [
+            PGNElement(
+                turn: 1,
+                previousWhiteCommentList: nil,
+                whiteMove: nil,
+                whiteEvaluation: nil,
+                postWhiteCommentList: nil,
+                postWhiteVariation: nil,
+                previousBlackCommentList: nil,
+                blackMove: nil,
+                blackEvaluation: nil,
+                postBlackCommentList: nil,
+                postBlackVariation: nil
+            ),
+            PGNElement(
+                turn: 1,
+                previousWhiteCommentList: nil,
+                whiteMove: nil,
+                whiteEvaluation: nil,
+                postWhiteCommentList: nil,
+                postWhiteVariation: nil,
+                previousBlackCommentList: nil,
+                blackMove: blackMove,
+                blackEvaluation: nil,
+                postBlackCommentList: nil,
+                postBlackVariation: nil
+            )
+        ]
+
+        #expect(MoveTree.buildLine(from: [PGNElement]()) == nil)
+
+        let tree = try #require(MoveTree.buildLine(from: elements))
+        #expect(tree.turn == 1)
+        #expect(tree.color == .black)
+        #expect(tree.node == blackMove)
+        #expect(tree.next == nil)
+    }
 }
 
 private extension MoveTree {
