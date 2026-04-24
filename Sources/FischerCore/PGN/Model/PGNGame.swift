@@ -85,7 +85,16 @@ public extension Game {
     }
 
     mutating func execute(move: SANMove, considerHalfmoves: Bool = true) throws {
-        try execute(move: try transform(sanMove: move, considerHalfmoves: considerHalfmoves), considerHalfmoves: considerHalfmoves)
+        let transformedMove = try transform(sanMove: move, considerHalfmoves: considerHalfmoves)
+        if case let .san(defaultMove) = move, let promotion = defaultMove.promotionTo {
+            try execute(move: transformedMove, considerHalfmoves: considerHalfmoves, promotion: promotion)
+        } else {
+            try execute(move: transformedMove, considerHalfmoves: considerHalfmoves)
+        }
+    }
+
+    mutating func execute(san: String, considerHalfmoves: Bool = true) throws {
+        try execute(move: SANMove(san: san), considerHalfmoves: considerHalfmoves)
     }
 
     init(loading pgnGame: PGNGame, moveToEnd: Bool = false, considerHalfmoves: Bool = true) throws {
