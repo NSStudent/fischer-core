@@ -37,10 +37,7 @@ public extension PGNGame {
         do {
             self = try PGNGameParser().parse(pgnString)
         } catch {
-            throw PGNGameFENPositionsError.pgnParsingFailed(
-                moveText: moveText,
-                reason: String(describing: error)
-            )
+            throw PGNGameFENPositionsError.pgnParsingFailed(moveText: moveText, reason: String(describing: error))
         }
     }
 
@@ -70,12 +67,7 @@ public extension PGNGame {
                     try game.execute(move: result.move)
                 }
             } catch {
-                throw PGNGameFENPositionsError.moveExecutionFailed(
-                    index: index,
-                    move: result.move,
-                    promotion: result.promotion,
-                    reason: String(describing: error)
-                )
+                throw PGNGameFENPositionsError.moveExecutionFailed(index: index, move: result.move, promotion: result.promotion, reason: String(describing: error))
             }
         }
         return try game.sanRepresentation()
