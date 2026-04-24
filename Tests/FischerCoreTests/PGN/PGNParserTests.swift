@@ -435,29 +435,29 @@ class PGNParserTests {
         #expect(result.games.count == 10)
     }
     
-    @Test("TWIC file PGN parser", .disabled("We only check in local"))
+    @Test("TWIC file PGN parser")
     func parseTWICFileFromResources() async throws {
         let fileURL = try #require(
-            Bundle.module.url(forResource: "twic1618", withExtension: "pgn")
+            Bundle.module.url(forResource: "twic1618-short", withExtension: "pgn")
         )
         
         let fileContents = try String(contentsOf: fileURL, encoding: .utf8)
         let parser = PGNParser()
         let result = try parser.parse(fileContents)
         
-        #expect(result.games.count == 5347)
+        #expect(result.games.count == 159)
     }
     
     @Test("TWIC file PGN parser")
     func parseTWICFileToBasicPGN() async throws {
         let fileURL = try #require(
-            Bundle.module.url(forResource: "twic1618", withExtension: "pgn")
+            Bundle.module.url(forResource: "twic1618-short", withExtension: "pgn")
         )
         
         let fileContents = try String(contentsOf: fileURL, encoding: .utf8)
         let parser = BasicPGNParser()
         let result = try parser.parse(fileContents)
         
-        #expect(result.count == 5347)
+        #expect(result.count == 159)
     }
 }
