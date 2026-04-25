@@ -8,18 +8,6 @@ import Foundation
 import Noora
 
 final class CLI {
-    private let help = """
-    USAGE:
-      b, board          Print the current position as a visual chess board
-      c, clear          Clear the visible area of the console
-      m, move <san>...  Execute moves on the board using standard algebraic notation
-      h, help           Print this help message
-      p, position       Print the current position as FEN
-      r, reset [fen]    Reset the board, optionally to a custom FEN position
-      q, quit           End FischerCore session
-
-    """
-
     private var game: Game
     private let noora: Noora
 
@@ -32,20 +20,20 @@ final class CLI {
         noora.success("Starting FischerCore CLI")
         write("\n")
         write("\(game.board.ascii())\n\n")
-        write(help)
-        write("\n")
     }
 
+    /// Returns false when the session should end.
     @discardableResult
-    func process(input: String) -> Command? {
-        let command = Command.match(input)
+    func run() -> Bool {
+        let option: CommandOption = noora.singleChoicePrompt(
+            title: "FischerCore",
+            question: "Select a command"
+        )
 
-        switch command {
-        case nil:
-            noora.error("Unrecognized command \(input)")
-
+        switch option {
         case .quit:
             noora.success("Goodbye")
+            return false
 
         case .board:
             write("\(game.board.ascii())\n")
@@ -54,32 +42,42 @@ final class CLI {
             print("\u{001B}[2J\u{001B}[H", terminator: "")
 
         case .help:
-            write(help)
+            for opt in CommandOption.allCases {
+                write("  \(opt)\n")
+            }
+            write("\n")
 
         case .position:
             write("\(game.position.fen())\n")
 
-        case let .reset(fen):
-            if let fen {
+        case .reset:
+            let fen = noora.textPrompt(
+                prompt: "FEN position (leave empty to reset to starting position)",
+                description: "Forsyth–Edwards Notation encodes a full chess position as a compact string."
+            )
+            if fen.isEmpty {
+                game = Game()
+                noora.success("Board reset")
+            } else {
                 do {
                     game = try Game(with: fen)
                     noora.success("Board reset")
-                    write("\(game.board.ascii())\n")
                 } catch {
                     noora.error("Invalid FEN")
                 }
-            } else {
-                game = Game()
-                noora.success("Board reset")
-                write("\(game.board.ascii())\n")
             }
+            write("\(game.board.ascii())\n")
 
-        case let .move(sans):
+        case .move:
+            let input = noora.textPrompt(
+                prompt: "Move(s) in SAN notation",
+                description: "Standard Algebraic Notation — separate multiple moves with spaces (e.g. e4 e5 Nf3)."
+            )
+            let sans = input.split(separator: " ").map(String.init).filter { !$0.isEmpty }
             guard !sans.isEmpty else {
-                noora.error("Missing move")
+                noora.error("No moves entered")
                 break
             }
-
             for san in sans {
                 do {
                     let sanMove = try SANMove(san: san)
@@ -92,7 +90,7 @@ final class CLI {
             }
         }
 
-        return command
+        return true
     }
 
     private func write(_ string: String) {

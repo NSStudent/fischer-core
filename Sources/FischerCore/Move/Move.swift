@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Move: Hashable {
+public struct Move: Hashable, Sendable {
     public var start: Square
     public var end: Square
 }

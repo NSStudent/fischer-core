@@ -10,8 +10,8 @@ import Foundation
 /// - Detection of game outcome and king safety
 ///
 /// It can be used for analysis, game playback, and engine integration.
-public struct Game: Equatable {
-    public struct GameToken: Equatable {
+public struct Game: Equatable, Sendable {
+    public struct GameToken: Equatable, Sendable {
         public var token: [String] = [String](repeating: UUID().uuidString, count: 64)
         private var piecesCount: [Int] = [Int](repeating: 0, count: 12)
         init(board: Board) {
@@ -30,7 +30,7 @@ public struct Game: Equatable {
         }
     }
 
-    public enum ExecutionError: Error {
+    public enum ExecutionError: Error, Sendable {
         case missingPiece(Square)
         case illegalMove(Move, PlayerColor, Board)
         case invalidPromotion(Piece.Kind)
@@ -423,7 +423,6 @@ extension Game {
         return move
     }
 }
-
 
 
 

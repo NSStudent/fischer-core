@@ -9,12 +9,12 @@
 ///
 /// SANMove supports normal piece moves, captures, promotions, check/checkmate flags,
 /// and also castling moves (kingside and queenside).
-public enum SANMove: Equatable {
+public enum SANMove: Equatable, Sendable {
     /// Specifies how the origin of a move is disambiguated in SAN.
     ///
     /// When two identical pieces can move to the same square, disambiguation is needed.
     /// This enum helps represent the disambiguation component: by file, rank, or full square.
-    public enum FromPosition: Equatable {
+    public enum FromPosition: Equatable, Sendable {
         case file(File)
         case rank(Rank)
         case square(Square)
@@ -24,7 +24,7 @@ public enum SANMove: Equatable {
     ///
     /// Includes the piece, origin (if disambiguated), capture flag, destination,
     /// promotion (if any), and whether the move results in check or checkmate.
-    public struct SANDefaultMove: Equatable {
+    public struct SANDefaultMove: Equatable, Sendable {
         /// The type of piece making the move.
         public let piece: Piece.Kind
         /// The disambiguation of the origin square, if required.

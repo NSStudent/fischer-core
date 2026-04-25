@@ -9,7 +9,7 @@
 ///
 /// `PGNGame` encapsulates the full information of a chess game including tags, comments,
 /// moves and game outcome.
-public struct PGNGame: Equatable {
+public struct PGNGame: Equatable, Sendable {
     /// The collection of PGN tags (e.g., Event, Site, Date, etc.) describing metadata about the game.
     public var tags: [PGNTag: String]
 

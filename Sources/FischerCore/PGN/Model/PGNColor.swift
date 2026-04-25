@@ -16,7 +16,7 @@
 /// - Y: Yellow
 /// - M: Magenta
 /// - C: Cyan
-public enum PGNColor: String, CaseIterable {
+public enum PGNColor: String, CaseIterable, Sendable {
     /// Red color annotation.
     case red = "R"
 

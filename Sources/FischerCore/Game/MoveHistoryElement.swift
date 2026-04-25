@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct MoveHistoryElement: Equatable {
+public struct MoveHistoryElement: Equatable, Sendable {
     public let move: Move
     public let piece: Piece
     public let capture: Piece?

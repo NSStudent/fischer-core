@@ -11,31 +11,26 @@ enum Command: Equatable {
     case position
     case reset(fen: String? = nil)
     case move(sans: [String])
+}
 
-    static func match(_ input: String) -> Command? {
-        let input = input.split(separator: " ").map(String.init)
-        guard let command = input.first else { return nil }
+enum CommandOption: CaseIterable, CustomStringConvertible, Equatable {
+    case board
+    case move
+    case position
+    case reset
+    case clear
+    case help
+    case quit
 
-        let args = input.count > 1 ? Array(input.dropFirst()) : []
-
-        switch command {
-        case "quit", "q", "exit":
-            return .quit
-        case "board", "b":
-            return .board
-        case "clear", "c":
-            return .clear
-        case "help", "h":
-            return .help
-        case "position", "p":
-            return .position
-        case "reset", "r":
-            let fen = args.joined(separator: " ")
-            return fen.isEmpty ? .reset(fen: nil) : .reset(fen: fen)
-        case "move", "m":
-            return .move(sans: args)
-        default:
-            return nil
+    var description: String {
+        switch self {
+        case .board:    return "board    — Print the current position as a visual chess board"
+        case .move:     return "move     — Execute moves using standard algebraic notation (e.g. e4 Nf3)"
+        case .position: return "position — Print the current position as FEN"
+        case .reset:    return "reset    — Reset the board, optionally to a custom FEN position"
+        case .clear:    return "clear    — Clear the visible area of the console"
+        case .help:     return "help     — Print this help message"
+        case .quit:     return "quit     — End FischerCore session"
         }
     }
 }
