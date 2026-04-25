@@ -6,7 +6,7 @@
 //
 
 
-enum UCIMove: Equatable {
+enum UCIMove: Equatable, Sendable {
     case nullMove
     case move(UCIMoveValue)
 }

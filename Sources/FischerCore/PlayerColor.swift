@@ -1,6 +1,6 @@
 import Foundation
 
-public enum PlayerColor: String, CaseIterable, Equatable, Codable {
+public enum PlayerColor: String, CaseIterable, Equatable, Codable, Sendable {
     case white
     case black
 }
@@ -34,5 +34,4 @@ extension PlayerColor {
         self = inverse()
     }
 }
-
 

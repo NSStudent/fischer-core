@@ -13,7 +13,7 @@
 /// - R: Rook
 /// - B: Bishop
 /// - N: Knight
-public enum PromotionPiece: String, CaseIterable {
+public enum PromotionPiece: String, CaseIterable, Sendable {
     case knight = "N"
     case bishop = "B"
     case rook = "R"

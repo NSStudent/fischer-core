@@ -11,7 +11,7 @@
 /// with a `PGNColor` (indicating the player's side, either white or black).
 /// It is useful when interpreting or processing PGN data that distinguishes
 /// moves or annotations based on color.
-public struct PGNSquare: Equatable {
+public struct PGNSquare: Equatable, Sendable {
     /// The color associated with the square (white or black).
     public var color: PGNColor
 

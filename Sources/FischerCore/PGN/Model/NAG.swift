@@ -14,7 +14,7 @@
 /// and help engines and humans alike understand the quality of a move.
 ///
 /// - Reference: [PGN Standard - NAG codes](https://en.wikipedia.org/wiki/Numeric_Annotation_Glyphs)
-public enum NAG: Int, CaseIterable, Equatable {
+public enum NAG: Int, CaseIterable, Equatable, Sendable {
     case nullAnnotation = 0
     case goodMove
     case poorMove

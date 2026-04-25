@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum PositionError: Error, Equatable {
+public enum PositionError: Error, Equatable, Sendable {
     case wrongKingCount(PlayerColor)
     case missingKing(CastlingRights.Right)
     case missingRook(CastlingRights.Right)

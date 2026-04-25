@@ -9,7 +9,7 @@
 ///
 /// These arrows are used in visual tools (e.g., Lichess studies) to indicate move suggestions,
 /// threats, or analysis lines. Each arrow has a color and a direction from one square to another.
-public struct PGNArrow: Equatable {
+public struct PGNArrow: Equatable, Sendable {
     /// The color of the arrow, typically used to convey meaning (e.g., red for threats).
     public var color: PGNColor
 

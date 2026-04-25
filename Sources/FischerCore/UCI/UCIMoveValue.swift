@@ -6,7 +6,7 @@
 //
 
 
-public struct UCIMoveValue: Equatable {
+public struct UCIMoveValue: Equatable, Sendable {
     public let start: Square
     public let end: Square
     public let promotion: PromotionPiece?
@@ -17,4 +17,3 @@ public extension UCIMoveValue {
         .init(start: start, end: end)
     }
 }
-
