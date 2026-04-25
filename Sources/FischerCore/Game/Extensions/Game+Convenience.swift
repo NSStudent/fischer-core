@@ -6,9 +6,19 @@
 /// A legal move resolved against a concrete game state, including the promotion
 /// choice needed to reproduce the resulting position.
 public struct ResolvedMove: Equatable, Sendable {
+    /// The legal move to execute in the game state where it was resolved.
     public let move: Move
+
+    /// The promotion piece required by `move`, or `nil` when the move is not a
+    /// promotion.
     public let promotion: PromotionPiece?
 
+    /// Creates a resolved move.
+    ///
+    /// - Parameters:
+    ///   - move: The legal move to execute.
+    ///   - promotion: The promotion piece to apply when the move promotes a
+    ///     pawn.
     public init(move: Move, promotion: PromotionPiece? = nil) {
         self.move = move
         self.promotion = promotion
@@ -17,16 +27,41 @@ public struct ResolvedMove: Equatable, Sendable {
 
 /// A structured SAN entry for one move that has already been played.
 public struct PlayedSANMove: Equatable, Identifiable, Sendable {
+    /// The stable identifier for this row, equal to `index`.
     public var id: Int { index }
 
+    /// The zero-based index of the move in `Game.moveHistory`.
     public let index: Int
+
+    /// The human chess move number for this move.
     public let moveNumber: Int
+
+    /// The side that played the move.
     public let color: PlayerColor
+
+    /// The SAN text for the move in its original game context.
     public let san: String
+
+    /// The underlying coordinate move.
     public let move: Move
+
+    /// The promotion piece used by the move, or `nil` when the move did not
+    /// promote a pawn.
     public let promotion: PromotionPiece?
+
+    /// Whether the SAN move ended the game by checkmate.
     public let isCheckmate: Bool
 
+    /// Creates a structured SAN entry for a played move.
+    ///
+    /// - Parameters:
+    ///   - index: The zero-based index in `Game.moveHistory`.
+    ///   - moveNumber: The human chess move number.
+    ///   - color: The side that played the move.
+    ///   - san: The SAN text for the move.
+    ///   - move: The underlying coordinate move.
+    ///   - promotion: The promotion piece, if any.
+    ///   - isCheckmate: Whether the move ended the game by checkmate.
     public init(
         index: Int,
         moveNumber: Int,
@@ -87,6 +122,15 @@ public extension Game {
         return nil
     }
 
+    /// Executes a previously resolved move.
+    ///
+    /// Use this when a move has already been resolved with
+    /// `resolvedMove(toPlacement:)` or another workflow that produces a
+    /// `ResolvedMove`.
+    ///
+    /// - Parameters:
+    ///   - resolvedMove: The move and optional promotion piece to execute.
+    ///   - considerHalfmoves: Whether to apply halfmove-clock validation.
     mutating func execute(resolvedMove: ResolvedMove, considerHalfmoves: Bool = true) throws {
         if let promotion = resolvedMove.promotion {
             try execute(move: resolvedMove.move, considerHalfmoves: considerHalfmoves, promotion: promotion)
@@ -95,6 +139,15 @@ public extension Game {
         }
     }
 
+    /// Parses and executes a UCI move in the current game state.
+    ///
+    /// The method supports standard UCI moves such as `"e2e4"` and promotion
+    /// moves such as `"h7h8q"`. Null moves and malformed UCI strings throw an
+    /// error.
+    ///
+    /// - Parameters:
+    ///   - uci: The UCI move string to execute.
+    ///   - considerHalfmoves: Whether to apply halfmove-clock validation.
     mutating func execute(uci: String, considerHalfmoves: Bool = true) throws {
         let parser = UCIMoveParser()
         let parsedMove: UCIMove
@@ -115,14 +168,28 @@ public extension Game {
         }
     }
 
+    /// Undoes moves until the game reaches its initial position.
     mutating func rewindToStart() {
         while undoMove() != nil {}
     }
 
+    /// Redoes moves until no undone move remains.
+    ///
+    /// - Parameter considerHalfmoves: Whether to apply halfmove-clock
+    ///   validation while replaying moves.
     mutating func fastForward(considerHalfmoves: Bool = false) {
         while redoMove(considerHalfmoves: considerHalfmoves) {}
     }
 
+    /// Moves the game history cursor to a specific move index.
+    ///
+    /// Values below zero rewind to the start. Values past the available redo
+    /// history fast-forward as far as possible.
+    ///
+    /// - Parameters:
+    ///   - index: The target number of played moves to keep in `moveHistory`.
+    ///   - considerHalfmoves: Whether to apply halfmove-clock validation while
+    ///     replaying moves.
     mutating func jumpToMove(_ index: Int, considerHalfmoves: Bool = false) {
         let target = max(0, index)
         if target < moveHistory.count {
