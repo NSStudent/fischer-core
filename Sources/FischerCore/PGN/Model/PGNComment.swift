@@ -10,7 +10,7 @@
 /// PGN comments can include plain text, arrows (to highlight movement or threats),
 /// and highlighted squares. This enum may be extended in the future to support
 /// engine evaluations and timing information.
-public enum PGNComment: Equatable {
+public enum PGNComment: Equatable, Sendable {
     /// A plain text comment enclosed in curly braces `{}` in PGN.
     case text(String)
 

@@ -9,7 +9,7 @@
 ///
 /// `PGNGame` encapsulates the full information of a chess game including tags, comments,
 /// moves and game outcome.
-public struct PGNGame: Equatable {
+public struct PGNGame: Equatable, Sendable {
     /// The collection of PGN tags (e.g., Event, Site, Date, etc.) describing metadata about the game.
     public var tags: [PGNTag: String]
 
@@ -85,7 +85,16 @@ public extension Game {
     }
 
     mutating func execute(move: SANMove, considerHalfmoves: Bool = true) throws {
-        try execute(move: try transform(sanMove: move, considerHalfmoves: considerHalfmoves), considerHalfmoves: considerHalfmoves)
+        let transformedMove = try transform(sanMove: move, considerHalfmoves: considerHalfmoves)
+        if case let .san(defaultMove) = move, let promotion = defaultMove.promotionTo {
+            try execute(move: transformedMove, considerHalfmoves: considerHalfmoves, promotion: promotion)
+        } else {
+            try execute(move: transformedMove, considerHalfmoves: considerHalfmoves)
+        }
+    }
+
+    mutating func execute(san: String, considerHalfmoves: Bool = true) throws {
+        try execute(move: SANMove(san: san), considerHalfmoves: considerHalfmoves)
     }
 
     init(loading pgnGame: PGNGame, moveToEnd: Bool = false, considerHalfmoves: Bool = true) throws {

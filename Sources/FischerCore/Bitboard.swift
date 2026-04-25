@@ -11,7 +11,7 @@ import Foundation
 /// Bitboards are commonly used in chess engines to represent piece positions and calculate move generation.
 ///
 /// - Note: Square 0 is the least-significant bit (a1), and Square 63 is the most-significant bit (h8).
-public struct Bitboard: Equatable, Hashable {
+public struct Bitboard: Equatable, Hashable, Sendable {
 
     private(set) var rawValue: UInt64 = 0
 
@@ -24,7 +24,7 @@ public struct Bitboard: Equatable, Hashable {
     /// An iterator over the squares set in a `Bitboard`.
     ///
     /// Iterates by popping least significant bits until the bitboard is empty.
-    public struct Iterator: IteratorProtocol {
+    public struct Iterator: IteratorProtocol, Sendable {
 
         fileprivate var bitboard: Bitboard
 
@@ -341,7 +341,7 @@ extension Bitboard {
 
     public static let edges: Bitboard = 0xff818181818181ff
 
-    public enum ShiftDirection {
+    public enum ShiftDirection: Sendable {
         case north
         case south
         case east

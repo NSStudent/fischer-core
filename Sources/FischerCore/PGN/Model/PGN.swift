@@ -6,7 +6,7 @@
 //
 
 // Reference https://github.com/fsmosca/PGN-Standard/blob/master/PGN-Standard.txt
-public struct PGN {
+public struct PGN: Sendable {
     public var games: [PGNGame]
 }
 

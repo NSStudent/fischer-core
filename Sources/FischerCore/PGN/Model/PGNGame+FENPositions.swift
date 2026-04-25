@@ -3,7 +3,7 @@
 //  FischerCore
 //
 
-public enum PGNGameFENPositionsError: Error, CustomStringConvertible {
+public enum PGNGameFENPositionsError: Error, CustomStringConvertible, Sendable {
     case malformedPosition(index: Int, fen: String)
     case invalidMove(index: Int, from: String, to: String)
     case moveExecutionFailed(index: Int, move: Move, promotion: PromotionPiece?, reason: String)

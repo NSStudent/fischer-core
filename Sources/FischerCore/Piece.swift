@@ -1,7 +1,7 @@
 import Foundation
 
-public struct Piece {
-    public enum Kind: Int, CaseIterable, Equatable {
+public struct Piece: Sendable {
+    public enum Kind: Int, CaseIterable, Equatable, Sendable {
         case pawn
         case knight
         case bishop
