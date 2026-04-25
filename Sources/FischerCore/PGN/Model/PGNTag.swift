@@ -7,7 +7,7 @@
 
 /// Represents the standardized PGN tags used in chess game notation.
 /// PGN (Portable Game Notation) tags store metadata about chess games.
-public enum PGNTag: Equatable, Hashable, RawRepresentable, Codable, CaseIterable {
+public enum PGNTag: Equatable, Hashable, RawRepresentable, Codable, CaseIterable, Sendable {
     // MARK: - Known Tags
     /// Name of the event or tournament.
     case event

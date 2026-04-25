@@ -8,9 +8,9 @@ import Foundation
 ///
 /// - Note: The bitboards are indexed by `Piece.bitValue`, where `0...5` represent white pieces
 /// and `6...11` black pieces.
-public struct Board: Equatable {
+public struct Board: Equatable, Sendable {
 
-    public enum Side {
+    public enum Side: Sendable {
         case kingside
         case queenside
 
@@ -23,7 +23,7 @@ public struct Board: Equatable {
         }
     }
 
-    public struct Space: Equatable {
+    public struct Space: Equatable, Sendable {
         public var piece: Piece?
         public var file: File
         public var rank: Rank
@@ -52,7 +52,7 @@ public struct Board: Equatable {
         return Space(piece: self[square], square: square)
     }
 
-    public struct Iterator: IteratorProtocol {
+    public struct Iterator: IteratorProtocol, Sendable {
 
         let _board: Board
 

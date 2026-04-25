@@ -1,7 +1,7 @@
 import Foundation
 
-public struct Piece {
-    public enum Kind: Int, CaseIterable, Equatable {
+public struct Piece: Sendable {
+    public enum Kind: Int, CaseIterable, Equatable, Sendable {
         case pawn
         case knight
         case bishop
@@ -73,6 +73,11 @@ public struct Piece {
         case .queen:  return color.isBlack()  ? "♕" : "♛"
         case .king:   return color.isBlack()  ? "♔" : "♚"
         }
+    }
+    
+    public init(kind: Kind, color: PlayerColor) {
+        self.kind = kind
+        self.color = color
     }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 
-public enum Square: Int, CaseIterable, Identifiable, Equatable {
-    public enum Color {
+public enum Square: Int, CaseIterable, Identifiable, Equatable, Sendable {
+    public enum Color: Sendable {
         case light
         case dark
     }
@@ -177,4 +177,3 @@ extension Square {
         return Square.Color.light
     }
 }
-

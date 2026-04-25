@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct Position: Equatable, CustomStringConvertible {
+public struct Position: Equatable, CustomStringConvertible, Sendable {
     public var board: Board
     public var playerTurn: PlayerColor
     public var castlingRights: CastlingRights

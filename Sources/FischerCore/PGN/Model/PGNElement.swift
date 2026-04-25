@@ -11,7 +11,7 @@
 /// A `PGNElement` captures the state of a game at a given turn number and allows for
 /// inclusion of optional annotations and nested variations, making it suitable for
 /// rich PGN parsing and serialization.
-public struct PGNElement {
+public struct PGNElement: Sendable {
     /// The turn number of this PGN element.
     public let turn: UInt
 
@@ -101,7 +101,7 @@ extension PGNElement: CustomStringConvertible {
     }
 }
 
-public struct PGNColumnElement {
+public struct PGNColumnElement: Sendable {
     /// The turn number of this PGN element.
     public let turn: UInt
 

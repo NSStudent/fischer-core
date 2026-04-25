@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UndoMoveElement: Equatable {
+struct UndoMoveElement: Equatable, Sendable {
     let move: Move
     let promotion: PromotionPiece?
     let kingAttackers: Bitboard

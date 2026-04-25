@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct MoveHistoryElement: Equatable {
+public struct MoveHistoryElement: Equatable, Sendable {
     public let move: Move
     public let piece: Piece
     public let capture: Piece?
@@ -16,6 +16,7 @@ public struct MoveHistoryElement: Equatable {
     public let halfmoves: UInt
     public let rights: CastlingRights
     public let promotionPiece: PromotionPiece?
+    let capturedPieceID: Game.PieceID?
     
     public init(
         move: Move,
@@ -35,6 +36,29 @@ public struct MoveHistoryElement: Equatable {
         self.halfmoves = halfmoves
         self.rights = rights
         self.promotionPiece = promotionPiece
+        self.capturedPieceID = nil
+    }
+
+    init(
+        move: Move,
+        piece: Piece,
+        capture: Piece?,
+        enPassantTarget: Square?,
+        kingAttackers: Bitboard,
+        halfmoves: UInt,
+        rights: CastlingRights,
+        promotionPiece: PromotionPiece? = nil,
+        capturedPieceID: Game.PieceID?
+    ) {
+        self.move = move
+        self.piece = piece
+        self.capture = capture
+        self.enPassantTarget = enPassantTarget
+        self.kingAttackers = kingAttackers
+        self.halfmoves = halfmoves
+        self.rights = rights
+        self.promotionPiece = promotionPiece
+        self.capturedPieceID = capturedPieceID
     }
 }
 

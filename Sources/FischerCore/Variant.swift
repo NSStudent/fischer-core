@@ -1,6 +1,6 @@
 import Foundation
 
-public enum Variant: Equatable {
+public enum Variant: Equatable, Sendable {
     case standard
     case chess960
 
