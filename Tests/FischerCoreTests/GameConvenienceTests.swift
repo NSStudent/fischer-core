@@ -94,4 +94,82 @@ final class GameConvenienceTests {
         #expect(moves.map(\.san) == ["g6", "Bb2", "Bg7"])
         #expect(moves.map(\.move) == [.g7 >>> .g6, .c1 >>> .b2, .f8 >>> .g7])
     }
+
+    @Test("Game exposes stable board pieces for UI identity")
+    func boardPiecesExposeStableIdentity() throws {
+        var game = Game()
+        let initialID = try #require(game.pieceID(at: .e2))
+
+        try game.execute(move: .e2 >>> .e4)
+
+        #expect(game.pieceID(at: .e2) == nil)
+        #expect(game.pieceID(at: .e4) == initialID)
+        #expect(game.boardPieces.contains(Game.BoardPiece(id: initialID, piece: Piece(pawn: .white), square: .e4)))
+    }
+
+    @Test("Game restores board piece identity across capture undo and redo")
+    func boardPieceIdentitySurvivesCaptureUndoRedo() throws {
+        var game = try Game(with: "8/8/8/3p4/4P3/8/8/4K2k w - - 0 1")
+        let movingID = try #require(game.pieceID(at: .e4))
+        let capturedID = try #require(game.pieceID(at: .d5))
+
+        try game.execute(move: .e4 >>> .d5)
+        #expect(game.pieceID(at: .d5) == movingID)
+
+        game.undoMove()
+        #expect(game.pieceID(at: .e4) == movingID)
+        #expect(game.pieceID(at: .d5) == capturedID)
+
+        let didRedo = game.redoMove()
+        #expect(didRedo)
+        #expect(game.pieceID(at: .d5) == movingID)
+    }
+
+    @Test("Game moves rook identity when castling")
+    func boardPieceIdentityMovesRookWhenCastling() throws {
+        var game = try Game(with: "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")
+        let kingID = try #require(game.pieceID(at: .e1))
+        let rookID = try #require(game.pieceID(at: .h1))
+
+        try game.execute(move: .e1 >>> .g1)
+
+        #expect(game.pieceID(at: .g1) == kingID)
+        #expect(game.pieceID(at: .f1) == rookID)
+
+        game.undoMove()
+        #expect(game.pieceID(at: .e1) == kingID)
+        #expect(game.pieceID(at: .h1) == rookID)
+    }
+
+    @Test("Game removes and restores captured identity for en passant")
+    func boardPieceIdentityHandlesEnPassant() throws {
+        var game = try Game(with: "8/8/8/3pP3/8/8/8/4K2k w - d6 0 1")
+        let movingID = try #require(game.pieceID(at: .e5))
+        let capturedID = try #require(game.pieceID(at: .d5))
+
+        try game.execute(move: .e5 >>> .d6)
+
+        #expect(game.pieceID(at: .d6) == movingID)
+        #expect(game.pieceID(at: .d5) == nil)
+
+        game.undoMove()
+        #expect(game.pieceID(at: .e5) == movingID)
+        #expect(game.pieceID(at: .d5) == capturedID)
+    }
+
+    @Test("Game keeps pawn identity when promoting")
+    func boardPieceIdentitySurvivesPromotion() throws {
+        var game = try Game(with: "8/k6P/8/8/8/8/K6p/8 w - - 0 1")
+        let pawnID = try #require(game.pieceID(at: .h7))
+
+        try game.execute(move: .h7 >>> .h8, promotion: .knight)
+
+        #expect(game.pieceID(at: .h8) == pawnID)
+        #expect(game.boardPieces.contains(Game.BoardPiece(id: pawnID, piece: Piece(knight: .white), square: .h8)))
+    }
+
+    @Test("Game equality is stable for equivalent initial games")
+    func gameEqualityIsStableForEquivalentInitialGames() {
+        #expect(Game() == Game())
+    }
 }

@@ -11,22 +11,71 @@ import Foundation
 ///
 /// It can be used for analysis, game playback, and engine integration.
 public struct Game: Equatable, Sendable {
+    /// A stable identity for one rendered chess piece.
+    ///
+    /// Piece identities are intended for UI diffing and animation. They are not
+    /// part of chess-state equality and should not be used to compare legal
+    /// positions.
+    public struct PieceID: Hashable, Sendable, CustomStringConvertible {
+        /// The underlying compact identifier.
+        public let rawValue: Int
+
+        /// A textual representation suitable for legacy string-based UI IDs.
+        public var description: String {
+            "piece-\(rawValue)"
+        }
+
+        /// Creates a piece identity from a raw integer value.
+        ///
+        /// - Parameter rawValue: The compact integer identity.
+        public init(rawValue: Int) {
+            self.rawValue = rawValue
+        }
+    }
+
+    /// A chess piece paired with its current square and stable UI identity.
+    public struct BoardPiece: Identifiable, Equatable, Sendable {
+        /// The stable identity for this piece.
+        public let id: PieceID
+
+        /// The piece occupying `square`.
+        public let piece: Piece
+
+        /// The square currently occupied by `piece`.
+        public let square: Square
+
+        /// Creates a renderable board piece.
+        ///
+        /// - Parameters:
+        ///   - id: The stable identity for the piece.
+        ///   - piece: The chess piece.
+        ///   - square: The square occupied by the piece.
+        public init(id: PieceID, piece: Piece, square: Square) {
+            self.id = id
+            self.piece = piece
+            self.square = square
+        }
+    }
+
+    /// Legacy string tokens for pieces on the board.
+    ///
+    /// Use `boardPieces` or `pieceID(at:)` for new UI code.
+    @available(*, deprecated, message: "Use boardPieces or pieceID(at:) instead.")
     public struct GameToken: Equatable, Sendable {
-        public var token: [String] = [String](repeating: UUID().uuidString, count: 64)
-        private var piecesCount: [Int] = [Int](repeating: 0, count: 12)
-        init(board: Board) {
-            for square in Square.allCases {
-                if let piece = board[square] {
-                    piecesCount[piece.bitValue] += 1
-                    token[square.rawValue] = "\(piece.fenName)\(piecesCount[piece.bitValue])"
-                } else {
-                    token[square.rawValue] = UUID().uuidString
-                }
+        /// String tokens indexed by `Square.rawValue`.
+        public var token: [String]
+
+        init(pieceIDs: [PieceID?]) {
+            self.token = pieceIDs.enumerated().map { index, pieceID in
+                pieceID?.description ?? "empty-\(index)"
             }
         }
-        
-        mutating func update(with startSquare: Square, oldSquare: Square, capturePice: Piece? = nil) {
-            (token[oldSquare.rawValue], token[startSquare.rawValue]) = (UUID().uuidString, token[oldSquare.rawValue])
+
+        /// Creates legacy string tokens.
+        ///
+        /// - Parameter token: String tokens indexed by `Square.rawValue`.
+        public init(token: [String]) {
+            self.token = token
         }
     }
 
@@ -94,8 +143,25 @@ public struct Game: Equatable, Sendable {
     public var isFinished: Bool {
         return availableMoves().isEmpty
     }
-    
-    public var token: GameToken
+
+    /// Renderable pieces with stable identities for UI diffing and animation.
+    public var boardPieces: [BoardPiece] {
+        Square.allCases.compactMap { square in
+            guard let piece = board[square],
+                  let id = pieceIDs[square.rawValue] else { return nil }
+            return BoardPiece(id: id, piece: piece, square: square)
+        }
+    }
+
+    /// Legacy string tokens for occupied and empty squares.
+    ///
+    /// Use `boardPieces` or `pieceID(at:)` for new UI code.
+    @available(*, deprecated, message: "Use boardPieces or pieceID(at:) instead.")
+    public var token: GameToken {
+        GameToken(pieceIDs: pieceIDs)
+    }
+
+    private var pieceIDs: [PieceID?]
 
     /// Create a game from another.
     private init(game: Game) {
@@ -112,7 +178,7 @@ public struct Game: Equatable, Sendable {
         self.fullmoves        = game.fullmoves
         self.initalFullmoves  = game.initalFullmoves
         self.enPassantTarget  = game.enPassantTarget
-        self.token = GameToken(board: self.board)
+        self.pieceIDs         = game.pieceIDs
         self.initialFen = game.initialFen
     }
 
@@ -132,7 +198,7 @@ public struct Game: Equatable, Sendable {
         self.halfmoves = 0
         self.fullmoves = 1
         self.initalFullmoves = 1
-        self.token = GameToken(board: self.board)
+        self.pieceIDs = Self.pieceIDs(for: self.board)
         let position = Position(board: board,
                                 playerTurn: playerTurn,
                                 castlingRights: castlingRights,
@@ -164,8 +230,48 @@ public struct Game: Equatable, Sendable {
         self.halfmoves = position.halfmoves
         self.fullmoves = position.fullmoves
         self.initalFullmoves = position.fullmoves
-        self.token = GameToken(board: self.board)
+        self.pieceIDs = Self.pieceIDs(for: self.board)
         self.initialFen = position.fen()
+    }
+
+    /// Returns the stable identity for the piece at `square`.
+    ///
+    /// - Parameter square: The square to inspect.
+    /// - Returns: A piece identity when the square is occupied, otherwise
+    ///   `nil`.
+    public func pieceID(at square: Square) -> PieceID? {
+        pieceIDs[square.rawValue]
+    }
+
+    public static func == (lhs: Game, rhs: Game) -> Bool {
+        lhs.undoHistory == rhs.undoHistory
+        && lhs.moveHistory == rhs.moveHistory
+        && lhs.board == rhs.board
+        && lhs.playerTurn == rhs.playerTurn
+        && lhs.castlingRights == rhs.castlingRights
+        && lhs.whitePlayer == rhs.whitePlayer
+        && lhs.blackPlayer == rhs.blackPlayer
+        && lhs.initialFen == rhs.initialFen
+        && lhs.variant == rhs.variant
+        && lhs.attackersToKing == rhs.attackersToKing
+        && lhs.fullmoves == rhs.fullmoves
+        && lhs.initalFullmoves == rhs.initalFullmoves
+        && lhs.halfmoves == rhs.halfmoves
+        && lhs.enPassantTarget == rhs.enPassantTarget
+    }
+
+    private static func pieceIDs(for board: Board) -> [PieceID?] {
+        var nextID = 0
+        return Square.allCases.map { square in
+            guard board[square] != nil else { return nil }
+            defer { nextID += 1 }
+            return PieceID(rawValue: nextID)
+        }
+    }
+
+    private mutating func movePieceID(from oldSquare: Square, to newSquare: Square) {
+        pieceIDs[newSquare.rawValue] = pieceIDs[oldSquare.rawValue]
+        pieceIDs[oldSquare.rawValue] = nil
     }
 }
 
@@ -226,7 +332,7 @@ extension Game {
                 let rook = Piece(rook: playerTurn)
                 board[rook][old] = false
                 board[rook][new] = true
-                token.update(with: new, oldSquare: old)
+                movePieceID(from: old, to: new)
             }
         }
         if let capture = capture, capture.kind.isRook {
@@ -240,6 +346,7 @@ extension Game {
             }
         }
 
+        let capturedPieceID = capture == nil ? nil : pieceIDs[captureSquare.rawValue]
         moveHistory.append(
             MoveHistoryElement(
                 move: move,
@@ -249,11 +356,13 @@ extension Game {
                 kingAttackers: attackersToKing,
                 halfmoves: halfmoves,
                 rights: rights,
-                promotionPiece: promoted
+                promotionPiece: promoted,
+                capturedPieceID: capturedPieceID
             )
         )
         if let capture = capture {
             board[capture][captureSquare] = false
+            pieceIDs[captureSquare.rawValue] = nil
         }
         if capture == nil && !piece.kind.isPawn {
             halfmoves += 1
@@ -264,7 +373,7 @@ extension Game {
         board[endPiece][move.end] = true
         playerTurn.invert()
         let pieceMoved = board[move.end]!
-        token.update(with: move.end, oldSquare: move.start)
+        movePieceID(from: move.start, to: move.end)
         if pieceMoved.kind.isPawn && abs(move.rankChange) == 2 {
             enPassantTarget = Square(file: move.start.file, rank: pieceMoved.color.isWhite() ? 3 : 6)
         } else {
@@ -382,14 +491,15 @@ extension Game {
         guard let moveHistoryElement = moveHistory.popLast() else {
             return nil
         }
-        let (move, piece, capture, enPassantTarget, attackers, halfmoves, rights) = (
+        let (move, piece, capture, enPassantTarget, attackers, halfmoves, rights, capturedPieceID) = (
             moveHistoryElement.move,
             moveHistoryElement.piece,
             moveHistoryElement.capture,
             moveHistoryElement.enPassantTarget,
             moveHistoryElement.kingAttackers,
             moveHistoryElement.halfmoves,
-            moveHistoryElement.rights
+            moveHistoryElement.rights,
+            moveHistoryElement.capturedPieceID
         )
         var captureSquare = move.end
         var promotionKind: PromotionPiece?
@@ -405,7 +515,7 @@ extension Game {
             let rook = Piece(rook: playerTurn.inverse())
             board[rook][old] = true
             board[rook][new] = false
-            token.update(with: old, oldSquare: new)
+            movePieceID(from: new, to: old)
         }
         if let capture = capture {
             board[capture][captureSquare] = true
@@ -413,7 +523,10 @@ extension Game {
         undoHistory.append(UndoMoveElement(move: move, promotion: promotionKind, kingAttackers: attackers))
         board[piece][move.end] = false
         board[piece][move.start] = true
-        token.update(with: move.start, oldSquare: move.end)
+        movePieceID(from: move.end, to: move.start)
+        if capture != nil {
+            pieceIDs[captureSquare.rawValue] = capturedPieceID
+        }
         playerTurn.invert()
         self.enPassantTarget = enPassantTarget
         self.attackersToKing = attackers
@@ -423,11 +536,6 @@ extension Game {
         return move
     }
 }
-
-
-
-
-
 
 
 
