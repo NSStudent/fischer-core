@@ -18,6 +18,8 @@ struct TagParser: Parser {
             }
         } separator: {
             Whitespace()
-        }.map(Dictionary.init)
+        }.map { tags in
+            Dictionary(tags, uniquingKeysWith: { _, newValue in newValue })
+        }
     }
 }
