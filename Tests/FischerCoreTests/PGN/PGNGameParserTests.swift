@@ -724,4 +724,42 @@ class PGNGameParserTests {
         #expect(elements.count == 30)
     }
     
+    @Test func tournament_game_issue() async throws {
+        let input =
+                """
+                [Event "TCEC Season 29 - FRD 5 Playoff"]
+                [Site "https://lichess.org/broadcast/tcec-double-fischer-random-chess-5--playoffs/round-13/69RT7RMp/UB3CKErh"]
+                [Date "2026.05.01"]
+                [Round "13.2"]
+                [White "Minic 3.45"]
+                [Black "Wasp 7.15"]
+                [Result "*"]
+                [WhiteElo "3441"]
+                [WhiteTitle "BOT"]
+                [BlackElo "3448"]
+                [BlackTitle "BOT"]
+                [TimeControl "1800+3"]
+                [Termination "unterminated"]
+                [FEN "qrnnkbbr/pppppppp/8/8/8/8/PPPPPPPP/QRNNKBBR w KQkq - 0 1"]
+                [Variant "fischerandom"]
+                [ECO "?"]
+                [Opening "?"]
+                [FEN "qrnnkbbr/pppppppp/8/8/8/8/PPPPPPPP/QRNNKBBR w KQkq - 0 1"]
+                [SetUp "1"]
+                [UTCDate "2026.05.01"]
+                [UTCTime "16:52:42"]
+                [BroadcastName "TCEC Double Fischer Random Chess 5 | Playoffs"]
+                [BroadcastURL "https://lichess.org/broadcast/tcec-double-fischer-random-chess-5--playoffs/round-13/69RT7RMp"]
+                [GameURL "https://lichess.org/broadcast/tcec-double-fischer-random-chess-5--playoffs/round-13/69RT7RMp/UB3CKErh"]
+
+                1. e4 { [%clk 0:30:00] } 1... f5 { [%clk 0:30:00] } 2. exf5 { [%clk 0:28:23] } 2... e6 { [%clk 0:29:00] } 3. fxe6 { [%clk 0:26:40] } 3... Nxe6 { [%clk 0:28:02] } 4. f3 { [%clk 0:25:47] } *
+                """
+        
+        let parser = PGNGameParser()
+        let result = try parser.parse(input)
+        let elements = result.elements
+        #expect(result.tags[.fen] == "qrnnkbbr/pppppppp/8/8/8/8/PPPPPPPP/QRNNKBBR w KQkq - 0 1")
+        #expect(elements.count == 4)
+    }
+    
 }
