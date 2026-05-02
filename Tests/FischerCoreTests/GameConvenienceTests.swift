@@ -50,6 +50,26 @@ final class GameConvenienceTests {
         }
     }
 
+    @Test("Game resolves SAN moves once for later execution")
+    func resolvesSANMoves() throws {
+        var game = Game()
+        let normal = try game.resolvedMove(from: SANMove(san: "e4"))
+        #expect(normal == ResolvedMove(move: .e2 >>> .e4))
+        try game.execute(resolvedMove: normal)
+
+        let capturePosition = try Game(with: "8/8/8/3pP3/8/8/8/4K2k w - d6 0 1")
+        let enPassant = try capturePosition.resolvedMove(from: SANMove(san: "exd6"))
+        #expect(enPassant == ResolvedMove(move: .e5 >>> .d6))
+
+        let promotionPosition = try Game(with: "8/k6P/8/8/8/8/K6p/8 w - - 0 1")
+        let promotion = try promotionPosition.resolvedMove(from: SANMove(san: "h8=N"))
+        #expect(promotion == ResolvedMove(move: .h7 >>> .h8, promotion: .knight))
+
+        let castlingPosition = try Game(with: "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")
+        let castling = try castlingPosition.resolvedMove(from: SANMove(san: "O-O"))
+        #expect(castling == ResolvedMove(move: .e1 >>> .g1))
+    }
+
     @Test("Game exposes outcome when finished")
     func outcome() throws {
         var game = Game()
@@ -77,6 +97,30 @@ final class GameConvenienceTests {
 
         game.rewindToStart()
         #expect(game.moveHistory.isEmpty)
+    }
+
+    @Test("Game jump preserves FEN, history, and piece identity")
+    func jumpToMovePreservesGameState() throws {
+        var jumped = Game()
+        var replayed = Game()
+        let ePawnID = try #require(jumped.pieceID(at: .e2))
+
+        try jumped.execute(move: .e2 >>> .e4)
+        try jumped.execute(move: .d7 >>> .d5)
+        try jumped.execute(move: .e4 >>> .d5)
+        try jumped.execute(move: .g8 >>> .f6)
+
+        try replayed.execute(move: .e2 >>> .e4)
+        try replayed.execute(move: .d7 >>> .d5)
+
+        jumped.jumpToMove(2)
+        #expect(jumped.position.fen() == replayed.position.fen())
+        #expect(jumped.moveHistory.map(\.move) == replayed.moveHistory.map(\.move))
+        #expect(jumped.pieceID(at: .e4) == ePawnID)
+
+        jumped.jumpToMove(4)
+        #expect(jumped.moveHistory.map(\.move) == [.e2 >>> .e4, .d7 >>> .d5, .e4 >>> .d5, .g8 >>> .f6])
+        #expect(jumped.pieceID(at: .d5) == ePawnID)
     }
 
     @Test("Game returns structured SAN moves")

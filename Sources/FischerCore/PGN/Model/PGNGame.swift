@@ -84,13 +84,21 @@ public extension Game {
         try Move(game: self, sanMove: sanMove, considerHalfmoves: considerHalfmoves)
     }
 
-    mutating func execute(move: SANMove, considerHalfmoves: Bool = true) throws {
-        let transformedMove = try transform(sanMove: move, considerHalfmoves: considerHalfmoves)
-        if case let .san(defaultMove) = move, let promotion = defaultMove.promotionTo {
-            try execute(move: transformedMove, considerHalfmoves: considerHalfmoves, promotion: promotion)
+    /// Resolves a SAN move against the current game state without executing it.
+    ///
+    /// Use the returned value with `execute(resolvedMove:considerHalfmoves:)`
+    /// to avoid transforming the same SAN move more than once.
+    func resolvedMove(from sanMove: SANMove, considerHalfmoves: Bool = true) throws -> ResolvedMove {
+        let transformedMove = try transform(sanMove: sanMove, considerHalfmoves: considerHalfmoves)
+        if case let .san(defaultMove) = sanMove, let promotion = defaultMove.promotionTo {
+            return ResolvedMove(move: transformedMove, promotion: promotion)
         } else {
-            try execute(move: transformedMove, considerHalfmoves: considerHalfmoves)
+            return ResolvedMove(move: transformedMove)
         }
+    }
+
+    mutating func execute(move: SANMove, considerHalfmoves: Bool = true) throws {
+        try execute(resolvedMove: resolvedMove(from: move, considerHalfmoves: considerHalfmoves), considerHalfmoves: considerHalfmoves)
     }
 
     mutating func execute(san: String, considerHalfmoves: Bool = true) throws {
