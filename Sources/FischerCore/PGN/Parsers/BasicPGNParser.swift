@@ -7,8 +7,10 @@
 
 import Parsing
 
-struct BasicPGNParser: Parser {
-    var body: some Parser<Substring, [BasicPGNGame]> {
+public struct BasicPGNParser: Parser {
+    public init() {}
+
+    public var body: some Parser<Substring, [BasicPGNGame]> {
         Many {
             BasicPGNGameParser()
         } separator: {
@@ -16,5 +18,18 @@ struct BasicPGNParser: Parser {
         } terminator: {
             Whitespace()
         }
+    }
+
+    public func parse(_ pgn: String) throws -> [BasicPGNGame] {
+        try parse(pgn[...])
+    }
+}
+
+/// Reads PGN documents into lightweight ``BasicPGNGame`` values.
+public struct BasicPGNReader {
+    public init() {}
+
+    public func parse(_ pgn: String) throws -> [BasicPGNGame] {
+        try BasicPGNParser().parse(pgn)
     }
 }
