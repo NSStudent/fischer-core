@@ -66,6 +66,22 @@ struct CommentListParserTests {
         ])
     }
 
+    @Test("Parses CSL and CAL annotations separated by whitespace without text")
+    func parsesSquareAndArrowAnnotationsSeparatedByWhitespaceWithoutText() throws {
+        let comments = try CommentListParser().parse(
+            "{[%csl Rg4] [%cal Ge5g4]}"
+        )
+
+        #expect(comments == [
+            .squareList([
+                PGNSquare(color: .red, square: .g4),
+            ]),
+            .arrowList([
+                PGNArrow(color: .green, fromSquare: .e5, toSquare: .g4),
+            ]),
+        ])
+    }
+
     @Test("PGN game parser keeps adjacent annotations and text in move comments")
     func pgnGameParserKeepsAdjacentAnnotationsAndTextInMoveComments() throws {
         let input =
@@ -92,6 +108,33 @@ struct CommentListParserTests {
                 PGNArrow(color: .green, fromSquare: .h2, toSquare: .h7),
             ]),
             .text("amenazando mate!"),
+        ])
+    }
+
+    @Test("PGN game parser keeps whitespace-separated annotations in move comments")
+    func pgnGameParserKeepsWhitespaceSeparatedAnnotationsInMoveComments() throws {
+        let input =
+        """
+        [Event "Whitespace separated comment annotations"]
+        [Site "Local"]
+        [Date "2026.05.15"]
+        [Round "-"]
+        [White "-"]
+        [Black "-"]
+        [Result "*"]
+
+        12. Ne5 {[%csl Rg4] [%cal Ge5g4]} *
+        """
+
+        let game = try PGNGameParser().parse(input)
+
+        #expect(game.elements[0].postWhiteCommentList == [
+            .squareList([
+                PGNSquare(color: .red, square: .g4),
+            ]),
+            .arrowList([
+                PGNArrow(color: .green, fromSquare: .e5, toSquare: .g4),
+            ]),
         ])
     }
 }

@@ -19,6 +19,15 @@ private struct SpecialCommentParser: Parser {
     }
 }
 
+private struct AdditionalSpecialCommentParser: Parser {
+    var body: some Parser<Substring, PGNComment> {
+        Parse {
+            Whitespace()
+            SpecialCommentParser()
+        }
+    }
+}
+
 struct MultipleCommentParser: Parser {
     var body: some Parser<Substring, [PGNComment]> {
         Parse {
@@ -26,9 +35,7 @@ struct MultipleCommentParser: Parser {
             Whitespace()
             SpecialCommentParser()
             Many {
-                SpecialCommentParser()
-            } separator: {
-                Whitespace()
+                AdditionalSpecialCommentParser()
             }
             Optionally {
                 Whitespace(1...)
