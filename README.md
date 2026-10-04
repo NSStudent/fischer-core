@@ -315,6 +315,79 @@ PGN comments preserve structured annotations:
 - Elapsed move time (`[%emt ...]`)
 - Engine evaluations (`[%eval ...]`)
 
+## What's New in 0.4.0 (unreleased)
+
+### Annotated move tree
+
+`AnnotatedMoveTree` is a mutable value-type tree of resolved moves with NAGs, comments and comment
+commands (`[%csl]`, `[%cal]`, `[%clk]`, `[%emt]`, `[%eval]`, plus any other command, preserved).
+Nodes are addressed with `MovePath`: index `0` is the main continuation at every level and higher
+indices are variations.
+
+```swift
+var tree = AnnotatedMoveTree()
+let e4 = try tree.insert(san: "e4", at: .root)        // [0]
+let e5 = try tree.insert(san: "e5", at: e4)           // [0, 0]
+let c5 = try tree.insert(san: "c5", at: e4)           // [0, 1] variation
+tree.updateAnnotations(at: c5) { $0.toggle(.goodMove); $0.commentText = "Sicilian" }
+tree.promote(at: c5)                                  // c5 becomes the main line
+let fen = tree.fen(at: [0, 0])
+let lines = tree.allLines                             // every line, for repertoire training
+```
+
+Read PGN keeping every annotation (moves are resolved, SAN is canonicalized, illegal moves are
+reported in `issues` or thrown in strict mode):
+
+```swift
+let games = try PGNReader().parseAnnotated(pgnText)
+let game = try AnnotatedPGNGame(pgn: pgnText)
+let clock = game.tree.node(at: [0])?.annotations.clockSeconds
+```
+
+### PGN writer
+
+```swift
+let text = PGNWriter().write(game)                    // seven tag roster, 80 columns
+let compact = PGNWriter(options: .compact).movetext(game.tree, result: game.result)
+let pgn = playedGame.pgn(tags: [.event: "Club"])      // Game.pgn(tags:result:)
+```
+
+Black moves get their `N...` number after comments and variations, and `FEN`/`SetUp` are added
+for games that do not start from the standard position.
+
+### Collections and duplicates
+
+```swift
+var chunker = PGNByteChunker()                         // streaming, resumable by byte offset
+let chunks = chunker.consume(data) + chunker.finish()
+let basic = try chunks[0].basicGame()
+let hash = basic.contentHash()                         // stable across formatting and comments
+let id = PGNHash.fallbackExternalID(for: chunks[0].text)
+```
+
+### SAN resolution and notation
+
+```swift
+let game = Game()
+let move = try game.resolve(san: "Cf3", language: .spanish)   // throws SANResolutionError
+let candidates = game.candidates(for: try SANMove(san: "Nd2"))
+let lenient = try SANMove(san: "0-0!?", options: .lenient)
+let spanish = try SANMove(san: "Nxe5+").description(language: .spanish) // "Cxe5+"
+let english = SANNotationLanguage.spanish.translateToEnglish("Dxd8#")  // "Qxd8#"
+let legal = game.legalSANMoves()
+var replay = try Game(sanMoves: ["e4", "e5", "Nf3"])
+try replay.replace(ply: 2, with: try SANMove(san: "Bc4"))
+```
+
+### Fixes
+
+- `+`/`#` are kept on castling SAN, and check after an underpromotion is computed with the actual piece.
+- A move that escapes check while giving check is now detected as check.
+- Queenside castling is legal when only the b-file square is attacked.
+- Fullmove numbers are correct after black moves in games that start with black to move.
+- `MoveTreePGNReader` no longer slows down quadratically or hangs on an unterminated comment.
+- Legal move generation no longer copies the whole game for every candidate move.
+
 ## Command Line
 
 The FischerCore command line interface can be used to explore and test the package from a terminal.
@@ -398,6 +471,9 @@ The following features are planned to improve the functionality and completeness
 - [x] Interactive CLI with board, move, position, reset, clear, help, and quit commands
 - [x] FEN-to-PGN reconstruction from position sequences
 - [x] UCI-to-SAN conversion helpers
+- [x] Annotated move tree, annotated PGN reader and PGN writer (0.4.0)
+- [x] PGN collection splitting and content hash (0.4.0)
+- [x] SAN resolution with typed errors, lenient parsing and Spanish notation (0.4.0)
 - [x] App workflow helpers for physical-board FEN placement resolution, UCI execution, structured SAN history, move-history navigation, and outcome lookup
 - [x] `Sendable` conformances for value-safe core model types
 - [ ] Add performance benchmarks for parsers and move generation.
