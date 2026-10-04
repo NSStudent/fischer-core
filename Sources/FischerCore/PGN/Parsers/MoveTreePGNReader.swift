@@ -334,22 +334,16 @@ private extension MoveTreePGNReader {
             return castling
         }
 
-        var remainder = input
-        if let move = try? SanMoveParser().parse(&remainder),
-           isTokenBoundary(remainder.first) {
-            input = remainder
-            return move
-        }
-
-        // Lenient fallback for tokens such as `e8Q` or `Nxe5:`.
         guard let first = input.first, first.isLetter else {
             return nil
         }
         let token = input.prefix { !isTokenBoundary($0) }
-        guard let move = try? SANMove(san: String(token), options: .lenient) else {
+        // Exact SAN first, then a lenient fallback for tokens such as `e8Q`.
+        guard let move = FastSANParser.parse(token)
+                ?? (try? SANMove(san: String(token), options: .lenient)) else {
             return nil
         }
-        input.removeFirst(token.count)
+        input = input[token.endIndex...]
         return move
     }
 

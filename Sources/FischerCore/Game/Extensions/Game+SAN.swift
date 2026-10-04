@@ -178,7 +178,7 @@ public extension Game {
             let piece = Piece(kind: defaultMove.piece, color: playerTurn)
             var result: [ResolvedMove] = []
             for start in board.bitboard(for: piece) where matches(start, defaultMove.from) {
-                guard movesBitboardForPiece(at: start, considerHalfmoves: false)[defaultMove.toSquare] else {
+                guard isLegalFast(move: start >>> defaultMove.toSquare, considerHalfmoves: false) else {
                     continue
                 }
                 let move = start >>> defaultMove.toSquare

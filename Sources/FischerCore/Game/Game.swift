@@ -280,8 +280,7 @@ extension Game {
 
     /// Returns `true` if the move is legal.
     public func isLegal(move: Move, considerHalfmoves: Bool = true) -> Bool {
-        let moves = movesBitboardForPiece(at: move.start, considerHalfmoves: considerHalfmoves)
-        return Bitboard(square: move.end).intersects(moves)
+        isLegalFast(move: move, considerHalfmoves: considerHalfmoves)
     }
 
     public mutating func execute(move: Move, considerHalfmoves: Bool = true, promotion: @autoclosure () -> PromotionPiece) throws {
@@ -418,91 +417,121 @@ extension Game {
     }
 
     func movesBitboardForPiece(at square: Square, considerHalfmoves: Bool) -> Bitboard {
-       if considerHalfmoves && halfmoves >= 100 {
-           return 0
-       }
-       guard let piece = board[square] else { return 0 }
-       guard piece.color == playerTurn else { return 0 }
-       if kingIsDoubleChecked {
-           guard piece.kind.isKing else {
-               return 0
-           }
-       }
+        guard let piece = board[square] else { return 0 }
+        var movesBitboard = pseudoLegalMoves(for: piece, at: square, considerHalfmoves: considerHalfmoves)
+        let player = playerTurn
+        for moveSquare in movesBitboard {
+            if leavesKingInCheck(piece: piece, from: square, to: moveSquare, player: player) {
+                movesBitboard[moveSquare] = false
+            }
+        }
+        return movesBitboard
+    }
 
-       let playerBitboard = board.bitboard(for: playerTurn)
-       let enemyBitboard = board.bitboard(for: playerTurn.inverse())
-       let allBitboard = playerBitboard | enemyBitboard
-       let emptyBitboard = ~allBitboard
-       let squareBitboard = Bitboard(square: square)
+    /// The moves of the piece at `square` that follow its movement rules,
+    /// before checking that the mover's king is safe. Castling squares are
+    /// only included when the king path is safe.
+    private func pseudoLegalMoves(for piece: Piece, at square: Square, considerHalfmoves: Bool) -> Bitboard {
+        if considerHalfmoves && halfmoves >= 100 {
+            return 0
+        }
+        guard piece.color == playerTurn else { return 0 }
+        if kingIsDoubleChecked {
+            guard piece.kind.isKing else {
+                return 0
+            }
+        }
 
-       var movesBitboard: Bitboard = 0
-       let attacks = square.attacks(for: piece, stoppers: allBitboard)
+        let playerBitboard = board.bitboard(for: playerTurn)
+        let enemyBitboard = board.bitboard(for: playerTurn.inverse())
+        let allBitboard = playerBitboard | enemyBitboard
+        let emptyBitboard = ~allBitboard
+        let squareBitboard = Bitboard(square: square)
 
-       if piece.kind.isPawn {
-           let enPassant = enPassantTarget.map({ Bitboard(square: $0) }) ?? 0
-           let pushes = squareBitboard.pawnPushes(for: playerTurn,
-                                                  empty: emptyBitboard)
-           let doublePushes = (squareBitboard & Bitboard(startFor: piece))
-               .pawnPushes(for: playerTurn, empty: emptyBitboard)
-               .pawnPushes(for: playerTurn, empty: emptyBitboard)
-           movesBitboard = movesBitboard | pushes | doublePushes
-           | (attacks & enemyBitboard)
-               | (attacks & enPassant)
-       } else {
-           movesBitboard = movesBitboard | attacks & ~playerBitboard
-       }
+        var movesBitboard: Bitboard = 0
+        let attacks = square.attacks(for: piece, stoppers: allBitboard)
 
-       if piece.kind.isKing && squareBitboard == Bitboard(startFor: piece) && !kingIsChecked {
-           rightLoop: for right in castlingRights {
-               let emptySquares = right.emptySquares
-               guard right.color == playerTurn && allBitboard & emptySquares == 0 else {
-                   continue
-               }
-               // Only the squares the king crosses must be safe. On the queenside
-               // the b-file square must be empty but may be attacked.
-               let kingPath = Bitboard(square: right.castleSquare) | square.between(right.castleSquare)
-               for square in kingPath {
-                   guard board.attackers(to: square, color: piece.color.inverse()).isEmpty else {
-                       continue rightLoop
-                   }
-               }
-               movesBitboard = movesBitboard | Bitboard(square: right.castleSquare)
-           }
-       }
+        if piece.kind.isPawn {
+            let enPassant = enPassantTarget.map({ Bitboard(square: $0) }) ?? 0
+            let pushes = squareBitboard.pawnPushes(for: playerTurn,
+                                                   empty: emptyBitboard)
+            let doublePushes = (squareBitboard & Bitboard(startFor: piece))
+                .pawnPushes(for: playerTurn, empty: emptyBitboard)
+                .pawnPushes(for: playerTurn, empty: emptyBitboard)
+            movesBitboard = movesBitboard | pushes | doublePushes
+                | (attacks & enemyBitboard)
+                | (attacks & enPassant)
+        } else {
+            movesBitboard = movesBitboard | attacks & ~playerBitboard
+        }
 
-       let player = playerTurn
-       for moveSquare in movesBitboard {
-           if leavesKingInCheck(piece: piece, from: square, to: moveSquare, player: player) {
-               movesBitboard[moveSquare] = false
-           }
-       }
+        if piece.kind.isKing && squareBitboard == Bitboard(startFor: piece) && !kingIsChecked {
+            rightLoop: for right in castlingRights {
+                let emptySquares = right.emptySquares
+                guard right.color == playerTurn && allBitboard & emptySquares == 0 else {
+                    continue
+                }
+                // Only the squares the king crosses must be safe. On the queenside
+                // the b-file square must be empty but may be attacked.
+                let kingPath = Bitboard(square: right.castleSquare) | square.between(right.castleSquare)
+                for square in kingPath {
+                    guard board.attackers(to: square, color: piece.color.inverse()).isEmpty else {
+                        continue rightLoop
+                    }
+                }
+                movesBitboard = movesBitboard | Bitboard(square: right.castleSquare)
+            }
+        }
+        return movesBitboard
+    }
 
-       return movesBitboard
-   }
+    /// Whether `move` is legal, checking king safety only for that move.
+    func isLegalFast(move: Move, considerHalfmoves: Bool) -> Bool {
+        guard let piece = board[move.start],
+              pseudoLegalMoves(for: piece, at: move.start, considerHalfmoves: considerHalfmoves)[move.end] else {
+            return false
+        }
+        return !leavesKingInCheck(piece: piece, from: move.start, to: move.end, player: playerTurn)
+    }
 
-    /// Simulates a pseudo-legal move on a copy of the board only and reports
-    /// whether it leaves the mover's king attacked.
+    /// Reports whether a pseudo-legal move leaves the mover's king attacked,
+    /// using bitboards only (no board or game copies).
     ///
-    /// This avoids copying the whole game (including its move history) for
-    /// every candidate move. Promotions and the castling rook do not affect the
-    /// safety of the mover's king, so they are not simulated.
+    /// Promotions and the castling rook do not affect the safety of the
+    /// mover's king, so they are not simulated.
     private func leavesKingInCheck(piece: Piece, from start: Square, to end: Square, player: PlayerColor) -> Bool {
-        var testBoard = board
+        let kingSquare: Square
+        if piece.kind.isKing {
+            kingSquare = end
+        } else if let square = board.squareForKing(for: player) {
+            kingSquare = square
+        } else {
+            return false
+        }
+
         var captureSquare = end
         if piece.kind.isPawn, end == enPassantTarget, start.file != end.file {
             captureSquare = Square(file: end.file, rank: start.rank)
         }
+        let removed = ~(Bitboard(square: start) | Bitboard(square: captureSquare))
+        let occupied = (board.occupiedSpaces & removed) | Bitboard(square: end)
         let opponent = player.inverse()
-        for kind in Piece.Kind.allCases {
-            let captured = Piece(kind: kind, color: opponent)
-            if testBoard[captured][captureSquare] {
-                testBoard[captured][captureSquare] = false
-                break
-            }
-        }
-        testBoard[piece][start] = false
-        testBoard[piece][end] = true
-        return testBoard.attackersToKing(for: player) != 0
+        let keep = ~Bitboard(square: captureSquare)
+
+        let pawns = board[Piece(pawn: opponent)] & keep
+        let knights = board[Piece(knight: opponent)] & keep
+        let king = board[Piece(king: opponent)]
+        let queens = board[Piece(queen: opponent)] & keep
+        let diagonal = (board[Piece(bishop: opponent)] & keep) | queens
+        let straight = (board[Piece(rook: opponent)] & keep) | queens
+        let kingBitboard = Bitboard(square: kingSquare)
+
+        if !(kingSquare.attacks(for: Piece(pawn: player)) & pawns).isEmpty { return true }
+        if !(kingSquare.knightAttacks() & knights).isEmpty { return true }
+        if !(kingSquare.kingAttacks() & king).isEmpty { return true }
+        if !diagonal.isEmpty, !(kingBitboard.bishopAttacks(stoppers: occupied) & diagonal).isEmpty { return true }
+        if !straight.isEmpty, !(kingBitboard.rookAttacks(stoppers: occupied) & straight).isEmpty { return true }
+        return false
     }
 
     /// Returns `true` when the side to move has at least one legal move,
@@ -511,8 +540,11 @@ extension Game {
     /// Stops at the first legal move found, which makes it much cheaper than
     /// `availableMoves().isEmpty` for check and mate detection.
     func hasAnyLegalMove() -> Bool {
-        for square in board.bitboard(for: playerTurn) {
-            if !movesBitboardForPiece(at: square, considerHalfmoves: false).isEmpty {
+        let player = playerTurn
+        for square in board.bitboard(for: player) {
+            guard let piece = board[square] else { continue }
+            for target in pseudoLegalMoves(for: piece, at: square, considerHalfmoves: false)
+            where !leavesKingInCheck(piece: piece, from: square, to: target, player: player) {
                 return true
             }
         }

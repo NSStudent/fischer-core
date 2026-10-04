@@ -53,7 +53,11 @@ public extension SANMove {
     ///   - options: The relaxations to apply.
     init(san: String, language: SANNotationLanguage, options: SANParsingOptions = .strict) throws {
         let normalized = SANMove.normalize(san, language: language, options: options)
-        self = try SanMoveParser().parse(normalized)
+        if let move = FastSANParser.parse(normalized) {
+            self = move
+        } else {
+            self = try SanMoveParser().parse(normalized)
+        }
     }
 
     /// Returns `text` rewritten as exact English SAN according to `options`.

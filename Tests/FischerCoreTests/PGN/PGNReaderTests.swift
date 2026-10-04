@@ -35,10 +35,14 @@ final class PGNReaderTests {
         let moveTree = try benchmark(label: "PGNReader") {
             try PGNReader().parse(fileContents).count
         }
+        let annotated = try benchmark(label: "PGNReader annotated") {
+            try PGNReader().parseAnnotated(fileContents).count
+        }
 
         #expect(classic.count == 159)
         #expect(basic.count == 159)
         #expect(moveTree.count == 159)
+        #expect(annotated.count == 159)
 
         print(
             """
@@ -46,6 +50,7 @@ final class PGNReaderTests {
             - \(classic.summary)
             - \(basic.summary)
             - \(moveTree.summary)
+            - \(annotated.summary)
             """
         )
     }

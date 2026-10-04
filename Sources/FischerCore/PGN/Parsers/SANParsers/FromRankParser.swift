@@ -9,7 +9,7 @@ import Parsing
 
 struct FromRankParser: Parser {
     var body: some Parser<Substring, SANMove.FromPosition> {
-        Prefix(1) { $0.isNumber }.map(String.init).compactMap(Int.init).compactMap(Rank.init(integerLiteral:)).compactMap {
+        Prefix(1) { $0.isNumber }.map(String.init).compactMap(Int.init).compactMap(Rank.init(rawValue:)).compactMap {
             SANMove.FromPosition.rank($0)
         }
     }
