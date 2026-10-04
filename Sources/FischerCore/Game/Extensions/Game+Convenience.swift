@@ -5,7 +5,7 @@
 
 /// A legal move resolved against a concrete game state, including the promotion
 /// choice needed to reproduce the resulting position.
-public struct ResolvedMove: Equatable, Sendable {
+public struct ResolvedMove: Hashable, Sendable {
     /// The legal move to execute in the game state where it was resolved.
     public let move: Move
 
@@ -149,23 +149,12 @@ public extension Game {
     ///   - uci: The UCI move string to execute.
     ///   - considerHalfmoves: Whether to apply halfmove-clock validation.
     mutating func execute(uci: String, considerHalfmoves: Bool = true) throws {
-        let parser = UCIMoveParser()
-        let parsedMove: UCIMove
-        do {
-            parsedMove = try parser.parse(uci)
-        } catch {
+        guard let parsed = ResolvedMove(uci: uci) else {
             throw FischerCoreError.illegalMove
         }
-
-        switch parsedMove {
-        case .nullMove:
-            throw FischerCoreError.illegalMove
-        case let .move(value):
-            try execute(
-                resolvedMove: ResolvedMove(move: value.asMove(), promotion: value.promotion),
-                considerHalfmoves: considerHalfmoves
-            )
-        }
+        // Normalizes king-takes-rook castling; falls back to the parsed move
+        // so illegal moves keep throwing `ExecutionError.illegalMove`.
+        try execute(resolvedMove: resolvedMove(uci: uci) ?? parsed, considerHalfmoves: considerHalfmoves)
     }
 
     /// Undoes moves until the game reaches its initial position.
@@ -229,19 +218,6 @@ public extension Game {
                 try replay.execute(move: element.move)
             }
             return playedMove
-        }
-    }
-}
-
-private extension SANMove {
-    var isCheckmate: Bool {
-        switch self {
-        case let .san(move):
-            return move.isCheckmate
-        case let .kingsideCastling(_, isCheckMate):
-            return isCheckMate
-        case let .queensideCastling(_, isCheckMate):
-            return isCheckMate
         }
     }
 }

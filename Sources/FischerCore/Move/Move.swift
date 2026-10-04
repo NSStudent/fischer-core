@@ -205,31 +205,16 @@ extension Move {
     }
     
     init(game: Game, sanDefaultMove: SANMove.SANDefaultMove, considerHalfmoves: Bool = true) throws {
-        let piece = Piece(kind: sanDefaultMove.piece, color: game.playerTurn)
-        let bitboard = game.board[piece]
-        if let from = sanDefaultMove.from {
-            guard let start = bitboard.first(
-                where: { currentSquare in
-                    switch from {
-                    case .file(let file):
-                        return (currentSquare.file == file) && game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare)
-                case .rank(let rank):
-                    return (currentSquare.rank == rank) && game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare)
-                case .square(let sqr):
-                    return sqr == currentSquare
-                }
-            }) else {
-                    throw FischerCoreError.illegalMove
-            }
-            self.init(start: start, end: sanDefaultMove.toSquare)
-        } else {
-            guard let start = bitboard.first(where: { currentSquare in
-                game.isLegal(move: currentSquare >>> sanDefaultMove.toSquare, considerHalfmoves: considerHalfmoves)
-            }) else {
-                throw FischerCoreError.illegalMove
-            }
-            self.init(start: start, end: sanDefaultMove.toSquare)
+        if considerHalfmoves && game.halfmoves >= 100 {
+            throw FischerCoreError.illegalMove
         }
+        // Keeps the 0.3.1 behaviour of picking the first legal candidate when
+        // the SAN is ambiguous. Use `Game.resolve(_:strict:)` to detect
+        // ambiguity.
+        guard let candidate = game.candidates(for: .san(sanDefaultMove)).first else {
+            throw FischerCoreError.illegalMove
+        }
+        self = candidate.move
     }
 }
 

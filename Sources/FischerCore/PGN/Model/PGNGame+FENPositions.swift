@@ -49,7 +49,7 @@ public extension PGNGame {
                 throw PGNGameFENPositionsError.malformedPosition(index: index, fen: rawPosition)
             }
             guard placement != game.position.board.fen() else { continue }
-            guard let result = physicalMove(to: placement, in: game) else {
+            guard let result = game.resolvedMove(toPlacement: placement) else {
                 if index < positions.index(before: positions.endIndex) {
                     continue
                 }
@@ -71,34 +71,6 @@ public extension PGNGame {
             }
         }
         return try game.sanRepresentation()
-    }
-}
-
-private extension PGNGame {
-    static func physicalMove(to placement: String, in game: Game) -> (move: Move, promotion: PromotionPiece?)? {
-        for move in game.availableMoves() {
-            if isPawnPromotion(move: move, in: game) {
-                for piece in PromotionPiece.allCases {
-                    var next = game
-                    try? next.execute(move: move, promotion: piece)
-                    if next.position.board.fen() == placement {
-                        return (move, piece)
-                    }
-                }
-            } else {
-                var next = game
-                try? next.execute(move: move)
-                if next.position.board.fen() == placement {
-                    return (move, nil)
-                }
-            }
-        }
-        return nil
-    }
-
-    static func isPawnPromotion(move: Move, in game: Game) -> Bool {
-        guard let piece = game.board[move.start] else { return false }
-        return piece.kind.isPawn && move.end.rank == Rank(endFor: piece.color)
     }
 }
 

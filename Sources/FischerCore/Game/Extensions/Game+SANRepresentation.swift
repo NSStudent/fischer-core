@@ -35,6 +35,6 @@ extension Game {
     }
     
     func sanList() -> [SANMove] {
-        return []
+        (try? sanMovesOfHistory()) ?? []
     }
 }
