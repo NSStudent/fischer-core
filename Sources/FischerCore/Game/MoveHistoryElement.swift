@@ -62,8 +62,15 @@ public struct MoveHistoryElement: Equatable, Sendable {
     }
 }
 
+public extension MoveHistoryElement {
+    /// The played move with its promotion piece.
+    var resolvedMove: ResolvedMove {
+        ResolvedMove(move: move, promotion: promotionPiece)
+    }
+}
+
 extension MoveHistoryElement {
     func asUCIMove() -> String {
-        return "\(move.start)\(move.end)\(promotionPiece?.uciValue ?? "")"
+        resolvedMove.uci
     }
 }

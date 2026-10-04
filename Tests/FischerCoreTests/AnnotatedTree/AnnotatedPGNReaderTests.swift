@@ -167,3 +167,22 @@ struct AnnotatedPGNReaderTests {
         #expect(game.tree.mainline.count == 3)
     }
 }
+
+struct AnnotatedPGNConversionTests {
+    @Test("Converting a PGNGame keeps comments, NAGs and variations like the reader")
+    func convertsPGNGame() throws {
+        let text = """
+        [Event "Conversion"]
+        [Result "*"]
+
+        { Intro } 1. e4 { [%clk 0:05:00] } e5 { [%clk 0:05:00] } 2. Nf3 $1 { Developing } ( 2. Bc4 ) 2... Nc6 ( 2... d6 3. d4 ) 3. Bb5 *
+        """
+        let parsed = try PGNGameParser().parse(text)
+        let converted = try AnnotatedPGNGame(parsed)
+        let read = try AnnotatedPGNGame(pgn: text)
+        #expect(converted.issues.isEmpty)
+        #expect(converted.tree == read.tree)
+        #expect(converted.tree.clocks(at: [0, 0]) == PGNClockSnapshot(white: 300, black: 300))
+        #expect(converted.tree.clocks(at: [0]) == PGNClockSnapshot(white: 300, black: nil))
+    }
+}
