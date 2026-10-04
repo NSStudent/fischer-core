@@ -209,9 +209,10 @@ extension AnnotatedPGNGame {
                 mainGame = after
             }
             for variant in current.sourceVariants {
-                guard var (node, after) = try resolveMove(variant, in: currentGame, at: path, issues: &issues, strict: strict) else {
+                guard let (resolvedNode, after) = try resolveMove(variant, in: currentGame, at: path, issues: &issues, strict: strict) else {
                     continue
                 }
+                var node = resolvedNode
                 node.children = try resolve(
                     variant.sourceNext,
                     game: after,
