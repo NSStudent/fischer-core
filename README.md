@@ -386,7 +386,9 @@ try replay.replace(ply: 2, with: try SANMove(san: "Bc4"))
 - Queenside castling is legal when only the b-file square is attacked.
 - Fullmove numbers are correct after black moves in games that start with black to move.
 - `MoveTreePGNReader` no longer slows down quadratically or hangs on an unterminated comment.
-- Legal move generation no longer copies the whole game for every candidate move.
+- `Square("e9")` and SAN such as `N9f3` fail gracefully instead of crashing.
+- Faster SAN parsing and legal move generation: reading 5,347 TWIC games with every move resolved
+  takes about 1.7 s in release (the plain `PGNReader` went from ~27 s to ~0.14 s for 159 games in debug).
 
 ## Command Line
 
