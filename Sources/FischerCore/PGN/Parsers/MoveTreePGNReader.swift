@@ -386,7 +386,7 @@ private extension MoveTreePGNReader {
         }
 
         while true {
-            let count = input.count
+            let start = input.startIndex
             skipWhitespace()
 
             if input.first == "%" || input.first == ";" {
@@ -394,7 +394,7 @@ private extension MoveTreePGNReader {
                 continue
             }
 
-            if input.count == count {
+            if input.startIndex == start {
                 return
             }
         }
@@ -402,7 +402,7 @@ private extension MoveTreePGNReader {
 
     mutating func skipMovetextNoise() {
         while true {
-            let count = input.count
+            let start = input.startIndex
             skipWhitespace()
 
             if input.first == ";" || input.first == "%" {
@@ -410,7 +410,7 @@ private extension MoveTreePGNReader {
                 continue
             }
 
-            if input.count == count {
+            if input.startIndex == start {
                 return
             }
         }

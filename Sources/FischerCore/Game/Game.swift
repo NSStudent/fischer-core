@@ -379,11 +379,9 @@ extension Game {
         } else {
             enPassantTarget = nil
         }
-        if kingIsChecked {
-            attackersToKing = 0
-        } else {
-            attackersToKing = board.attackersToKing(for: playerTurn)
-        }
+        // Always recompute: a move that escapes check can also give check
+        // (for example, interposing a piece that discovers an attack).
+        attackersToKing = board.attackersToKing(for: playerTurn)
 
         fullmoves = initalFullmoves + (UInt(moveCount) / 2)
         undoHistory = []
@@ -419,7 +417,7 @@ extension Game {
         return movesBitboardForPiece(at: square, considerHalfmoves: flag).moves(from: square)
     }
 
-    private func movesBitboardForPiece(at square: Square, considerHalfmoves: Bool) -> Bitboard {
+    func movesBitboardForPiece(at square: Square, considerHalfmoves: Bool) -> Bitboard {
        if considerHalfmoves && halfmoves >= 100 {
            return 0
        }
@@ -460,7 +458,10 @@ extension Game {
                guard right.color == playerTurn && allBitboard & emptySquares == 0 else {
                    continue
                }
-               for square in emptySquares {
+               // Only the squares the king crosses must be safe. On the queenside
+               // the b-file square must be empty but may be attacked.
+               let kingPath = Bitboard(square: right.castleSquare) | square.between(right.castleSquare)
+               for square in kingPath {
                    guard board.attackers(to: square, color: piece.color.inverse()).isEmpty else {
                        continue rightLoop
                    }
@@ -471,16 +472,62 @@ extension Game {
 
        let player = playerTurn
        for moveSquare in movesBitboard {
-           var copyGame = self.copy()
-           try? copyGame.execute(uncheckedMove: square >>> moveSquare, promotion: { .queen })
-               if copyGame.board.attackersToKing(for: player) != 0 {
-                   movesBitboard[moveSquare] = false
-               }
-
+           if leavesKingInCheck(piece: piece, from: square, to: moveSquare, player: player) {
+               movesBitboard[moveSquare] = false
+           }
        }
 
        return movesBitboard
    }
+
+    /// Simulates a pseudo-legal move on a copy of the board only and reports
+    /// whether it leaves the mover's king attacked.
+    ///
+    /// This avoids copying the whole game (including its move history) for
+    /// every candidate move. Promotions and the castling rook do not affect the
+    /// safety of the mover's king, so they are not simulated.
+    private func leavesKingInCheck(piece: Piece, from start: Square, to end: Square, player: PlayerColor) -> Bool {
+        var testBoard = board
+        var captureSquare = end
+        if piece.kind.isPawn, end == enPassantTarget, start.file != end.file {
+            captureSquare = Square(file: end.file, rank: start.rank)
+        }
+        let opponent = player.inverse()
+        for kind in Piece.Kind.allCases {
+            let captured = Piece(kind: kind, color: opponent)
+            if testBoard[captured][captureSquare] {
+                testBoard[captured][captureSquare] = false
+                break
+            }
+        }
+        testBoard[piece][start] = false
+        testBoard[piece][end] = true
+        return testBoard.attackersToKing(for: player) != 0
+    }
+
+    /// Returns `true` when the side to move has at least one legal move,
+    /// ignoring the halfmove clock.
+    ///
+    /// Stops at the first legal move found, which makes it much cheaper than
+    /// `availableMoves().isEmpty` for check and mate detection.
+    func hasAnyLegalMove() -> Bool {
+        for square in board.bitboard(for: playerTurn) {
+            if !movesBitboardForPiece(at: square, considerHalfmoves: false).isEmpty {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Whether the side to move is checkmated.
+    public var isCheckmate: Bool {
+        kingIsChecked && !hasAnyLegalMove()
+    }
+
+    /// Whether the side to move is stalemated.
+    public var isStalemate: Bool {
+        !kingIsChecked && !hasAnyLegalMove()
+    }
 
     public func copy() -> Game {
         return Game(game: self)
