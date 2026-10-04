@@ -22,25 +22,15 @@ public struct MoveTreePGNReader {
     }
 
     public mutating func readGame() throws -> MoveTreePGN? {
-        skipLeadingNoise()
-
-        guard !input.isEmpty else {
+        guard let raw = try readRawGame(parsesInitialComment: true) else {
             return nil
         }
 
-        let tags = try parseTags()
-        skipLeadingNoise()
-
-        let initialComment = try parseCommentList()
-
-        let (turn, color) = initialPlyState(from: tags)
-        let line = try parseLine(untilVariationEnd: false, turn: turn, color: color)
-
         return MoveTreePGN(
-            tags: tags,
-            initialComment: initialComment,
-            tree: line.head?.freeze(),
-            result: line.result
+            tags: raw.tags,
+            initialComment: raw.initialComment,
+            tree: raw.line.head?.freeze(),
+            result: raw.line.result
         )
     }
 
@@ -51,44 +41,97 @@ public struct MoveTreePGNReader {
         }
         return games
     }
+
+    /// Reads the next game into an ``AnnotatedPGNGame``, keeping NAGs,
+    /// comments, comment commands and variations, with every move resolved.
+    ///
+    /// In lenient mode (the default) a move that cannot be played ends its
+    /// line and is reported in ``AnnotatedPGNGame/issues``; in strict mode it
+    /// throws ``AnnotatedPGNError/illegalMove(_:)``.
+    ///
+    /// - Returns: The game, or `nil` at the end of the input.
+    public mutating func readAnnotatedGame(strict: Bool = false) throws -> AnnotatedPGNGame? {
+        guard let raw = try readRawGame(parsesInitialComment: false) else {
+            return nil
+        }
+        return try AnnotatedPGNGame(raw: raw, strict: strict)
+    }
+
+    /// Reads every remaining game as ``AnnotatedPGNGame`` values.
+    public mutating func readAnnotatedGames(strict: Bool = false) throws -> [AnnotatedPGNGame] {
+        var games: [AnnotatedPGNGame] = []
+        while let game = try readAnnotatedGame(strict: strict) {
+            games.append(game)
+        }
+        return games
+    }
+}
+
+struct RawPGNGame {
+    let tags: [PGNTag: String]
+    let tagOrder: [PGNTag]
+    let initialComment: [PGNComment]?
+    let line: RawPGNLine
+}
+
+struct RawPGNLine {
+    let head: RawPGNNode?
+    let leadingComments: [Substring]
+    let result: PGNOutcome?
+}
+
+final class RawPGNNode {
+    let turn: UInt
+    let color: PlayerColor
+    let move: SANMove
+    var annotations = MoveAnnotations()
+    var next: RawPGNNode?
+    var variants: [RawPGNNode]
+
+    init(
+        turn: UInt,
+        color: PlayerColor,
+        move: SANMove,
+        next: RawPGNNode? = nil,
+        variants: [RawPGNNode] = []
+    ) {
+        self.turn = turn
+        self.color = color
+        self.move = move
+        self.next = next
+        self.variants = variants
+    }
+
+    func freeze() -> MoveTree {
+        MoveTree(
+            turn: turn,
+            color: color,
+            node: move,
+            next: next?.freeze(),
+            variants: variants.map { $0.freeze() }
+        )
+    }
 }
 
 private extension MoveTreePGNReader {
-    final class NodeBuilder {
-        let turn: UInt
-        let color: PlayerColor
-        let move: SANMove
-        var next: NodeBuilder?
-        var variants: [NodeBuilder]
+    typealias NodeBuilder = RawPGNNode
+    typealias ParsedLine = RawPGNLine
 
-        init(
-            turn: UInt,
-            color: PlayerColor,
-            move: SANMove,
-            next: NodeBuilder? = nil,
-            variants: [NodeBuilder] = []
-        ) {
-            self.turn = turn
-            self.color = color
-            self.move = move
-            self.next = next
-            self.variants = variants
+    mutating func readRawGame(parsesInitialComment: Bool) throws -> RawPGNGame? {
+        skipLeadingNoise()
+
+        guard !input.isEmpty else {
+            return nil
         }
 
-        func freeze() -> MoveTree {
-            MoveTree(
-                turn: turn,
-                color: color,
-                node: move,
-                next: next?.freeze(),
-                variants: variants.map { $0.freeze() }
-            )
-        }
-    }
+        let (tags, tagOrder) = try parseTags()
+        skipLeadingNoise()
 
-    struct ParsedLine {
-        let head: NodeBuilder?
-        let result: PGNOutcome?
+        let initialComment = parsesInitialComment ? try parseCommentList() : nil
+
+        let (turn, color) = initialPlyState(from: tags)
+        let line = try parseLine(untilVariationEnd: false, turn: turn, color: color)
+        return RawPGNGame(tags: tags, tagOrder: tagOrder, initialComment: initialComment, line: line)
     }
 
     mutating func parseLine(
@@ -101,6 +144,7 @@ private extension MoveTreePGNReader {
         var head: NodeBuilder?
         var tail: NodeBuilder?
         var result: PGNOutcome?
+        var leadingComments: [Substring] = []
 
         while true {
             skipMovetextNoise()
@@ -139,13 +183,21 @@ private extension MoveTreePGNReader {
                     color: tail.color
                 )
                 if let branch = variation.head {
+                    for comment in variation.leadingComments {
+                        branch.annotations.absorbComment(comment, before: true)
+                    }
                     tail.variants.append(branch)
                 }
                 continue
             }
 
             if character == "{" {
-                _ = try parseCommentList()
+                let body = readCommentBody()
+                if let tail {
+                    tail.annotations.absorbComment(body, before: false)
+                } else {
+                    leadingComments.append(body)
+                }
                 continue
             }
 
@@ -158,7 +210,10 @@ private extension MoveTreePGNReader {
                 continue
             }
 
-            if parseNAG() {
+            if let codes = parseGlyphs() {
+                for code in codes {
+                    tail?.annotations.addNAGCode(code)
+                }
                 continue
             }
 
@@ -189,17 +244,18 @@ private extension MoveTreePGNReader {
             skipToken()
         }
 
-        return ParsedLine(head: head, result: result)
+        return ParsedLine(head: head, leadingComments: leadingComments, result: result)
     }
 
-    mutating func parseTags() throws -> [PGNTag: String] {
+    mutating func parseTags() throws -> ([PGNTag: String], [PGNTag]) {
         var tags: [PGNTag: String] = [:]
+        var order: [PGNTag] = []
 
         while true {
             skipLeadingNoise()
 
             guard input.first == "[" else {
-                return tags
+                return (tags, order)
             }
 
             input.removeFirst()
@@ -260,7 +316,9 @@ private extension MoveTreePGNReader {
             input.removeFirst()
 
             let key = PGNTag(rawValue: name) ?? .custom(name)
-            tags[key] = value
+            if tags.updateValue(value, forKey: key) == nil {
+                order.append(key)
+            }
         }
     }
 
@@ -277,31 +335,64 @@ private extension MoveTreePGNReader {
         }
 
         var remainder = input
-        guard let move = try? SanMoveParser().parse(&remainder),
-              isTokenBoundary(remainder.first) else {
+        if let move = try? SanMoveParser().parse(&remainder),
+           isTokenBoundary(remainder.first) {
+            input = remainder
+            return move
+        }
+
+        // Lenient fallback for tokens such as `e8Q` or `Nxe5:`.
+        guard let first = input.first, first.isLetter else {
             return nil
         }
-        input = remainder
+        let token = input.prefix { !isTokenBoundary($0) }
+        guard let move = try? SANMove(san: String(token), options: .lenient) else {
+            return nil
+        }
+        input.removeFirst(token.count)
         return move
     }
 
-    mutating func parseNAG() -> Bool {
-        guard let character = input.first,
-              character == "!" || character == "?" || character == "$" else {
-            return false
+    /// Reads `!`, `?`, `!!`, `??`, `!?`, `?!` and `$n` glyphs.
+    ///
+    /// - Returns: The NAG codes, or `nil` when the input does not start with
+    ///   a glyph.
+    mutating func parseGlyphs() -> [Int]? {
+        guard let character = input.first else { return nil }
+
+        if character == "$" {
+            let digits = input.dropFirst().prefix(while: \.isWholeNumber)
+            guard !digits.isEmpty, let code = Int(digits) else { return nil }
+            input.removeFirst(1 + digits.count)
+            return [code]
         }
 
-        var remainder = input
-        guard (try? NAGParser().parse(&remainder)) != nil else {
-            return false
+        guard character == "!" || character == "?" else { return nil }
+        let symbol = input.prefix { $0 == "!" || $0 == "?" }
+        input.removeFirst(symbol.count)
+        switch symbol {
+        case "!": return [NAG.goodMove.rawValue]
+        case "?": return [NAG.poorMove.rawValue]
+        case "!!": return [NAG.veryGoodMove.rawValue]
+        case "??": return [NAG.veryPoorMove.rawValue]
+        case "!?": return [NAG.speculativeMove.rawValue]
+        case "?!": return [NAG.questionableMove.rawValue]
+        default: return []
         }
+    }
 
-        guard remainder.startIndex != input.startIndex else {
-            return false
+    /// Reads a `{...}` comment and returns its body. An unterminated comment
+    /// runs to the end of the input.
+    mutating func readCommentBody() -> Substring {
+        input.removeFirst()
+        guard let close = input.firstIndex(of: "}") else {
+            let body = input
+            input = input[input.endIndex...]
+            return body
         }
-
-        input = remainder
-        return true
+        let body = input[..<close]
+        input = input[input.index(after: close)...]
+        return body
     }
 
     mutating func parseMoveNumber(turn: inout UInt, color: inout PlayerColor) -> Bool {

@@ -79,6 +79,38 @@ public extension Game {
 
         var after = self
         try after.execute(uncheckedMove: move, promotion: { promotion ?? .queen })
+        return san(forLegal: ResolvedMove(move: move, promotion: promotion), piece: piece, resultingGame: after)
+    }
+
+    /// Returns the long algebraic notation for a legal move, for example
+    /// `"Ng1-f3"`, `"e7xd8=Q+"` or `"O-O"`.
+    func longNotation(for resolvedMove: ResolvedMove, language: SANNotationLanguage = .english) throws -> String {
+        let san = try san(for: resolvedMove)
+        if san.isCastling {
+            return san.description
+        }
+        guard let piece = board[resolvedMove.move.start] else {
+            throw SANResolutionError.illegal
+        }
+        return NotationMove.long(
+            from: resolvedMove.move.start,
+            to: resolvedMove.move.end,
+            piece: piece.kind,
+            promotion: san.promotion,
+            isCapture: san.isCapture,
+            isCheck: san.isCheck,
+            isCheckmate: san.isCheckmate,
+            language: language
+        )
+    }
+}
+
+extension Game {
+    /// Builds the SAN of a move already known to be legal, given the game
+    /// after playing it. Avoids replaying the move when the caller already
+    /// did.
+    func san(forLegal resolvedMove: ResolvedMove, piece: Piece, resultingGame after: Game) -> SANMove {
+        let move = resolvedMove.move
         let isCheck = after.kingIsChecked
         let isCheckmate = isCheck && !after.hasAnyLegalMove()
 
@@ -109,37 +141,16 @@ public extension Game {
             }
         }
 
+        let promotes = piece.kind.isPawn && move.end.rank == Rank(endFor: piece.color)
         return .san(SANMove.SANDefaultMove(
             piece: piece.kind,
             from: disambiguation,
             isCapture: isCapture,
             toSquare: move.end,
-            promotionTo: promotion,
+            promotionTo: promotes ? (resolvedMove.promotion ?? .queen) : nil,
             isCheck: isCheck && !isCheckmate,
             isCheckmate: isCheckmate
         ))
-    }
-
-    /// Returns the long algebraic notation for a legal move, for example
-    /// `"Ng1-f3"`, `"e7xd8=Q+"` or `"O-O"`.
-    func longNotation(for resolvedMove: ResolvedMove, language: SANNotationLanguage = .english) throws -> String {
-        let san = try san(for: resolvedMove)
-        if san.isCastling {
-            return san.description
-        }
-        guard let piece = board[resolvedMove.move.start] else {
-            throw SANResolutionError.illegal
-        }
-        return NotationMove.long(
-            from: resolvedMove.move.start,
-            to: resolvedMove.move.end,
-            piece: piece.kind,
-            promotion: san.promotion,
-            isCapture: san.isCapture,
-            isCheck: san.isCheck,
-            isCheckmate: san.isCheckmate,
-            language: language
-        )
     }
 }
 

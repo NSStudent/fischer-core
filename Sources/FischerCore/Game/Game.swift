@@ -383,7 +383,7 @@ extension Game {
         // (for example, interposing a piece that discovers an attack).
         attackersToKing = board.attackersToKing(for: playerTurn)
 
-        fullmoves = initalFullmoves + (UInt(moveCount) / 2)
+        fullmoves = currentFullmoves()
         undoHistory = []
     }
     
@@ -529,6 +529,18 @@ extension Game {
         !kingIsChecked && !hasAnyLegalMove()
     }
 
+    /// The side that moved first in this game.
+    var initialPlayerTurn: PlayerColor {
+        moveCount.isMultiple(of: 2) ? playerTurn : playerTurn.inverse()
+    }
+
+    /// The fullmove number for the current position. The number increases
+    /// after each black move, also when the game started with black to move.
+    private func currentFullmoves() -> UInt {
+        let blackStarted: UInt = initialPlayerTurn == .black ? 1 : 0
+        return initalFullmoves + (UInt(moveCount) + blackStarted) / 2
+    }
+
     public func copy() -> Game {
         return Game(game: self)
     }
@@ -577,7 +589,7 @@ extension Game {
         playerTurn.invert()
         self.enPassantTarget = enPassantTarget
         self.attackersToKing = attackers
-        self.fullmoves = initalFullmoves + (UInt(moveCount) / 2)
+        self.fullmoves = currentFullmoves()
         self.halfmoves = halfmoves
         self.castlingRights = rights
         return move
