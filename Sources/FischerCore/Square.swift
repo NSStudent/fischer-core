@@ -129,7 +129,7 @@ extension Square {
         guard let file = File(fileCharacter) else {
             return nil
         }
-        guard let rank = Int(String(rankCharacter)).flatMap(Rank.init(integerLiteral:)) else {
+        guard let rank = Int(String(rankCharacter)).flatMap(Rank.init(rawValue:)) else {
             return nil
         }
         self.init(file: file, rank: rank)

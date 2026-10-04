@@ -24,6 +24,10 @@ struct SanMoveParser: Parser {
 
 public extension SANMove {
     init(san: String) throws {
-        self = try SanMoveParser().parse(san)
+        if let move = FastSANParser.parse(san) {
+            self = move
+        } else {
+            self = try SanMoveParser().parse(san)
+        }
     }
 }

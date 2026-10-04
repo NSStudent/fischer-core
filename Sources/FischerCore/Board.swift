@@ -158,13 +158,15 @@ extension Board {
 
     public func attackers(to square: Square, color: PlayerColor) -> Bitboard {
         let all = occupiedSpaces
-        let attackPieces = Piece.nonQueens(for: color)
-        let playerPieces = Piece.nonQueens(for: color.inverse())
-        let attacks = playerPieces.map({ piece in
-            square.attacks(for: piece, stoppers: all)
-        })
-        let queens = (attacks[2] | attacks[3]) & self[Piece(queen: color)]
-        return zip(attackPieces, attacks).reduce(queens) { $0 | (self[$1.0] & $1.1) }
+        let defender = color.inverse()
+        let queens = self[Piece(queen: color)]
+        let pawns = square.attacks(for: Piece(pawn: defender)) & self[Piece(pawn: color)]
+        let knights = square.knightAttacks() & self[Piece(knight: color)]
+        let king = square.kingAttacks() & self[Piece(king: color)]
+        let origin = Bitboard(square: square)
+        let diagonal = origin.bishopAttacks(stoppers: all) & (self[Piece(bishop: color)] | queens)
+        let straight = origin.rookAttacks(stoppers: all) & (self[Piece(rook: color)] | queens)
+        return pawns | knights | king | diagonal | straight
     }
 
     public var pieces: [Piece] {
