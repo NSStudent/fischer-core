@@ -52,6 +52,11 @@ public extension SANMove {
     ///   - language: The language of the piece letters.
     ///   - options: The relaxations to apply.
     init(san: String, language: SANNotationLanguage, options: SANParsingOptions = .strict) throws {
+        let trimmed = options.contains(.alternativeSymbols) ? san.trimmingWhitespace() : san
+        if trimmed == "--" || (!options.isEmpty && SANMove.nullMoveTokens.contains(trimmed)) {
+            self = .nullMove
+            return
+        }
         let normalized = SANMove.normalize(san, language: language, options: options)
         if let move = FastSANParser.parse(normalized) {
             self = move
@@ -59,6 +64,10 @@ public extension SANMove {
             self = try SanMoveParser().parse(normalized)
         }
     }
+
+    /// The spellings of the null move accepted when reading: `--` (the
+    /// ChessBase form, accepted also in strict mode), `Z0`, `0000` and `@@@@`.
+    static let nullMoveTokens = ["--", "Z0", "0000", "@@@@"]
 
     /// Returns `text` rewritten as exact English SAN according to `options`.
     ///

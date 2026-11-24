@@ -23,8 +23,11 @@ struct SanMoveParser: Parser {
 }
 
 public extension SANMove {
+    /// Parses exact SAN. `--` is read as ``SANMove/nullMove``.
     init(san: String) throws {
-        if let move = FastSANParser.parse(san) {
+        if san == "--" {
+            self = .nullMove
+        } else if let move = FastSANParser.parse(san) {
             self = move
         } else {
             self = try SanMoveParser().parse(san)

@@ -255,6 +255,17 @@ extension AnnotatedPGNGame {
             if strict { throw AnnotatedPGNError.illegalMove(issue) }
             issues.append(issue)
             return nil
+        case let .success(resolved) where resolved.isNull:
+            var next = game
+            try next.executeNullMove()
+            let node = AnnotatedMoveNode(
+                moveNumber: game.fullmoves,
+                color: game.playerTurn,
+                san: .nullMove,
+                move: resolved,
+                annotations: source.sourceAnnotations
+            )
+            return (node, next)
         case let .success(resolved):
             guard let piece = game.board[resolved.move.start] else { return nil }
             var next = game

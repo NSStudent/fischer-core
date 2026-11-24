@@ -330,6 +330,10 @@ private extension MoveTreePGNReader {
     }
 
     mutating func parseMove() throws -> SANMove? {
+        if let nullMove = parseNullMove() {
+            return nullMove
+        }
+
         if let castling = parseZeroCastling() {
             return castling
         }
@@ -431,6 +435,20 @@ private extension MoveTreePGNReader {
             return outcome
         }
 
+        return nil
+    }
+
+    /// Reads a null move. `--` is the ChessBase form and the one the writer
+    /// uses; `Z0`, `0000` and `@@@@` are also found in the wild.
+    mutating func parseNullMove() -> SANMove? {
+        for token in SANMove.nullMoveTokens where input.hasPrefix(token) {
+            let remainder = input.dropFirst(token.count)
+            guard isTokenBoundary(remainder.first) else {
+                continue
+            }
+            input = remainder
+            return .nullMove
+        }
         return nil
     }
 

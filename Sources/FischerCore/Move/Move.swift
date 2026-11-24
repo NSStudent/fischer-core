@@ -7,6 +7,19 @@ public struct Move: Hashable, Sendable {
 
 extension Move: Equatable {}
 
+extension Move {
+    /// The null move: the side to move passes.
+    ///
+    /// It uses `a1` as both start and end square. A real move always changes
+    /// square, so `start == end` only happens for the null move.
+    public static let null = Move(start: .a1, end: .a1)
+
+    /// Whether this is the null move (``null``).
+    public var isNull: Bool {
+        start == end
+    }
+}
+
 extension Move: CustomStringConvertible {
     public var description: String {
         return "\(start) >>> \(end)"
@@ -201,6 +214,11 @@ extension Move {
             case .black:
                 self.init(start: .e8, end: .c8)
             }
+        case .nullMove:
+            guard !game.kingIsChecked else {
+                throw FischerCoreError.illegalMove
+            }
+            self = .null
         }
     }
     

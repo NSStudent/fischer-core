@@ -27,7 +27,7 @@ It also powers the MindChess project as its chess logic core: https://nsstudent.
 You can use `FischerCore` in your project by adding it as a dependency in your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/NSStudent/fischer-core.git", from: "0.1.0")
+.package(url: "https://github.com/NSStudent/fischer-core.git", from: "0.5.0")
 ```
 
 Then, add `"FischerCore"` to your target's dependencies:
@@ -315,7 +315,30 @@ PGN comments preserve structured annotations:
 - Elapsed move time (`[%emt ...]`)
 - Engine evaluations (`[%eval ...]`)
 
-## What's New in 0.4.0 (unreleased)
+## What's New in 0.5.0
+
+### Null move
+
+The ChessBase null move is supported. `--` is read in strict and lenient SAN; `Z0`, `0000` and `@@@@`
+are also read in lenient SAN and in annotated PGNs. It is always written back as `--`.
+
+```swift
+let pgn = "1. e4 e5 2. Nf3 -- (2... Nc6) (2... Nf6) 3. Bc4 *"
+let game = try AnnotatedPGNGame(pgn: pgn)
+let pass = game.tree.node(at: .mainline(plies: 4))!
+pass.san == .nullMove   // true, written as "--"
+pass.move.isNull        // true, its UCI is "0000"
+```
+
+- `SANMove.nullMove`, `Move.null` (`a1` to `a1`; `isNull` is `start == end`) and `ResolvedMove.null`.
+- `Game.canPlayNullMove` (false in check) and `Game.executeNullMove()`. `execute(move: .null)` also plays it.
+- A null move is not kept in `moveHistory`: the game starts a new history from the position after it,
+  keeping piece identities.
+- In annotated PGNs the variations of a `--` are sibling alternatives from the same position.
+- Adding the `SANMove` case is source-breaking for exhaustive `switch` statements over `SANMove`.
+- The legacy `PGNGameParser` (`PGNGame.elements`) does not read `--` yet; use `AnnotatedPGNGame`.
+
+## What's New in 0.4.0
 
 ### Annotated move tree
 
@@ -476,6 +499,7 @@ The following features are planned to improve the functionality and completeness
 - [x] Annotated move tree, annotated PGN reader and PGN writer (0.4.0)
 - [x] PGN collection splitting and content hash (0.4.0)
 - [x] SAN resolution with typed errors, lenient parsing and Spanish notation (0.4.0)
+- [x] ChessBase null move (`--`) in SAN, games and annotated PGNs (0.5.0)
 - [x] App workflow helpers for physical-board FEN placement resolution, UCI execution, structured SAN history, move-history navigation, and outcome lookup
 - [x] `Sendable` conformances for value-safe core model types
 - [ ] Add performance benchmarks for parsers and move generation.

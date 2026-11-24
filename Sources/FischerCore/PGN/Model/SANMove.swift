@@ -8,7 +8,7 @@
 /// A representation of a move in Standard Algebraic Notation (SAN).
 ///
 /// SANMove supports normal piece moves, captures, promotions, check/checkmate flags,
-/// and also castling moves (kingside and queenside).
+/// castling moves (kingside and queenside) and the null move.
 public enum SANMove: Equatable, Sendable {
     /// Specifies how the origin of a move is disambiguated in SAN.
     ///
@@ -72,6 +72,12 @@ public enum SANMove: Equatable, Sendable {
     case san(SANDefaultMove)
     case kingsideCastling(isCheck: Bool, isCheckMate: Bool)
     case queensideCastling(isCheck: Bool, isCheckMate: Bool)
+    /// A null move: the side to move passes without moving a piece.
+    ///
+    /// It is not part of the PGN standard. ChessBase writes it as `--`, and
+    /// annotated games use it to hang several variations with comments from
+    /// the same position. It is written back as `--`.
+    case nullMove
 }
 
 extension SANMove.SANDefaultMove {
@@ -135,6 +141,8 @@ extension SANMove: CustomStringConvertible {
             return "O-O-O" + Self.checkSuffix(isCheck: isCheck, isCheckmate: isCheckMate)
         case .san(let move):
             return move.description(language: language)
+        case .nullMove:
+            return "--"
         }
     }
 
@@ -154,6 +162,8 @@ public extension SANMove {
             return move.isCheck || move.isCheckmate
         case let .kingsideCastling(isCheck, isCheckMate), let .queensideCastling(isCheck, isCheckMate):
             return isCheck || isCheckMate
+        case .nullMove:
+            return false
         }
     }
 
@@ -164,17 +174,24 @@ public extension SANMove {
             return move.isCheckmate
         case let .kingsideCastling(_, isCheckMate), let .queensideCastling(_, isCheckMate):
             return isCheckMate
+        case .nullMove:
+            return false
         }
     }
 
     /// Whether the move is a castling move.
     var isCastling: Bool {
         switch self {
-        case .san:
+        case .san, .nullMove:
             return false
         case .kingsideCastling, .queensideCastling:
             return true
         }
+    }
+
+    /// Whether the move is a null move (`--`).
+    var isNullMove: Bool {
+        self == .nullMove
     }
 
     /// Whether the move is marked as a capture. Castling is never a capture.
@@ -206,6 +223,8 @@ public extension SANMove {
             return .kingsideCastling(isCheck: isCheck && !isCheckmate, isCheckMate: isCheckmate)
         case .queensideCastling:
             return .queensideCastling(isCheck: isCheck && !isCheckmate, isCheckMate: isCheckmate)
+        case .nullMove:
+            return .nullMove
         }
     }
 }

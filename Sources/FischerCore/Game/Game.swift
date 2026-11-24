@@ -280,10 +280,51 @@ extension Game {
 
     /// Returns `true` if the move is legal.
     public func isLegal(move: Move, considerHalfmoves: Bool = true) -> Bool {
-        isLegalFast(move: move, considerHalfmoves: considerHalfmoves)
+        if move.isNull { return canPlayNullMove }
+        return isLegalFast(move: move, considerHalfmoves: considerHalfmoves)
+    }
+
+    /// Whether the side to move may pass with a null move. A null move is not
+    /// allowed while in check, because the king would be left in check.
+    public var canPlayNullMove: Bool {
+        !kingIsChecked
+    }
+
+    /// Plays a null move: the side to move passes without moving a piece.
+    ///
+    /// The board stays the same, the turn changes, the en passant target is
+    /// cleared, the halfmove clock goes up by one and the fullmove number goes
+    /// up after a black null move.
+    ///
+    /// A null move is not a move of chess, so it is not kept in
+    /// ``moveHistory``. The game starts a new history from the position after
+    /// the null move: ``initialFen`` becomes that position and the moves
+    /// played before it can no longer be undone. Piece identities are kept.
+    ///
+    /// - Throws: ``ExecutionError/illegalMove(_:_:_:)`` when the side to move
+    ///   is in check.
+    public mutating func executeNullMove() throws {
+        guard canPlayNullMove else {
+            throw ExecutionError.illegalMove(.null, playerTurn, board)
+        }
+        let after = Position(
+            board: board,
+            playerTurn: playerTurn.inverse(),
+            castlingRights: castlingRights,
+            enPassantTarget: nil,
+            halfmoves: halfmoves + 1,
+            fullmoves: playerTurn.isBlack() ? fullmoves + 1 : fullmoves
+        )
+        let identities = pieceIDs
+        self = try Game(position: after, whitePlayer: whitePlayer, blackPlayer: blackPlayer, variant: variant)
+        pieceIDs = identities
     }
 
     public mutating func execute(move: Move, considerHalfmoves: Bool = true, promotion: @autoclosure () -> PromotionPiece) throws {
+        if move.isNull {
+            try executeNullMove()
+            return
+        }
         guard isLegal(move: move, considerHalfmoves: considerHalfmoves) else {
             throw ExecutionError.illegalMove(move, playerTurn, board)
         }
@@ -296,6 +337,10 @@ extension Game {
 
     @inline(__always)
     public mutating func execute(uncheckedMove move: Move, promotion: () -> PromotionPiece) throws {
+        if move.isNull {
+            try executeNullMove()
+            return
+        }
         guard let piece = board[move.start] else {
             throw ExecutionError.missingPiece(move.start)
         }

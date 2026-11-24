@@ -4,9 +4,19 @@
 //
 
 public extension ResolvedMove {
-    /// The move in UCI notation, for example `"e2e4"` or `"e7e8n"`.
+    /// The null move: the side to move passes.
+    static let null = ResolvedMove(move: .null)
+
+    /// Whether this is the null move.
+    var isNull: Bool {
+        move.isNull
+    }
+
+    /// The move in UCI notation, for example `"e2e4"` or `"e7e8n"`. The null
+    /// move is `"0000"`.
     var uci: String {
-        "\(move.start)\(move.end)\(promotion?.uciValue ?? "")"
+        if isNull { return "0000" }
+        return "\(move.start)\(move.end)\(promotion?.uciValue ?? "")"
     }
 
     /// Parses a UCI move such as `"g1f3"` or `"e7e8q"`.
@@ -67,6 +77,10 @@ public extension Game {
     ///
     /// - Throws: ``SANResolutionError/illegal`` when the move is not legal.
     func san(for resolvedMove: ResolvedMove) throws -> SANMove {
+        if resolvedMove.isNull {
+            guard canPlayNullMove else { throw SANResolutionError.illegal }
+            return .nullMove
+        }
         let move = resolvedMove.move
         guard let piece = board[move.start],
               piece.color == playerTurn,
@@ -86,7 +100,7 @@ public extension Game {
     /// `"Ng1-f3"`, `"e7xd8=Q+"` or `"O-O"`.
     func longNotation(for resolvedMove: ResolvedMove, language: SANNotationLanguage = .english) throws -> String {
         let san = try san(for: resolvedMove)
-        if san.isCastling {
+        if san.isCastling || san.isNullMove {
             return san.description
         }
         guard let piece = board[resolvedMove.move.start] else {
@@ -110,6 +124,7 @@ extension Game {
     /// after playing it. Avoids replaying the move when the caller already
     /// did.
     func san(forLegal resolvedMove: ResolvedMove, piece: Piece, resultingGame after: Game) -> SANMove {
+        if resolvedMove.isNull { return .nullMove }
         let move = resolvedMove.move
         let isCheck = after.kingIsChecked
         let isCheckmate = isCheck && !after.hasAnyLegalMove()
@@ -174,6 +189,8 @@ public extension Game {
                 return []
             }
             return [ResolvedMove(move: start >>> end)]
+        case .nullMove:
+            return canPlayNullMove ? [.null] : []
         case let .san(defaultMove):
             let piece = Piece(kind: defaultMove.piece, color: playerTurn)
             var result: [ResolvedMove] = []
@@ -319,7 +336,7 @@ private extension Game {
     /// safety were ignored. Distinguishes `.illegal` from `.notFound`.
     func hasMatchingPiece(for san: SANMove) -> Bool {
         switch san {
-        case .kingsideCastling, .queensideCastling:
+        case .kingsideCastling, .queensideCastling, .nullMove:
             return true
         case let .san(defaultMove):
             let piece = Piece(kind: defaultMove.piece, color: playerTurn)
